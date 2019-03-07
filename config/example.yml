@@ -1,0 +1,70 @@
+---
+# creates a YUM repository populated from Base or alternate sources
+yum:
+  repos:
+    - https://myrepo.org/7/x86_64
+  packages:
+    - net-tools
+    - postfix-3.2.1
+  files:
+    - https://github.com/org/project/releases/1.0.0/file.rpm
+
+# creates a static rubygems repository
+ruby:
+  version: 2.4.5
+  gems:
+    - thor
+    - package: rails
+      version: ~5.1.0
+
+# creates a PyPi compatible static repository, both packages and wheels
+python:
+  version: 2.7.5
+  packages:
+    - django
+    - package: flask
+      version: <3.4.1
+
+# creates a static NPM repository site
+npm:
+  node_version: 10.0
+  npm_version: 5.5
+  packages:
+    - express
+    - package: vue-cli
+      version: 3.0.1
+
+# downloads docker images from provided image specs, and exports to file (or optionally, pushes to an alternate repository)
+docker:
+  repository: repository.internal.corp.com   # exports to file if no target repo is specified
+  images:
+    - centos:7
+    - image: ubuntu
+      version: 18.04
+    - myrepo.org/alpine:3.7
+
+# creates a Jenkins update site
+jenkins:
+  - pipeline
+  - package: blueocean
+    version: 2.2.1
+
+# creates a static maven repository with POMs
+maven:
+  - apache-commons
+  - junit:4
+  - groupId: commons-io
+    artifactId: commons-io
+    version: 2.6
+    packaging: jar # default if not specified
+
+# creates bare git repositories to be statically hosted
+git:
+  - https://github.com/org/project.git   # will create git/project.git bare repository
+
+# downloads any files from a network source (HTTP/S only) and gathers them for static hosting
+files:
+  - https://server.com/releases/myfile.zip   # will create files/myfile.zip
+  - source: https://server.com/anotherfile.js  # will create files/assets/anotherfile.js
+    target: assets/
+
