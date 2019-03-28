@@ -11,11 +11,11 @@ html)
   ;;
 xunit)
   go get github.com/tebeka/go2xunit
-  2>&1 go test -v ./... | tee xunitresults
+  2>&1 go test -v -race ./... | tee xunitresults
   go2xunit -fail -input $outfile -output tests.xml
   ;;
 cover)
-  go test -covermode=count -coverprofile=c.out
+  go test -v -race -covermode=count -coverprofile=c.out
   ;;
 none)
   rm -f coverage.out
