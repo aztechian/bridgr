@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 	"strings"
@@ -23,7 +24,7 @@ func BaseDir() string {
 	return "files"
 }
 
-func parseFiles(conf tempConfig) (Files, error) {
+func parseFiles(conf tempConfig) Files {
 	files := Files{}
 	for _, val := range conf.Files {
 		log.Println("DEBUG: Parsing Files entry for:", val)
@@ -34,14 +35,16 @@ func parseFiles(conf tempConfig) (Files, error) {
 			err = newItem.parseSimple(o)
 		case map[interface{}]interface{}: // complex type
 			err = newItem.parseComplex(o)
+		default:
+			err = fmt.Errorf("Unsupported File type in config - %T", o)
 		}
 		if err != nil {
-			log.Println("Error while parsing Files entry:", val)
+			log.Println(err)
 		} else {
 			files.Items = append(files.Items, newItem)
 		}
 	}
-	return files, nil
+	return files
 }
 
 func (f *FileItem) parseSimple(s string) error {
@@ -62,6 +65,7 @@ func (f *FileItem) parseComplex(s map[interface{}]interface{}) error {
 	} else {
 		f.Target = target
 	}
+	f.Target = getFileTarget(f.Target)
 	return nil
 }
 
@@ -69,7 +73,11 @@ func getFileProtocol(src string) string {
 	if strings.HasPrefix(src, "/") {
 		return "file"
 	}
-	return strings.Split(src, "://")[0]
+	proto := strings.Split(src, "://")[0]
+	if proto == src {
+		return "file"
+	}
+	return proto
 }
 
 func getFileTarget(src string) string {

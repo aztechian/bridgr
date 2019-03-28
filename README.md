@@ -7,7 +7,7 @@
 [![GitHub][license]][license-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
-your software (or deploy it) isn't available! The common solution to this problem has been to have each developer bring in the 
+your software (or deploy it) isn't available! The common solution to this problem has been to have each developer bring in the
 pieces they need. Governance of the artifacts becomes nearly non-existant - at best you have a "dumping ground" of files that no one
 person knows much about.
 

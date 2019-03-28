@@ -58,7 +58,7 @@ func Config(f string) (BridgrConf, error) {
 
 	temp := tempConfig{}
 	yaml.Unmarshal(confData, &temp)
-	c.Files, _ = parseFiles(temp)
+	c.Files = parseFiles(temp)
 	return c, nil
 }
 
