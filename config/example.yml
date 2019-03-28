@@ -36,7 +36,7 @@ npm:
 
 # downloads docker images from provided image specs, and exports to file (or optionally, pushes to an alternate repository)
 docker:
-  repository: repository.internal.corp.com   # exports to file if no target repo is specified
+  repository: repository.internal.corp.com # exports to file if no target repo is specified
   images:
     - centos:7
     - image: ubuntu
@@ -60,11 +60,15 @@ maven:
 
 # creates bare git repositories to be statically hosted
 git:
-  - https://github.com/org/project.git   # will create git/project.git bare repository
+  - https://github.com/org/project.git # will create git/project.git bare repository
 
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:
-  - https://server.com/releases/myfile.zip   # will create files/myfile.zip
-  - source: https://server.com/anotherfile.js  # will create files/assets/anotherfile.js
+  - https://server.com/releases/myfile.zip # will create files/myfile.zip
+  - source: https://server.com/anotherfile.js # will create files/assets/anotherfile.js
     target: assets/
 
+# downloads from vagrant cloud or local .box image, creating a vagrant box repository
+vagrant:
+  - centos/7
+  - myimage.box
