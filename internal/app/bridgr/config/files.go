@@ -20,7 +20,7 @@ type FileItem struct {
 }
 
 // BaseDir is the top-level directory name for all objects written out under the Files worker
-func BaseDir() string {
+func (f *Files) BaseDir() string {
 	return "files"
 }
 
@@ -73,6 +73,7 @@ func getFileProtocol(src string) string {
 	if strings.HasPrefix(src, "/") {
 		return "file"
 	}
+	// probably better to switch to using net/url for parsing
 	proto := strings.Split(src, "://")[0]
 	if proto == src {
 		return "file"
@@ -81,5 +82,6 @@ func getFileProtocol(src string) string {
 }
 
 func getFileTarget(src string) string {
-	return filepath.Join(BaseDir(), filepath.Base(src))
+	file := Files{}
+	return filepath.Join(file.BaseDir(), filepath.Base(src))
 }

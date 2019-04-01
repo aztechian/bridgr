@@ -12,7 +12,7 @@ import (
 // BridgrConf is the in-memory representation of the provided YAML config file
 //
 type BridgrConf struct {
-	Yum      interface{}
+	Yum      Yum
 	Files    Files
 	Ruby     interface{}
 	Python   interface{}
@@ -59,6 +59,7 @@ func Config(f string) (BridgrConf, error) {
 	temp := tempConfig{}
 	yaml.Unmarshal(confData, &temp)
 	c.Files = parseFiles(temp)
+	c.Yum = parseYum(temp)
 	return c, nil
 }
 

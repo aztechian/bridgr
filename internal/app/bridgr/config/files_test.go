@@ -7,7 +7,8 @@ import (
 
 func TestBaseDir(t *testing.T) {
 	expected := "files"
-	tested := config.BaseDir()
+	files := config.Files{}
+	tested := files.BaseDir()
 	if tested != expected {
 		t.Errorf("Expected %s but got %s", expected, tested)
 	}

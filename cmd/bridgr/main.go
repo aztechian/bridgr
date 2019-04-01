@@ -35,9 +35,12 @@ func main() {
 	// spew.Dump(config)
 
 	files := workers.Files{}
+	yum := workers.Yum{}
 	if *dryrunPtr {
 		files.Setup(configFile)
+		yum.Setup(configFile)
 	} else {
 		files.Run(configFile)
+		yum.Run(configFile)
 	}
 }

@@ -40,7 +40,7 @@ func (f *Files) Run(conf config.BridgrConf) error {
 func (f *Files) Setup(conf config.BridgrConf) error {
 	log.Println("Called Files.setup()")
 	spew.Dump(conf.Files)
-	os.Mkdir(config.BaseDir(), os.ModePerm)
+	os.Mkdir(conf.Files.BaseDir(), os.ModePerm)
 	return nil
 }
 

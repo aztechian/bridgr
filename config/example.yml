@@ -6,7 +6,7 @@ yum:
   packages:
     - net-tools
     - postfix-3.2.1
-  files:
+    # any form of package protocol/URI that is valid for YUM can be used in the "packages" section
     - https://github.com/org/project/releases/1.0.0/file.rpm
 
 # creates a static rubygems repository
