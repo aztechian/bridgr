@@ -60,7 +60,7 @@ Project structure following [these guidelines](https://github.com/golang-standar
 We will use the following libraries to do heavy lifting:
 
 - go-git
-- docker.io/go-docker
+- docker.io/go-docker (also compare with github.com/fsouza/go-dockerclient)
 
 Potential for schema definition/validation of the YAML config file: https://github.com/rjbs/rx
 
