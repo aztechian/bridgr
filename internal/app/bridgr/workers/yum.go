@@ -46,10 +46,11 @@ func (y *Yum) Setup() error {
 }
 
 func (y *Yum) writeRepos() error {
-	repoTemplate, err := template.ParseFiles("internal/app/bridgr/templates/yum.repo")
+	yumTmpl, err := loadTemplate("yum.repo")
 	if err != nil {
-		return fmt.Errorf("Error parsing YUM repo template from templates/yum/repo")
+		log.Printf("Error loading yum.repo template: %s", err)
 	}
-
-	return repoTemplate.Execute(y.RepoWriter, y.Config.Yum.Repos)
+	tmpl := template.New("yumrepo")
+	tmpl.Parse(yumTmpl)
+	return tmpl.Execute(y.RepoWriter, y.Config.Yum.Repos)
 }

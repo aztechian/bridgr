@@ -12,7 +12,7 @@ type Files struct {
 	Items []FileItem
 }
 
-// FileItem is a discreet file defintion object
+// FileItem is a discreet file definition object
 type FileItem struct {
 	Source   string
 	Target   string

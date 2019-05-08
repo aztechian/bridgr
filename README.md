@@ -5,6 +5,7 @@
 [![Build Status][travis-image]][travis-url]
 [![Downloads Stats][gh-downloads]][gh-dl-url]
 [![GitHub][license]][license-url]
+[![Go Report Card][reportcard-image]][reportcard-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
 your software (or deploy it) isn't available! The common solution to this problem has been to have each developer bring in the
@@ -18,8 +19,9 @@ in place Bridgr can allow:
 - DevOps and pipeline friendly-ness
 - Review of changes to artifacts by security teams or CM _before_ the artifact makes it to the target network
 - Static website hosting of artifacts on the target network (with metadata, so repositories like YUM and Rubygems work)
+- Support for multiple output formats - local filesystem, object storage, DVD image(?)
 
-![](header.png)
+![header video](header.png)
 
 ## Installation
 
@@ -56,13 +58,15 @@ Requires Go version 1.11 or higher.
 
 Using new (as of go 1.11) [modules-style](https://github.com/golang/go/wiki/Modules) dependencies.
 Project structure following [these guidelines](https://github.com/golang-standards/project-layout)
+Example project showing [CI pipeline](https://gitlab.com/pantomath-io/demo-tools)
 
 We will use the following libraries to do heavy lifting:
 
 - go-git
 - docker.io/go-docker (also compare with github.com/fsouza/go-dockerclient)
 
-Potential for schema definition/validation of the YAML config file: https://github.com/rjbs/rx
+Potential for schema definition/validation of the YAML config file: [https://github.com/rjbs/rx](https://github.com/rjbs/rx)
+Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski/iso9660](https://github.com/kdomanski/iso9660)
 
 ## Release History
 
@@ -93,3 +97,5 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 [travis-image]: https://img.shields.io/travis/aztechian/bridgr/master.svg?style=flat-square
 [travis-url]: https://travis-ci.org/aztechian/bridgr
 [wiki]: https://github.com/aztechian/bridgr/wiki
+[reportcard-image]: https://goreportcard.com/badge/github.com/aztechian/bridgr
+[reportcard-url]: https://goreportcard.com/report/github.com/aztechian/bridgr
