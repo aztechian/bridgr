@@ -6,7 +6,7 @@ env:
   global:
     # Force-enable Go modules. This will be unnecessary when Go 1.12 lands.
     - GO111MODULE=on
-    - BUILD_GOARCH=amd64
+    - GOARCH=amd64
     # - CODECOV_TOKEN="9d27ab9c-c774-4583-8a46-f0b4380d374b"
 stages:
   - checks
@@ -14,6 +14,9 @@ stages:
   - build
 go:
   - 1.11.x
+cache:
+  directories:
+    $GOPATH
 
 # Only clone the most recent commit.
 git:
@@ -23,35 +26,34 @@ git:
 # in vendor/
 install: true
 
-# Anything in before_script that returns a nonzero exit code will flunk the
-# build and immediately stop. It's sorta like having set -e enabled in bash.
-# Make sure golangci-lint is vendored.
-before_script:
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.16.0
-  # - go get github.com/golangci/golangci-lint/cmd/golangci-lint
-  - golangci-lint --version # test that we got it
-
 # script always runs to completion (set +e). If we have linter issues AND a
 # failing test, we want to see both. Configure golangci-lint with a
 # .golangci.yml file at the top level of your repo.
 jobs:
   include:
     - stage: checks
-      script: golangci-lint run # run a bunch of code checkers/linters in parallel
+      # script: golangci-lint run # run a bunch of code checkers/linters in parallel
+      script:
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.16.0
+        - golangci-lint --version # test that we got it
+        - make download
+        - golangci-lint run --issues-exit-code 0 --new-from-rev=HEAD~
     - stage: test
-      script: make coverage
+      script:
+        - make coverage && bash <(curl -s https://codecov.io/bash)
     - stage: build
-      script: BUILD_GOOS=linux make
+      script: make
+      env: GOOS=linux
     - stage: build
-      script: BUILD_GOOS=darwin make
+      script: make
+      env: GOOS=windows
     - stage: build
-      script: BUILD_GOOS=windows make
-
-after_success:
-  # upload coverage to codecov
-  - bash <(curl -s https://codecov.io/bash)
+      script: make
+      env: GOOS=darwin
 
 deploy:
+  on: 
+    condition: $TRAVIS_BUILD_STAGE_NAME = Build
   provider: releases
   api_key:
     secure: a82ExBJvRkaSq+gYKN4bGA5jtERY0pWZS2KL5aY3g6BaonIuVK3M2hjjYMa0TRGUewNNE7JnEhTmsS3JB3koPSHT3ep9UfQ3hAjh50MDEUK78htUOiozKdc6raxyE9LxGi/td/KrI6TuIaKsoY+35T5xBEKdE1ZXLnu8xcGQjmQ6a8iFwkAm6moNEyslR0xJfTMK32svpX3gs9v3sLbffRWvRCgjoOeZVz7g/XtYJESG2+oKT0aCTVvR8pGcQ2D76/bn6TlLhfhsNxfqqfgFbqtXhMnPDkRlVTi60pexvoxKoXuka4zwFSzb49qQddDw5XDuZ5TpvTF6wdwTkGYUs9Om+GwtwKf0FQ1GoZzWVXmQhujbkvwxlDNpowe+V7T9IuCvTPSbyLGKU4tqmPF3RVDZKQzg7DdCfR7KiMtxuBlRYitLJNLR8sLQ9QyGZIvXsSTVK9e+8J0li5P6L6nxF9jpRvqTdRWJdrph5mBbp2auI/wh9Q+tcK9v2bqOx4rasKajH9BCtiuIWAS8e3cRqxKKMhDuH/oxyRM4C5QXWIga+/SfRNTHj3immhJL4CUseXfDcEU6OD1OzlEojPyRoa69U0fs8Om+0i3rKKjfXT0epnn+PgBPD10te74CrLgzhzd/tPd/2zmFru1KZ9nxT2Ie4hkcYOqc2XSOAH8GF40=
