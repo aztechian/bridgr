@@ -5,7 +5,15 @@ GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 
 .PHONY: all coverage lint test race x2unit xunit clean generate
 
+ifeq ($(GOOS), linux)
+all: $(PROJECT_NAME)-Linux
+else ifeq ($(GOOS), windows)
+all: $(PROJECT_NAME)-Windows
+else ifeq ($(GOOS), darwin)
+all: $(PROJECT_NAME)-MacOS
+else
 all: $(PROJECT_NAME)
+endif
 
 ifeq ($(TRAVIS),)
 coverage: html
@@ -42,9 +50,12 @@ clean:
 	@rm -rf internal/app/bridgr/assets/templates.go coverage.out yum files tests.xml tests.out coverage.out main $(PKG)
 
 generate: $(GO_FILES)
-	@go generate ./...
+	@GOOS="" go generate ./...
 
 $(PROJECT_NAME): generate $(GO_FILES)
+	@go build -tags dist -i -v -o $@ $(CMD)
+
+$(PROJECT_NAME)-%: generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ $(CMD) 
 
 # need something in here to check $TRAVIS_TAG an add version to the build command with -X Version=${TRAVIS_TAG}
