@@ -1,10 +1,19 @@
 language: go
-
+dist:  xenial
 # Force-enable Go modules. This will be unnecessary when Go 1.12 lands.
 env:
-  - GO111MODULE=on
+  global:
+    - GO111MODULE=on
+    - BUILD_GOARCH=amd64
+    # - CODECOV_TOKEN="9d27ab9c-c774-4583-8a46-f0b4380d374b"
+  matrix:
+    - BUILD_GOOS=linux
+    - BUILD_GOOS=darwin
+    - BUILD_GOOS=windows
 go:
   - 1.11.x
+os:
+  - linux
 
 # Only clone the most recent commit.
 git:
@@ -18,11 +27,16 @@ install: true
 # build and immediately stop. It's sorta like having set -e enabled in bash.
 # Make sure golangci-lint is vendored.
 before_script:
-  - go install -mod vendor github.com/golangci/golangci-lint/cmd/golangci-lint
+  - go install github.com/golangci/golangci-lint/cmd/golangci-lint
 
 # script always runs to completion (set +e). If we have linter issues AND a
 # failing test, we want to see both. Configure golangci-lint with a
 # .golangci.yml file at the top level of your repo.
+job:
+  include:
+    - stage: checks
+      script: golangci-lint run # run a bunch of code checkers/linters in parallel
+    - script: make coverage
+
 script:
-  - golangci-lint run # run a bunch of code checkers/linters in parallel
-  - ./scripts/test.sh # Run all the tests with the race detector enabled
+  - make
