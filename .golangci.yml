@@ -1,0 +1,8 @@
+---
+linters:
+  enable:
+    - lint
+    - goimport
+
+service:
+  golangci-lint-version: 1.16.x
