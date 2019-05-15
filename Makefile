@@ -3,7 +3,7 @@ PKG := "$(PROJECT_NAME)"
 CMD := "cmd/bridgr/main.go"
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 
-.PHONY: all coverage lint test race x2unit xunit clean generate
+.PHONY: all coverage lint test race x2unit xunit clean generate download
 
 ifeq ($(GOOS), linux)
 all: $(PROJECT_NAME)-Linux
@@ -56,6 +56,9 @@ $(PROJECT_NAME): generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ $(CMD)
 
 $(PROJECT_NAME)-%: generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ $(CMD) 
+	@go build -tags dist -i -v -o $@ $(CMD)
+	@echo "Created executable $@"
 
+download:
+	@go list -e $(shell go list -m all)
 # need something in here to check $TRAVIS_TAG an add version to the build command with -X Version=${TRAVIS_TAG}

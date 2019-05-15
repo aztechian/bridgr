@@ -7,6 +7,7 @@
 [![GitHub][license]][license-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
 [![codecov][codecov-image]][codecov-url]
+[![Get more details at **codescene.io**.][codescene-image]][codescene-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
 your software (or deploy it) isn't available! The common solution to this problem has been to have each developer bring in the
@@ -102,3 +103,5 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 [reportcard-url]: https://goreportcard.com/report/github.com/aztechian/bridgr
 [codecov-image]: https://codecov.io/gh/aztechian/bridgr/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/aztechian/bridgr
+[codescene-image]: https://codescene.io/projects/4859/status.svg
+[codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
