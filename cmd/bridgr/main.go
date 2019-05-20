@@ -33,14 +33,17 @@ func main() {
 		panic(err)
 	}
 	// spew.Dump(config)
-
-	files := workers.Files{}
+	files, _ := workers.NewFiles(configFile)
 	yum, _ := workers.NewYum(configFile)
+
 	if *dryrunPtr {
-		files.Setup(configFile)
+		files.Setup()
 		yum.Setup()
 	} else {
-		files.Run(configFile)
-		yum.Run()
+		files.Run()
+		err := yum.Run()
+		if err != nil {
+			panic(err)
+		}
 	}
 }

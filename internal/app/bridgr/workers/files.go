@@ -14,12 +14,22 @@ import (
 )
 
 // Files is the work type for fetching plain files of various protocols
-type Files struct{}
+type Files struct {
+	config config.BridgrConf
+}
+
+// NewFiles is the constructor for a new Files worker struct
+func NewFiles(conf config.BridgrConf) (Files, error) {
+	f := Files{
+		config: conf,
+	}
+	return f, nil
+}
 
 // Run sets up, creates and fetches static files based on the settings from the config file
-func (f *Files) Run(conf config.BridgrConf) error {
-	f.Setup(conf)
-	for _, file := range conf.Files.Items {
+func (f *Files) Run() error {
+	f.Setup()
+	for _, file := range f.config.Files.Items {
 		var err error
 		switch file.Protocol {
 		case "http", "https":
@@ -37,10 +47,9 @@ func (f *Files) Run(conf config.BridgrConf) error {
 }
 
 // Setup only does the setup step of the Files worker
-func (f *Files) Setup(conf config.BridgrConf) error {
-	log.Println("Called Files.setup()")
-	spew.Dump(conf.Files)
-	os.Mkdir(conf.Files.BaseDir(), os.ModePerm)
+func (f *Files) Setup() error {
+	spew.Dump(f.config.Files)
+	os.Mkdir(f.config.Files.BaseDir(), os.ModePerm)
 	return nil
 }
 

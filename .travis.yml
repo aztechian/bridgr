@@ -7,7 +7,6 @@ env:
     # Force-enable Go modules. This will be unnecessary when Go 1.12 lands.
     - GO111MODULE=on
     - GOARCH=amd64
-    # - CODECOV_TOKEN="9d27ab9c-c774-4583-8a46-f0b4380d374b"
 stages:
   - checks
   - test
@@ -40,6 +39,8 @@ jobs:
     - stage: test
       script:
         - make coverage && bash <(curl -s https://codecov.io/bash)
+        # trigger goreportcard scan
+        - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
       script: GOOS=linux make #need this here because gvm resets the GOOS var from the "env:" line
       env: GOOS=linux

@@ -48,6 +48,7 @@ xunit: x2unit tests.out
 
 clean:
 	@rm -rf internal/app/bridgr/assets/templates.go coverage.out yum files tests.xml tests.out coverage.out main $(PKG)
+	@docker rm --force bridgr_yum
 
 generate: $(GO_FILES)
 	@GOOS="" go generate ./...

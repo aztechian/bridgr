@@ -28,7 +28,9 @@ func TestRun(t *testing.T) {
 func TestSetup(t *testing.T) {
 	err := yumStub.Setup()
 	if err != nil {
-		t.Errorf("uh oh, %s", err)
+		t.Errorf("Error during Yum.Setup(): %s", err)
 	}
-	// t.Logf("Got repo file of %+s", memBuffer.String())
+	if memBuffer.Len() <= 0 {
+		t.Error("Expected content in the yum.repo file, but got size 0")
+	}
 }
