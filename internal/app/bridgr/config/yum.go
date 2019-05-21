@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"path"
 )
 
 const defaultYumImage = "library/centos:7" // TODO move this to a function that returns the canonical form of an image
@@ -15,7 +16,7 @@ type Yum struct {
 
 // BaseDir is the top-level directory name for all objects written out under the Yum worker
 func (y *Yum) BaseDir() string {
-	return "yum"
+	return path.Join(BaseDir(), "yum")
 }
 
 func parseYum(config tempConfig) Yum {

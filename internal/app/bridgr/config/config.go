@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 
 	"gopkg.in/yaml.v2"
 )
@@ -69,4 +70,11 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+// BaseDir gives the runtime absolute directory of the base "packages" directory
+// See the individual repo type struct for the type-specific path
+func BaseDir() string {
+	var cwd, _ = os.Getwd()
+	return path.Join(cwd, "packages")
 }

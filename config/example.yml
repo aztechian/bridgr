@@ -64,9 +64,9 @@ git:
 
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:
-  - https://server.com/releases/myfile.zip # will create files/myfile.zip
-  - source: https://server.com/anotherfile.js # will create files/assets/anotherfile.js
-    target: assets/
+  # - https://server.com/releases/myfile.zip # will create files/myfile.zip
+  # - source: https://server.com/anotherfile.js # will create files/assets/anotherfile.js
+  #   target: assets/
 
 # downloads from vagrant cloud or local .box image, creating a vagrant box repository
 vagrant:
