@@ -48,7 +48,7 @@ func (f *Files) Run() error {
 // Setup only does the setup step of the Files worker
 func (f *Files) Setup() error {
 	spew.Dump(f.config.Files)
-	os.Mkdir(f.config.Files.BaseDir(), os.ModePerm)
+	os.MkdirAll(f.config.Files.BaseDir(), os.ModePerm)
 	return nil
 }
 
@@ -58,8 +58,8 @@ func ftpFetch(f config.FileItem) error {
 
 func httpFetch(f config.FileItem) error {
 	// TODO this would be much better to do as a fallback - if regular (InsecureSkipVerify: true) fails first
-	// this will be _really_ bad if someday we supported 2-way SSL
 	transport := &http.Transport{
+		// this will be _really_ bad if someday we supported 2-way SSL
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore SSL certificates
 	}
 

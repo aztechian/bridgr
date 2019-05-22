@@ -2,11 +2,12 @@ package config_test
 
 import (
 	"bridgr/internal/app/bridgr/config"
+	"path"
 	"testing"
 )
 
 func TestBaseDir(t *testing.T) {
-	expected := "files"
+	expected := path.Join(config.BaseDir(), "files")
 	files := config.Files{}
 	tested := files.BaseDir()
 	if tested != expected {

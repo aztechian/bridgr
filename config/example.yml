@@ -2,12 +2,13 @@
 # creates a YUM repository populated from Base or alternate sources
 yum:
   repos:
-    - https://myrepo.org/7/x86_64
+    - https://dl.fedoraproject.org/pub/epel/7/x86_64/
   packages:
     - net-tools
-    - postfix-3.2.1
+    - postgis-2.0.7
+    - htop
     # any form of package protocol/URI that is valid for YUM can be used in the "packages" section
-    - https://github.com/org/project/releases/1.0.0/file.rpm
+    - https://rpmfind.net/linux/rpmfusion/free/el/updates/7/x86_64/f/ffmpeg-3.4.6-1.el7.x86_64.rpm
 
 # creates a static rubygems repository
 ruby:
@@ -65,7 +66,7 @@ git:
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:
   - https://server.com/releases/myfile.zip # will create files/myfile.zip
-  - source: https://server.com/anotherfile.js # will create files/assets/anotherfile.js
+  - source: https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 # will create files/assets/jq-linux64
     target: assets/
 
 # downloads from vagrant cloud or local .box image, creating a vagrant box repository
