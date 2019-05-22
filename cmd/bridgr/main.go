@@ -33,8 +33,8 @@ func main() {
 		panic(err)
 	}
 	// spew.Dump(config)
-	files, _ := workers.NewFiles(configFile)
-	yum, _ := workers.NewYum(configFile)
+	files := workers.NewFiles(configFile)
+	yum := workers.NewYum(configFile)
 
 	if *dryrunPtr {
 		files.Setup()

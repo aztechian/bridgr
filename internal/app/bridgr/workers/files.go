@@ -19,11 +19,10 @@ type Files struct {
 }
 
 // NewFiles is the constructor for a new Files worker struct
-func NewFiles(conf config.BridgrConf) (Files, error) {
-	f := Files{
+func NewFiles(conf config.BridgrConf) *Files {
+	return &Files{
 		config: conf,
 	}
-	return f, nil
 }
 
 // Run sets up, creates and fetches static files based on the settings from the config file

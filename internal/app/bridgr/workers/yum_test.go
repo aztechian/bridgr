@@ -7,6 +7,14 @@ import (
 	"testing"
 )
 
+type MemWriteCloser struct {
+	bytes.Buffer
+}
+
+func (mwc *MemWriteCloser) Close() error {
+	return nil
+}
+
 var confStruct = config.BridgrConf{
 	Yum: config.Yum{
 		Repos: []string{"http://repo1.test"},
@@ -14,7 +22,7 @@ var confStruct = config.BridgrConf{
 	},
 }
 
-var memBuffer = bytes.Buffer{}
+var memBuffer = MemWriteCloser{bytes.Buffer{}}
 
 var yumStub = workers.Yum{
 	Config:     confStruct,
