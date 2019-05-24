@@ -16,7 +16,7 @@ import (
 
 // Yum is the worker implementation for Yum repositories
 type Yum struct {
-	Config          config.BridgrConf
+	Config          *config.BridgrConf
 	RepoWriter      io.WriteCloser
 	RepoTemplate    string
 	PackageMount    mount.Mount
@@ -25,7 +25,7 @@ type Yum struct {
 }
 
 // NewYum creates a worker.Yum struct
-func NewYum(conf config.BridgrConf) *Yum {
+func NewYum(conf *config.BridgrConf) *Yum {
 	os.MkdirAll(conf.Yum.BaseDir(), os.ModePerm)
 	repo, err := os.Create(path.Join(config.BaseDir(), "bridgr.repo"))
 	if err != nil {

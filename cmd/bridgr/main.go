@@ -5,6 +5,9 @@ import (
 	"bridgr/internal/app/bridgr/workers"
 	"flag"
 	"fmt"
+	"io"
+	"log"
+	"os"
 )
 
 // this interface may not be useful because each type of worker needs to be instantiated in main anyways
@@ -28,13 +31,21 @@ func main() {
 	fmt.Println("Bridgr")
 	flag.Parse()
 
-	configFile, err := config.Config(*configPtr)
+	configFile, err := openConfig()
+	if err != nil {
+		log.Printf("Unable to open bridgr config \"%s\": %s", *configPtr, err)
+		if configFile != nil {
+			configFile.Close()
+		}
+		os.Exit(4)
+	}
+	conf, err := config.New(configFile)
 	if err != nil {
 		panic(err)
 	}
 	// spew.Dump(config)
-	files := workers.NewFiles(configFile)
-	yum := workers.NewYum(configFile)
+	files := workers.NewFiles(conf)
+	yum := workers.NewYum(conf)
 
 	if *dryrunPtr {
 		files.Setup()
@@ -46,4 +57,19 @@ func main() {
 			panic(err)
 		}
 	}
+}
+
+func openConfig() (io.ReadCloser, error) {
+	if !fileExists(*configPtr) {
+		return nil, fmt.Errorf("file does not exist")
+	}
+	return os.Open(*configPtr)
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }

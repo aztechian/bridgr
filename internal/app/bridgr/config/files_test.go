@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestBaseDir(t *testing.T) {
+func TestFilesBaseDir(t *testing.T) {
 	expected := path.Join(config.BaseDir(), "files")
 	files := config.Files{}
 	tested := files.BaseDir()

@@ -15,11 +15,11 @@ import (
 
 // Files is the work type for fetching plain files of various protocols
 type Files struct {
-	config config.BridgrConf
+	config *config.BridgrConf
 }
 
 // NewFiles is the constructor for a new Files worker struct
-func NewFiles(conf config.BridgrConf) *Files {
+func NewFiles(conf *config.BridgrConf) *Files {
 	return &Files{
 		config: conf,
 	}
