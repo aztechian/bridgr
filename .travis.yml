@@ -1,5 +1,5 @@
 language: go
-dist:  xenial
+dist: xenial
 os:
   - linux
 env:
@@ -15,8 +15,7 @@ stages:
 go:
   - 1.11.x
 cache:
-  directories:
-    $GOPATH
+  directories: $GOPATH
 
 # Only clone the most recent commit.
 git:
@@ -52,13 +51,12 @@ jobs:
       env: GOOS=darwin
 
 deploy:
-  on: 
+  on:
+    tags: true
     condition: $TRAVIS_BUILD_STAGE_NAME = Build
   provider: releases
   api_key:
-    secure: a82ExBJvRkaSq+gYKN4bGA5jtERY0pWZS2KL5aY3g6BaonIuVK3M2hjjYMa0TRGUewNNE7JnEhTmsS3JB3koPSHT3ep9UfQ3hAjh50MDEUK78htUOiozKdc6raxyE9LxGi/td/KrI6TuIaKsoY+35T5xBEKdE1ZXLnu8xcGQjmQ6a8iFwkAm6moNEyslR0xJfTMK32svpX3gs9v3sLbffRWvRCgjoOeZVz7g/XtYJESG2+oKT0aCTVvR8pGcQ2D76/bn6TlLhfhsNxfqqfgFbqtXhMnPDkRlVTi60pexvoxKoXuka4zwFSzb49qQddDw5XDuZ5TpvTF6wdwTkGYUs9Om+GwtwKf0FQ1GoZzWVXmQhujbkvwxlDNpowe+V7T9IuCvTPSbyLGKU4tqmPF3RVDZKQzg7DdCfR7KiMtxuBlRYitLJNLR8sLQ9QyGZIvXsSTVK9e+8J0li5P6L6nxF9jpRvqTdRWJdrph5mBbp2auI/wh9Q+tcK9v2bqOx4rasKajH9BCtiuIWAS8e3cRqxKKMhDuH/oxyRM4C5QXWIga+/SfRNTHj3immhJL4CUseXfDcEU6OD1OzlEojPyRoa69U0fs8Om+0i3rKKjfXT0epnn+PgBPD10te74CrLgzhzd/tPd/2zmFru1KZ9nxT2Ie4hkcYOqc2XSOAH8GF40=
+    secure: UZAAijNltt/1y9paip4U0quLiEEafq6Y5HSKYGMcpgYTuyp5sbyK7+kiiTAADahhN0UpyP9F4zfgcnEuISy1Ssr42zOHBVNeVQdGh1AJLTmi1Ne21vmbIVsRS6ZedmwvqiTw0GdmfXtcMx38S9QmJQtZrLuIY42irsPKbYmE/44SMzwoREed+jns1WkxxYqv92bLgAPrY2WiJpm0ZH90zcghflh7Mnr7s4hVPFB1R+OECE1pLeGYeuqMyto6eIPVkWSlrIfVjBXiMFHpsW3z2xYBFtu+ChBBftPw8RCeX8ustVtpD7Xe/XdpulZJ2EVR0VVRpoHcS1PJSWG8tORVXa/tQRU/k3Ymiv7VCKXnu7w0ELAO07VZsSLjcgUQ9mt9TIwSoCdj6pVSQpwT4POaaFR+gACf7ETVXqaDDIttjuA5SwWEHb4N0Y2O3FI1E/scoaS0WOJ1nZgMay26T9MuZhwufLUH5D7sEPiNKv90coZCK1+a7L8VEVm3+Xwvbpbrj6j/cF1aOoDYUuJPdP7511P+rAZFJSbE6S4BoM/3+M3dz5e18WTKAf8f6Kc/4F/eF2igOM5k7X/Gd3bpLwmUBZB8ZcAi4b62z1zIkQQn1On9gthIQ9C+ETJauhqP3aR23HzaYB5RG/AssN+XoInIVIET9L8GHpXWpFR11LZswrE=
   file_glob: true
   file: bridgr-*
   skip_cleanup: true
-  on:
-    tags: true
