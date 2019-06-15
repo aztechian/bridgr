@@ -28,7 +28,7 @@ test:
 	@go test -short ./...
 
 race:
-	@go test -v -race ./...
+	@go test -v -count=1 -race ./...
 
 coverage.out: $(GO_FILES)
 	@go test -v -race -covermode=atomic -coverprofile=$@ ./...
@@ -48,7 +48,7 @@ xunit: x2unit tests.out
 
 clean:
 	@rm -rf internal/app/bridgr/assets/templates.go coverage.out packages tests.xml tests.out coverage.out main $(PKG)
-	@docker rm --force bridgr_yum
+	@docker rm --force bridgr_yum  &> /dev/null || true
 
 generate: $(GO_FILES)
 	@GOOS="" go generate ./...

@@ -38,8 +38,6 @@ jobs:
         - golangci-lint run --issues-exit-code 0 --new-from-rev=HEAD~
     - stage: test
       script:
-        - ls -altr
-        - rm -rf coverage.out
         - make coverage.out && bash <(curl -s https://codecov.io/bash)
         # trigger goreportcard scan
         - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
