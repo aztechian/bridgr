@@ -15,7 +15,7 @@ stages:
 go:
   - 1.11.x
 cache:
-  directories: $GOPATH
+  directories: $GOPATH/pkg/mod
 
 # Only clone the most recent commit.
 git:
