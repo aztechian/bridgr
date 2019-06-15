@@ -41,13 +41,13 @@ jobs:
       script:
         - make coverage && bash <(curl -s https://codecov.io/bash)
     - stage: build
-      script: make
+      script: GOOS=linux make #need this here because gvm resets the GOOS var from the "env:" line
       env: GOOS=linux
     - stage: build
-      script: make
+      script: GOOS=windows make
       env: GOOS=windows
     - stage: build
-      script: make
+      script: GOOS=darwin make
       env: GOOS=darwin
 
 deploy:
