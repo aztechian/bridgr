@@ -3,6 +3,7 @@ package config_test
 import (
 	"bridgr/internal/app/bridgr/config"
 	"bytes"
+	"errors"
 	"os"
 	"path"
 	"strings"
@@ -13,8 +14,19 @@ type MemReadCloser struct {
 	bytes.Buffer
 }
 
+type ErrMemReadCloser struct {
+	bytes.Buffer
+}
+
 func (mwc *MemReadCloser) Close() error {
 	return nil
+}
+
+func (emwc *ErrMemReadCloser) Close() error {
+	return nil
+}
+func (ErrMemReadCloser) Read(p []byte) (n int, err error) {
+	return 0, errors.New("test error")
 }
 
 var validConfig = `---
@@ -23,14 +35,35 @@ yum:
 `
 
 func TestNew(t *testing.T) {
-	content := bytes.NewBufferString("helloworld")
-	configFile := MemReadCloser{*content}
-	c, err := config.New(&configFile)
-	if err != nil {
-		t.Error("Error creating new Config")
+	tests := []struct {
+		name     string
+		data     string
+		expected int
+	}{
+		{"invalid config", "helloworld", 0},
+		{"yaml config", validConfig, 1},
+		{"read error", "", 0},
 	}
-	if len(c.Yum.Items) > 0 {
-		t.Error("Yum config is magically populated")
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			content := bytes.NewBufferString(test.data)
+			if test.data == "" {
+				configFile := ErrMemReadCloser{*content}
+				_, err := config.New(&configFile)
+				if err == nil {
+					t.Error("Read error from config.New should have raised error")
+				}
+			} else {
+				configFile := MemReadCloser{*content}
+				c, err := config.New(&configFile)
+				if err != nil {
+					t.Error("Error creating new Config")
+				}
+				if len(c.Yum.Items) != test.expected {
+					t.Errorf("Yum config has %d items, expected %d", len(c.Yum.Items), test.expected)
+				}
+			}
+		})
 	}
 }
 

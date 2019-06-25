@@ -2,6 +2,8 @@ package config
 
 import (
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestParseRepos(t *testing.T) {
@@ -51,11 +53,21 @@ func TestParsePackages(t *testing.T) {
 }
 
 func TestParseYum(t *testing.T) {
-	c := tempConfig{
-		Yum: []interface{}{"repo1"},
+	tests := []struct {
+		name   string
+		data   tempConfig
+		expect Yum
+	}{
+		{"array of packages", tempConfig{Yum: []interface{}{"package1", "package2"}}, Yum{Repos: nil, Items: []string{"package1", "package2"}, Image: "library/centos:7"}},
+		{"map with repos", tempConfig{Yum: map[interface{}]interface{}{"repos": []interface{}{"testrepo"}, "packages": []interface{}{"pkg"}}}, Yum{Repos: []string{"testrepo"}, Items: []string{"pkg"}, Image: "library/centos:7"}},
+		{"map with image", tempConfig{Yum: map[interface{}]interface{}{"image": "my/centos:1.0", "repos": []interface{}{"testrepo"}, "packages": []interface{}{"pkg"}}}, Yum{Repos: []string{"testrepo"}, Items: []string{"pkg"}, Image: "my/centos:1.0"}},
 	}
-	y := parseYum(c)
-	if y.Items[0] != "repo1" {
-		t.Errorf("YUM config is incorrect %+v", y)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			y := parseYum(test.data)
+			if !cmp.Equal(y, test.expect) {
+				t.Errorf("YUM config not parsed correctly. Expected %+v but got %+v", test.expect, y)
+			}
+		})
 	}
 }
