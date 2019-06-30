@@ -47,10 +47,10 @@ func pullImage(cli *client.Client, image string) error {
 
 func runContainer(name string, containerConfig *container.Config, hostConfig *container.HostConfig, script string) error {
 	ctx := context.Background()
-	cli, _ := client.NewEnvClient()
+	cli, _ := client.NewClientWithOpts(client.FromEnv)
 	// log.Printf("%+v", cli)
 	cleanContainer(cli, name)
-	pullImage(cli, "docker.io/"+containerConfig.Image)
+	_ = pullImage(cli, "docker.io/"+containerConfig.Image)
 
 	resp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, name)
 	if err != nil {

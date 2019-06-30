@@ -73,7 +73,7 @@ func getFileProtocol(src string) string {
 	if strings.HasPrefix(src, "/") {
 		return "file"
 	}
-	// probably better to switch to using net/url for parsing
+	// TODO: probably better to switch to using net/url for parsing
 	proto := strings.Split(src, "://")[0]
 	if proto == src {
 		return "file"

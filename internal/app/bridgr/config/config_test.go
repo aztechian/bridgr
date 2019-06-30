@@ -56,8 +56,8 @@ func TestNew(t *testing.T) {
 			} else {
 				configFile := MemReadCloser{*content}
 				c, err := config.New(&configFile)
-				if err != nil {
-					t.Error("Error creating new Config")
+				if test.expected > 0 && err != nil {
+					t.Errorf("Error creating new Config: %s", err)
 				}
 				if len(c.Yum.Items) != test.expected {
 					t.Errorf("Yum config has %d items, expected %d", len(c.Yum.Items), test.expected)

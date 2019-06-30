@@ -15,6 +15,7 @@ import (
 type worker interface {
 	Run(config.BridgrConf) error
 	Setup(config.BridgrConf) error
+	Name() string
 }
 
 var verbosePtr = flag.Bool("verbose", false, "Verbose logging (debug)")
@@ -51,10 +52,13 @@ func main() {
 		files.Setup()
 		yum.Setup()
 	} else {
-		files.Run()
-		err := yum.Run()
+		err := files.Run()
 		if err != nil {
-			panic(err)
+			log.Printf("Error processing files: %s", err)
+		}
+		err = yum.Run()
+		if err != nil {
+			log.Printf("Error processing Yum: %s", err)
 		}
 	}
 }

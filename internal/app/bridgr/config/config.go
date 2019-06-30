@@ -39,9 +39,9 @@ type tempConfig struct {
 }
 
 // Helper interface translates top-level config file sections into normalized structs for use by workers
-type Helper interface {
-	parse(BridgrConf) (interface{}, error)
-}
+// type Helper interface {
+// 	parse(BridgrConf) (interface{}, error)
+// }
 
 // New is a factory method that instantiates and populates a BridgrConf object
 func New(f io.ReadCloser) (*BridgrConf, error) {
@@ -54,7 +54,10 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 	}
 
 	temp := tempConfig{}
-	yaml.Unmarshal(confData, &temp)
+	err = yaml.Unmarshal(confData, &temp)
+	if err != nil {
+		return &c, err
+	}
 	c.Files = parseFiles(temp)
 	c.Yum = parseYum(temp)
 	return &c, nil

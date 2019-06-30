@@ -29,11 +29,14 @@ var yumStub = workers.Yum{
 	RepoWriter: &memBuffer,
 }
 
-func TestRun(t *testing.T) {
-
+func TestYumRun(t *testing.T) {
+	err := yumStub.Run()
+	if err != nil {
+		t.Errorf("Error during Yum.Setup(): %s", err)
+	}
 }
 
-func TestSetup(t *testing.T) {
+func TestYumSetup(t *testing.T) {
 	err := yumStub.Setup()
 	if err != nil {
 		t.Errorf("Error during Yum.Setup(): %s", err)
