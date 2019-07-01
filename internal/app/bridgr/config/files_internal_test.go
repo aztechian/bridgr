@@ -52,7 +52,10 @@ func TestParseSimple(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.given, func(t *testing.T) {
 			result := FileItem{}
-			result.parseSimple(test.given)
+			err := result.parseSimple(test.given)
+			if err != nil {
+				t.Errorf("Got error from parseSimple: %s", err)
+			}
 			if result != test.expected {
 				t.Errorf("Expected %+v from parseSimple(), got %+v", test.expected, result)
 			}
@@ -77,7 +80,10 @@ func TestParseComplex(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.given["source"].(string), func(t *testing.T) {
 			result := FileItem{}
-			result.parseComplex(test.given)
+			err := result.parseComplex(test.given)
+			if err != nil {
+				t.Errorf("Got error from parseComplex: %s", err)
+			}
 			if result != test.expected {
 				t.Errorf("Expected %s from parseComplex(), got %s", test.expected, result)
 			}

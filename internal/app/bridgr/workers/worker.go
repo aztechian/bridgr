@@ -49,7 +49,7 @@ func runContainer(name string, containerConfig *container.Config, hostConfig *co
 	ctx := context.Background()
 	cli, _ := client.NewClientWithOpts(client.FromEnv)
 	// log.Printf("%+v", cli)
-	cleanContainer(cli, name)
+	_ = cleanContainer(cli, name)
 	_ = pullImage(cli, "docker.io/"+containerConfig.Image)
 
 	resp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, name)
@@ -64,7 +64,7 @@ func runContainer(name string, containerConfig *container.Config, hostConfig *co
 	if err != nil {
 		return err
 	}
-	io.Copy(hijack.Conn, bytes.NewBufferString(script))
+	_, _ = io.Copy(hijack.Conn, bytes.NewBufferString(script))
 	hijack.Conn.Close()
 
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
@@ -73,10 +73,10 @@ func runContainer(name string, containerConfig *container.Config, hostConfig *co
 
 	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true, Follow: true})
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer out.Close()
-	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	_, _ = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 
 	return nil
 }

@@ -2,7 +2,6 @@ package config
 
 import (
 	"testing"
-
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -21,7 +20,10 @@ func TestParseRepos(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			yum := Yum{}
-			yum.parseRepos(test.data)
+			err := yum.parseRepos(test.data)
+			if err != nil {
+				t.Errorf("Got error from parseRepos: %s", err)
+			}
 			if len(yum.Repos) != test.expect {
 				t.Errorf("Expected %d repos in File struct, got %d", test.expect, len(yum.Repos))
 			}
@@ -44,7 +46,10 @@ func TestParsePackages(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			yum := Yum{}
-			yum.parsePackages(test.data)
+			err := yum.parsePackages(test.data)
+			if err != nil {
+				t.Errorf("Got error from parsePackages: %s", err)
+			}
 			if len(yum.Items) != test.expect {
 				t.Errorf("Expected %d items in File struct, got %d", test.expect, len(yum.Items))
 			}

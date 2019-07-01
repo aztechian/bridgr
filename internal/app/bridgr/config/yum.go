@@ -25,7 +25,7 @@ func parseYum(config tempConfig) Yum {
 	}
 	switch c := config.Yum.(type) {
 	case []interface{}:
-		yum.parsePackages(c)
+		_ = yum.parsePackages(c)
 	case map[interface{}]interface{}:
 		repos := c["repos"]
 		packages := c["packages"]
@@ -33,8 +33,8 @@ func parseYum(config tempConfig) Yum {
 		if _, present := c["image"]; present {
 			yum.Image = c["image"].(string)
 		}
-		yum.parseRepos(repos.([]interface{}))
-		yum.parsePackages(packages.([]interface{}))
+		_ = yum.parseRepos(repos.([]interface{}))
+		_ = yum.parsePackages(packages.([]interface{}))
 	default:
 		fmt.Printf("DEBUG: Unknown configuration section for Yum: %+s", c)
 	}

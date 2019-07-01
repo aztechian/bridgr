@@ -26,7 +26,7 @@ type Yum struct {
 
 // NewYum creates a worker.Yum struct
 func NewYum(conf *config.BridgrConf) *Yum {
-	os.MkdirAll(conf.Yum.BaseDir(), os.ModePerm)
+	_ = os.MkdirAll(conf.Yum.BaseDir(), os.ModePerm)
 	repo, err := os.Create(path.Join(config.BaseDir(), "bridgr.repo"))
 	if err != nil {
 		log.Printf("Unable to creeate YUM repo file: %s", err)
@@ -61,7 +61,10 @@ func NewYum(conf *config.BridgrConf) *Yum {
 
 // Run sets up, creates and fetches a YUM repository based on the settings from the config file
 func (y *Yum) Run() error {
-	y.Setup()
+	err := y.Setup()
+	if err != nil {
+		return err
+	}
 	script, _ := y.script(y.Config.Yum.Items)
 	hostConfig := container.HostConfig{
 		Mounts: []mount.Mount{
@@ -69,8 +72,7 @@ func (y *Yum) Run() error {
 			y.RepoMount,
 		},
 	}
-	runContainer("bridgr_yum", &y.ContainerConfig, &hostConfig, script)
-	return nil
+	return runContainer("bridgr_yum", &y.ContainerConfig, &hostConfig, script)
 }
 
 // Setup only does the setup step of the YUM worker
@@ -91,7 +93,7 @@ func (y *Yum) writeRepos() error {
 	}
 	defer y.RepoWriter.Close()
 	tmpl := template.New("yumrepo")
-	tmpl.Parse(yumTmpl)
+	_, _ = tmpl.Parse(yumTmpl)
 	return tmpl.Execute(y.RepoWriter, y.Config.Yum.Repos)
 }
 
@@ -102,7 +104,7 @@ func (y *Yum) script(packages []string) (string, error) {
 	}
 	tmpl := template.New("yumscript")
 	tmpl = tmpl.Funcs(template.FuncMap{"Join": strings.Join})
-	tmpl.Parse(docker)
+	_, _ = tmpl.Parse(docker)
 	final := bytes.Buffer{}
 	if err := tmpl.Execute(&final, packages); err != nil {
 		return "", err

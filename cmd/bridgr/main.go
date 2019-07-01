@@ -12,11 +12,11 @@ import (
 
 // this interface may not be useful because each type of worker needs to be instantiated in main anyways
 // keeping for now in case it becomes useful to abstract handling of workers
-type worker interface {
-	Run(config.BridgrConf) error
-	Setup(config.BridgrConf) error
-	Name() string
-}
+// type worker interface {
+// 	Run(config.BridgrConf) error
+// 	Setup(config.BridgrConf) error
+// 	Name() string
+// }
 
 var verbosePtr = flag.Bool("verbose", false, "Verbose logging (debug)")
 var configPtr = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
@@ -49,8 +49,8 @@ func main() {
 	yum := workers.NewYum(conf)
 
 	if *dryrunPtr {
-		files.Setup()
-		yum.Setup()
+		_ = files.Setup()
+		_ = yum.Setup()
 	} else {
 		err := files.Run()
 		if err != nil {

@@ -19,7 +19,7 @@ type Files struct {
 
 // NewFiles is the constructor for a new Files worker struct
 func NewFiles(conf *config.BridgrConf) *Files {
-	os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
+	_ = os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
 	return &Files{
 		Config: conf,
 		HTTP: &http.Client{
@@ -35,7 +35,10 @@ func NewFiles(conf *config.BridgrConf) *Files {
 
 // Run sets up, creates and fetches static files based on the settings from the config file
 func (worker *Files) Run() error {
-	worker.Setup()
+	err := worker.Setup()
+	if err != nil {
+		return err
+	}
 	for _, file := range worker.Config.Files.Items {
 		out, err := os.Create(file.Target)
 		if err != nil {
