@@ -1,11 +1,12 @@
 package config
 
 import (
+	"bridgr/internal/app/bridgr"
 	"fmt"
 	"path"
 )
 
-const defaultYumImage = "library/centos:7" // TODO move this to a function that returns the canonical form of an image
+const defaultYumImage = "centos:7"
 
 // Yum is the normalized structure for workers to get YUM information from the config file
 type Yum struct {
@@ -21,7 +22,7 @@ func (y *Yum) BaseDir() string {
 
 func parseYum(config tempConfig) Yum {
 	yum := Yum{
-		Image: defaultYumImage,
+		Image: bridgr.DockerImage(defaultYumImage),
 	}
 	switch c := config.Yum.(type) {
 	case []interface{}:
@@ -29,7 +30,6 @@ func parseYum(config tempConfig) Yum {
 	case map[interface{}]interface{}:
 		repos := c["repos"]
 		packages := c["packages"]
-		yum.Image = defaultYumImage
 		if _, present := c["image"]; present {
 			yum.Image = c["image"].(string)
 		}

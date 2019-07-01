@@ -4,7 +4,10 @@ import (
 	"bridgr/internal/app/bridgr/config"
 	"bridgr/internal/app/bridgr/workers"
 	"bytes"
+	"strings"
 	"testing"
+
+	"github.com/docker/docker/api/types/mount"
 )
 
 type MemWriteCloser struct {
@@ -27,12 +30,22 @@ var memBuffer = MemWriteCloser{bytes.Buffer{}}
 var yumStub = workers.Yum{
 	Config:     &confStruct,
 	RepoWriter: &memBuffer,
+	PackageMount: mount.Mount{
+		Type:   mount.TypeBind,
+		Source: "/dev/null",
+		Target: "/packages",
+	},
+	RepoMount: mount.Mount{
+		Type:   mount.TypeBind,
+		Source: "/dev/zero",
+		Target: "/etc/yum.repos.d/bridgr.repo",
+	},
 }
 
 func TestYumRun(t *testing.T) {
 	err := yumStub.Run()
-	if err != nil {
-		t.Errorf("Error during Yum.Setup(): %s", err)
+	if err != nil && !strings.HasSuffix(err.Error(), "No command specified") {
+		t.Errorf("Error during Yum.Run(): %s", err)
 	}
 }
 
