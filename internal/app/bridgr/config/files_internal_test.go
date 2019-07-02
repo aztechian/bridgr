@@ -1,6 +1,13 @@
 package config
 
-import "testing"
+import (
+	"os"
+	"path"
+	"testing"
+)
+
+var cwd, _ = os.Getwd()
+var dir = path.Join(cwd, "packages", "files")
 
 func TestParseFiles(t *testing.T) {
 	tests := []struct {
@@ -34,18 +41,21 @@ func TestParseSimple(t *testing.T) {
 		given    string
 		expected FileItem
 	}{
-		{"/afile.zyx", FileItem{"/afile.zyx", "files/afile.zyx", "file"}},
-		{"my/file.abc", FileItem{"my/file.abc", "files/file.abc", "file"}},
-		{"file://some/file/toget.zip", FileItem{"file://some/file/toget.zip", "files/toget.zip", "file"}},
-		{"http://mysite.com/file.gz", FileItem{"http://mysite.com/file.gz", "files/file.gz", "http"}},
-		{"https://mysite.com/archive.tar", FileItem{"https://mysite.com/archive.tar", "files/archive.tar", "https"}},
-		{"blah://mysite.com/file.js", FileItem{"blah://mysite.com/file.js", "files/file.js", "blah"}},
+		{"/afile.zyx", FileItem{"/afile.zyx", path.Join(dir, "afile.zyx"), "file"}},
+		{"my/file.abc", FileItem{"my/file.abc", path.Join(dir, "file.abc"), "file"}},
+		{"file://some/file/toget.zip", FileItem{"file://some/file/toget.zip", path.Join(dir, "toget.zip"), "file"}},
+		{"http://mysite.com/file.gz", FileItem{"http://mysite.com/file.gz", path.Join(dir, "file.gz"), "http"}},
+		{"https://mysite.com/archive.tar", FileItem{"https://mysite.com/archive.tar", path.Join(dir, "archive.tar"), "https"}},
+		{"blah://mysite.com/file.js", FileItem{"blah://mysite.com/file.js", path.Join(dir, "file.js"), "blah"}},
 	}
 
 	for _, test := range tests {
 		t.Run(test.given, func(t *testing.T) {
 			result := FileItem{}
-			result.parseSimple(test.given)
+			err := result.parseSimple(test.given)
+			if err != nil {
+				t.Errorf("Got error from parseSimple: %s", err)
+			}
 			if result != test.expected {
 				t.Errorf("Expected %+v from parseSimple(), got %+v", test.expected, result)
 			}
@@ -58,18 +68,22 @@ func TestParseComplex(t *testing.T) {
 		given    map[interface{}]interface{}
 		expected FileItem
 	}{
-		{map[interface{}]interface{}{"source": "/afile.zyx", "target": "/afile.zyx"}, FileItem{"/afile.zyx", "files/afile.zyx", "file"}},
-		{map[interface{}]interface{}{"source": "my/file.abc", "target": "file.xyz"}, FileItem{"my/file.abc", "files/file.xyz", "file"}},
-		{map[interface{}]interface{}{"source": "file://some/file/toget.zip", "target": "file.toget.zip"}, FileItem{"file://some/file/toget.zip", "files/file.toget.zip", "file"}},
-		{map[interface{}]interface{}{"source": "http://mysite.com/file.gz", "target": "file.gz"}, FileItem{"http://mysite.com/file.gz", "files/file.gz", "http"}},
-		{map[interface{}]interface{}{"source": "https://mysite.com/archive.tar", "target": "archive.tgz"}, FileItem{"https://mysite.com/archive.tar", "files/archive.tgz", "https"}},
-		{map[interface{}]interface{}{"source": "blah://mysite.com/file.js", "target": "myfile.js"}, FileItem{"blah://mysite.com/file.js", "files/myfile.js", "blah"}},
+		{map[interface{}]interface{}{"source": "/afile.zyx", "target": "/afile.zyx"}, FileItem{"/afile.zyx", path.Join(dir, "afile.zyx"), "file"}},
+		{map[interface{}]interface{}{"source": "my/file.abc", "target": "file.xyz"}, FileItem{"my/file.abc", path.Join(dir, "file.xyz"), "file"}},
+		{map[interface{}]interface{}{"source": "my/file.bac", "target": "myfolder/"}, FileItem{"my/file.bac", path.Join(dir, "myfolder", "file.bac"), "file"}},
+		{map[interface{}]interface{}{"source": "file://some/file/toget.zip", "target": "file.toget.zip"}, FileItem{"file://some/file/toget.zip", path.Join(dir, "file.toget.zip"), "file"}},
+		{map[interface{}]interface{}{"source": "http://mysite.com/file.gz", "target": "file.gz"}, FileItem{"http://mysite.com/file.gz", path.Join(dir, "file.gz"), "http"}},
+		{map[interface{}]interface{}{"source": "https://mysite.com/archive.tar", "target": "archive.tgz"}, FileItem{"https://mysite.com/archive.tar", path.Join(dir, "archive.tgz"), "https"}},
+		{map[interface{}]interface{}{"source": "blah://mysite.com/file.js", "target": "myfile.js"}, FileItem{"blah://mysite.com/file.js", path.Join(dir, "myfile.js"), "blah"}},
 	}
 
 	for _, test := range tests {
 		t.Run(test.given["source"].(string), func(t *testing.T) {
 			result := FileItem{}
-			result.parseComplex(test.given)
+			err := result.parseComplex(test.given)
+			if err != nil {
+				t.Errorf("Got error from parseComplex: %s", err)
+			}
 			if result != test.expected {
 				t.Errorf("Expected %s from parseComplex(), got %s", test.expected, result)
 			}
@@ -105,11 +119,11 @@ func TestGetFileTarget(t *testing.T) {
 		given    string
 		expected string
 	}{
-		{"afile.zyx", "files/afile.zyx"},
-		{"afile", "files/afile"},
-		{"/my/bfile", "files/bfile"},
-		{"my/file.abc", "files/file.abc"},
-		{"file://some/file/toget.zip", "files/toget.zip"},
+		{"afile.zyx", path.Join(dir, "afile.zyx")},
+		{"afile", path.Join(dir, "afile")},
+		{"/my/bfile", path.Join(dir, "bfile")},
+		{"my/file.abc", path.Join(dir, "file.abc")},
+		{"file://some/file/toget.zip", path.Join(dir, "toget.zip")},
 	}
 
 	for _, test := range tests {

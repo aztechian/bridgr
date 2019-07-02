@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -21,7 +22,7 @@ type FileItem struct {
 
 // BaseDir is the top-level directory name for all objects written out under the Files worker
 func (f *Files) BaseDir() string {
-	return "files"
+	return path.Join(BaseDir(), "files")
 }
 
 func parseFiles(conf tempConfig) Files {
@@ -61,11 +62,10 @@ func (f *FileItem) parseComplex(s map[interface{}]interface{}) error {
 	f.Protocol = getFileProtocol(source)
 	f.Source = source
 	if strings.HasSuffix(target, "/") {
-		f.Target = filepath.Join(target, filepath.Base(source))
+		f.Target = filepath.Join(new(Files).BaseDir(), target, filepath.Base(source))
 	} else {
-		f.Target = target
+		f.Target = getFileTarget(target)
 	}
-	f.Target = getFileTarget(f.Target)
 	return nil
 }
 
@@ -73,7 +73,7 @@ func getFileProtocol(src string) string {
 	if strings.HasPrefix(src, "/") {
 		return "file"
 	}
-	// probably better to switch to using net/url for parsing
+	// TODO: probably better to switch to using net/url for parsing
 	proto := strings.Split(src, "://")[0]
 	if proto == src {
 		return "file"
@@ -82,6 +82,5 @@ func getFileProtocol(src string) string {
 }
 
 func getFileTarget(src string) string {
-	file := Files{}
-	return filepath.Join(file.BaseDir(), filepath.Base(src))
+	return filepath.Join(new(Files).BaseDir(), filepath.Base(src))
 }

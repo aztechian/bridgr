@@ -1,7 +1,7 @@
-{{range .}}
-[{{.}}]
-baseurl={{.}}
-name=Bridgr - {{.}}
+{{range $idx, $url := .}}
+[bridgr{{$idx}}]
+baseurl={{$url}}
+name=Bridgr Repo {{$idx}}
 enabled=1
 gpgcheck=0
 repo_gpgcheck=0

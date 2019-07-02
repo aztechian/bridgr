@@ -9,92 +9,87 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 // Files is the work type for fetching plain files of various protocols
-type Files struct{}
+type Files struct {
+	Config *config.BridgrConf
+	HTTP   *http.Client
+}
+
+// NewFiles is the constructor for a new Files worker struct
+func NewFiles(conf *config.BridgrConf) *Files {
+	_ = os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
+	return &Files{
+		Config: conf,
+		HTTP: &http.Client{
+			// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
+			Transport: &http.Transport{
+				// this will be _really_ bad if someday we supported 2-way SSL
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore SSL certificates
+			},
+			Timeout: time.Second * 10,
+		},
+	}
+}
 
 // Run sets up, creates and fetches static files based on the settings from the config file
-func (f *Files) Run(conf config.BridgrConf) error {
-	f.Setup(conf)
-	for _, file := range conf.Files.Items {
-		var err error
+func (worker *Files) Run() error {
+	err := worker.Setup()
+	if err != nil {
+		return err
+	}
+	for _, file := range worker.Config.Files.Items {
+		out, err := os.Create(file.Target)
+		if err != nil {
+			log.Printf("Unable to create target: %s", err)
+			continue
+		}
 		switch file.Protocol {
 		case "http", "https":
-			err = httpFetch(file)
+			err = worker.httpFetch(file, out)
 		case "ftp":
-			err = ftpFetch(file)
+			err = worker.ftpFetch(file, out)
 		case "file":
-			err = fileFetch(file)
+			err = worker.fileFetch(file, out)
 		}
 		if err != nil {
 			log.Printf("Files - %+s", err)
 		}
+		out.Close()
 	}
 	return nil
 }
 
 // Setup only does the setup step of the Files worker
-func (f *Files) Setup(conf config.BridgrConf) error {
-	log.Println("Called Files.setup()")
-	spew.Dump(conf.Files)
-	os.Mkdir(conf.Files.BaseDir(), os.ModePerm)
+func (worker *Files) Setup() error {
 	return nil
 }
 
-func ftpFetch(f config.FileItem) error {
+func (worker *Files) ftpFetch(f config.FileItem, out io.Writer) error {
 	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", f.Source)
 }
 
-func httpFetch(f config.FileItem) error {
-	// TODO this would be much better to do as a fallback - if regular (InsecureSkipVerify: true) fails first
-	// this will be _really_ bad if someday we supported 2-way SSL
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore SSL certificates
-	}
-
-	client := &http.Client{
-		Timeout:   time.Second * 10,
-		Transport: transport,
-	}
-
+func (worker *Files) httpFetch(f config.FileItem, out io.Writer) error {
 	// Get the data
-	resp, err := client.Get(f.Source)
+	resp, err := worker.HTTP.Get(f.Source)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(f.Target)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
 	return err
 }
 
-func fileFetch(f config.FileItem) error {
+func (worker *Files) fileFetch(f config.FileItem, out io.Writer) error {
 	in, err := os.Open(f.Source)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
 
-	out, err := os.Create(f.Target)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
 	_, err = io.Copy(out, in)
-	if err != nil {
-		return err
-	}
-	return out.Close()
+	return err
 }

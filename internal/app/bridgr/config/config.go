@@ -1,10 +1,11 @@
 package config
 
 import (
-	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 
 	"gopkg.in/yaml.v2"
 )
@@ -38,35 +39,33 @@ type tempConfig struct {
 }
 
 // Helper interface translates top-level config file sections into normalized structs for use by workers
-type Helper interface {
-	parse(BridgrConf) (interface{}, error)
-}
+// type Helper interface {
+// 	parse(BridgrConf) (interface{}, error)
+// }
 
-// Config is a factory method that instantiates and populates a BridgrConf object
-func Config(f string) (BridgrConf, error) {
+// New is a factory method that instantiates and populates a BridgrConf object
+func New(f io.ReadCloser) (*BridgrConf, error) {
 	var c BridgrConf
-
-	if !fileExists(f) {
-		return c, fmt.Errorf("config file %+s not found", f)
-	}
-
-	confData, err := ioutil.ReadFile(f)
+	confData, err := ioutil.ReadAll(f)
+	defer f.Close()
 	if err != nil {
-		log.Println("Unable to read config file", f)
-		return c, fmt.Errorf("unable to read config file %+s", f)
+		log.Printf("Unable to read config file: %s", err)
+		return &c, err
 	}
 
 	temp := tempConfig{}
-	yaml.Unmarshal(confData, &temp)
+	err = yaml.Unmarshal(confData, &temp)
+	if err != nil {
+		return &c, err
+	}
 	c.Files = parseFiles(temp)
 	c.Yum = parseYum(temp)
-	return c, nil
+	return &c, nil
 }
 
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
+// BaseDir gives the runtime absolute directory of the base "packages" directory
+// See the individual repo type struct for the type-specific path
+func BaseDir() string {
+	var cwd, _ = os.Getwd()
+	return path.Join(cwd, "packages")
 }

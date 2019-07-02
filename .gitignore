@@ -13,8 +13,7 @@
 
 # Generated files
 **/assets/templates.go
-/yum
-/files
+/packages
 /main
 /bridgr
 

@@ -7,7 +7,6 @@ env:
     # Force-enable Go modules. This will be unnecessary when Go 1.12 lands.
     - GO111MODULE=on
     - GOARCH=amd64
-    # - CODECOV_TOKEN="9d27ab9c-c774-4583-8a46-f0b4380d374b"
 stages:
   - checks
   - test
@@ -33,13 +32,15 @@ jobs:
     - stage: checks
       # script: golangci-lint run # run a bunch of code checkers/linters in parallel
       script:
-        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.16.0
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
         - golangci-lint --version # test that we got it
         - make download
         - golangci-lint run --issues-exit-code 0 --new-from-rev=HEAD~
     - stage: test
       script:
         - make coverage && bash <(curl -s https://codecov.io/bash)
+        # trigger goreportcard scan
+        - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
       script: GOOS=linux make #need this here because gvm resets the GOOS var from the "env:" line
       env: GOOS=linux
