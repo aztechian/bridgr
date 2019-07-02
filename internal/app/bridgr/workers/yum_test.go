@@ -4,7 +4,6 @@ import (
 	"bridgr/internal/app/bridgr/config"
 	"bridgr/internal/app/bridgr/workers"
 	"bytes"
-	"strings"
 	"testing"
 
 	"github.com/docker/docker/api/types/mount"
@@ -40,13 +39,6 @@ var yumStub = workers.Yum{
 		Source: "/dev/zero",
 		Target: "/etc/yum.repos.d/bridgr.repo",
 	},
-}
-
-func TestYumRun(t *testing.T) {
-	err := yumStub.Run()
-	if err != nil && !strings.HasSuffix(err.Error(), "No command specified") {
-		t.Errorf("Error during Yum.Run(): %s", err)
-	}
 }
 
 func TestYumSetup(t *testing.T) {
