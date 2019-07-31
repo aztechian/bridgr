@@ -17,7 +17,7 @@ import (
 
 // Yum is the worker implementation for Yum repositories
 type Yum struct {
-	Config          *config.BridgrConf
+	Config          *config.Yum
 	RepoWriter      io.WriteCloser
 	RepoTemplate    string
 	PackageMount    mount.Mount
@@ -30,13 +30,13 @@ func NewYum(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Yum.BaseDir(), os.ModePerm)
 	repo, err := os.Create(path.Join(config.BaseDir(), "bridgr.repo"))
 	if err != nil {
-		bridgr.Printf("Unable to creeate YUM repo file: %s", err)
+		bridgr.Printf("Unable to create YUM repo file: %s", err)
 		return nil
 	}
 	bridgr.Debugf("Created %s for writing repo template", repo.Name())
 
 	return &Yum{
-		Config:     conf,
+		Config:     &conf.Yum,
 		RepoWriter: repo,
 		PackageMount: mount.Mount{
 			Type:   mount.TypeBind,
@@ -49,7 +49,7 @@ func NewYum(conf *config.BridgrConf) Worker {
 			Target: "/etc/yum.repos.d/bridgr.repo",
 		},
 		ContainerConfig: container.Config{
-			Image:        conf.Yum.Image.Name(),
+			Image:        conf.Yum.Image.String(),
 			Cmd:          []string{"/bin/bash", "-"},
 			Tty:          false,
 			OpenStdin:    true,
@@ -71,7 +71,7 @@ func (y *Yum) Run() error {
 	if err != nil {
 		return err
 	}
-	script, _ := y.script(y.Config.Yum.Items)
+	script, _ := y.script(y.Config.Items)
 	hostConfig := container.HostConfig{
 		Mounts: []mount.Mount{
 			y.PackageMount,
@@ -83,7 +83,7 @@ func (y *Yum) Run() error {
 
 // Setup only does the setup step of the YUM worker
 func (y *Yum) Setup() error {
-	bridgr.Print("Called Yum.setup()")
+	bridgr.Print("Called Yum.Setup()")
 
 	err := y.writeRepos()
 	if err != nil {
@@ -100,7 +100,7 @@ func (y *Yum) writeRepos() error {
 	defer y.RepoWriter.Close()
 	tmpl := template.New("yumrepo")
 	_, _ = tmpl.Parse(yumTmpl)
-	return tmpl.Execute(y.RepoWriter, y.Config.Yum.Repos)
+	return tmpl.Execute(y.RepoWriter, y.Config.Repos)
 }
 
 func (y *Yum) script(packages []string) (string, error) {

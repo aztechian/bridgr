@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 var (
@@ -46,12 +47,8 @@ func main() {
 
 	workerList := initWorkers(conf)
 
-	subcmd := flag.Args()
-	if len(subcmd) <= 0 {
-		subcmd = []string{"all"}
-	}
-	bridgr.Debugf("Running workers for subcommands: %+v\n", subcmd)
-	err = processWorkers(workerList, subcmd[0])
+	bridgr.Debugf("Running workers for subcommands: %+v\n", flag.Args())
+	err = processWorkers(workerList, flag.Args())
 	if err != nil {
 		log.Print(err)
 		os.Exit(255)
@@ -89,6 +86,7 @@ func initWorkers(conf *config.BridgrConf) []workers.Worker {
 		workers.NewYum(conf),
 		workers.NewFiles(conf),
 		workers.NewDocker(conf),
+		workers.NewPython(conf),
 	}
 }
 
@@ -105,30 +103,24 @@ func doWorker(w workers.Worker) {
 	}
 }
 
-func processWorkers(list []workers.Worker, filter string) error {
+func processWorkers(list []workers.Worker, filter []string) error {
 	// TODO: This only works on a single subcommand right now. Allow this to work on an array of subcommands.
-	switch filter {
-	case "docker":
-		w := FindWorker(list, func(w workers.Worker) bool {
-			return w.Name() == "Docker"
-		})
-		doWorker(w)
-	case "yum":
-		w := FindWorker(list, func(w workers.Worker) bool {
-			return w.Name() == "Yum"
-		})
-		doWorker(w)
-	case "files":
-		w := FindWorker(list, func(w workers.Worker) bool {
-			return w.Name() == "Files"
-		})
-		doWorker(w)
-	case "all":
+	if len(filter) <= 0 {
+		filter = append(filter, "all")
+	}
+	switch f := filter[0]; f {
+	case "all", "":
 		for _, w := range list {
 			doWorker(w)
 		}
 	default:
-		log.Printf("Unknown subcommand `%s`", filter)
+		w := FindWorker(list, func(w workers.Worker) bool {
+			return strings.EqualFold(w.Name(), f)
+		})
+		if w == nil {
+			return fmt.Errorf("Unable to find worker named %s", f)
+		}
+		doWorker(w)
 	}
 	return nil
 }

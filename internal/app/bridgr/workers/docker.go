@@ -18,7 +18,7 @@ import (
 
 // Docker is the worker struct for fetching Docker images
 type Docker struct {
-	Config *config.BridgrConf
+	Config *config.Docker
 	Cli    client.ImageAPIClient
 }
 
@@ -26,7 +26,7 @@ type Docker struct {
 func NewDocker(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Docker.BaseDir(), os.ModePerm)
 	cli, _ := client.NewClientWithOpts(client.FromEnv)
-	return &Docker{Config: conf, Cli: cli}
+	return &Docker{Config: &conf.Docker, Cli: cli}
 }
 
 // Name returns the string name of the Docker struct
@@ -36,8 +36,8 @@ func (d *Docker) Name() string {
 
 // Run executes the Docker worker to fetch artifacts
 func (d *Docker) Run() error {
-	for _, img := range d.Config.Docker.Items {
-		if d.Config.Docker.Destination != "" {
+	for _, img := range d.Config.Items {
+		if d.Config.Destination != "" {
 			dest := d.tagForRemote(img)
 			err := d.writeRemote(dest, img)
 			if err != nil {
@@ -46,7 +46,7 @@ func (d *Docker) Run() error {
 		} else {
 			re := regexp.MustCompile(`[:/]`)
 			outFile := re.ReplaceAllString(reference.Path(img), "_") + ".tar"
-			out, err := os.Create(path.Join(d.Config.Docker.BaseDir(), outFile))
+			out, err := os.Create(path.Join(d.Config.BaseDir(), outFile))
 			if err != nil {
 				bridgr.Print(err)
 				continue
@@ -65,7 +65,8 @@ func (d *Docker) Run() error {
 
 // Setup gets the environment ready to run the Docker worker
 func (d *Docker) Setup() error {
-	for _, img := range d.Config.Docker.Items {
+	bridgr.Print("Called Docker.Setup()")
+	for _, img := range d.Config.Items {
 		bridgr.Printf("pulling image %s", img.String())
 		err := pullImage(d.Cli, img.String())
 		if err != nil {
@@ -105,7 +106,7 @@ func (d *Docker) writeRemote(remote string, in reference.Named) error {
 }
 
 func (d *Docker) tagForRemote(local reference.Named) string {
-	destReg := d.Config.Docker.Destination
+	destReg := d.Config.Destination
 	remoteTag := strings.Replace(local.String(), reference.Domain(local), destReg, -1)
 
 	_ = d.Cli.ImageTag(context.Background(), local.Name(), remoteTag)

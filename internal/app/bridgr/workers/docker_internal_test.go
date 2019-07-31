@@ -18,11 +18,9 @@ import (
 )
 
 var defaultImg, _ = reference.ParseNormalizedNamed("myimage:3.2.1")
-var defaultDockerConf = config.BridgrConf{
-	Docker: config.Docker{
-		Destination: "corp.repo",
-		Items:       []reference.Named{defaultImg},
-	},
+var defaultDockerConf = config.Docker{
+	Destination: "corp.repo",
+	Items:       []reference.Named{defaultImg},
 }
 
 type stubCli struct {

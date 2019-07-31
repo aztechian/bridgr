@@ -20,11 +20,13 @@ ruby:
 
 # creates a PyPi compatible static repository, both packages and wheels
 python:
-  version: 2.7.5
+  # simplest case is a plain string array
+  #- awscli
+  version: 2.7.16
   packages:
     - django
     - package: flask
-      version: <3.4.1
+      version: <1.1.0
 
 # creates a static NPM repository site
 npm:

@@ -27,7 +27,7 @@ var confStruct = config.BridgrConf{
 var memBuffer = MemWriteCloser{bytes.Buffer{}}
 
 var yumStub = workers.Yum{
-	Config:     &confStruct,
+	Config:     &confStruct.Yum,
 	RepoWriter: &memBuffer,
 	PackageMount: mount.Mount{
 		Type:   mount.TypeBind,
