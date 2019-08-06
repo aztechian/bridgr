@@ -41,7 +41,10 @@ docker:
   images:
     - centos:7
     - image: ubuntu
-      version: 18.04
+      version: "18.04"
+    - host: myrepo.org
+      image: something/something/alpine
+      version: latest
     - myrepo.org/alpine:3.7
 
 # creates a Jenkins update site

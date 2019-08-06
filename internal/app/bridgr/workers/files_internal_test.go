@@ -3,17 +3,30 @@ package workers
 import (
 	"bridgr/internal/app/bridgr/config"
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"testing"
 )
 
-type MemWriteCloser struct {
+type fakeWriteCloser struct {
 	bytes.Buffer
+	isError bool
 }
 
-type HTTPMock struct {
+type httpMock struct {
 	http.RoundTripper
+}
+
+func (wc *fakeWriteCloser) Close() error {
+	return nil
+}
+
+func (wc *fakeWriteCloser) Write(p []byte) (n int, err error) {
+	if wc.isError {
+		return 0, errors.New("write error")
+	}
+	return wc.Write(p)
 }
 
 var defaultConf = config.BridgrConf{
@@ -28,10 +41,10 @@ var defaultConf = config.BridgrConf{
 
 var stubWorker = Files{
 	Config: &defaultConf,
-	HTTP:   &http.Client{Transport: &HTTPMock{}},
+	HTTP:   &http.Client{Transport: &httpMock{}},
 }
 
-func (m HTTPMock) RoundTrip(req *http.Request) (*http.Response, error) {
+func (m httpMock) RoundTrip(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 200,
 		Body:       ioutil.NopCloser(bytes.NewBufferString("OK")),
@@ -40,7 +53,7 @@ func (m HTTPMock) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func TestFilesHttp(t *testing.T) {
-	writer := MemWriteCloser{}
+	writer := fakeWriteCloser{}
 	err := stubWorker.httpFetch(defaultConf.Files.Items[1], &writer)
 	if err != nil {
 		t.Errorf("Unable to fetch HTTP source: %s", err)

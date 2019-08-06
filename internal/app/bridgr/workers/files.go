@@ -18,7 +18,7 @@ type Files struct {
 }
 
 // NewFiles is the constructor for a new Files worker struct
-func NewFiles(conf *config.BridgrConf) *Files {
+func NewFiles(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
 	return &Files{
 		Config: conf,
@@ -31,6 +31,11 @@ func NewFiles(conf *config.BridgrConf) *Files {
 			Timeout: time.Second * 10,
 		},
 	}
+}
+
+// Name returns the string name of the Files worker
+func (worker *Files) Name() string {
+	return "Files"
 }
 
 // Run sets up, creates and fetches static files based on the settings from the config file

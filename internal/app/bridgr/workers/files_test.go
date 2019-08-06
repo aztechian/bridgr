@@ -50,3 +50,10 @@ func TestFilesRun(t *testing.T) {
 		t.Error("Error running Run")
 	}
 }
+
+func TestFilesName(t *testing.T) {
+	f := workers.Files{}
+	if f.Name() != "Files" {
+		t.Errorf("Files worker does not provide the correct Name() response (%s)", f.Name())
+	}
+}

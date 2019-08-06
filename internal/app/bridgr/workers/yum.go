@@ -25,7 +25,7 @@ type Yum struct {
 }
 
 // NewYum creates a worker.Yum struct
-func NewYum(conf *config.BridgrConf) *Yum {
+func NewYum(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Yum.BaseDir(), os.ModePerm)
 	repo, err := os.Create(path.Join(config.BaseDir(), "bridgr.repo"))
 	if err != nil {
@@ -48,7 +48,7 @@ func NewYum(conf *config.BridgrConf) *Yum {
 			Target: "/etc/yum.repos.d/bridgr.repo",
 		},
 		ContainerConfig: container.Config{
-			Image:        conf.Yum.Image,
+			Image:        conf.Yum.Image.Name(),
 			Cmd:          []string{"/bin/bash", "-"},
 			Tty:          false,
 			OpenStdin:    true,
@@ -57,6 +57,11 @@ func NewYum(conf *config.BridgrConf) *Yum {
 			StdinOnce:    true,
 		},
 	}
+}
+
+// Name returns the string name of the Yum worker
+func (y *Yum) Name() string {
+	return "Yum"
 }
 
 // Run sets up, creates and fetches a YUM repository based on the settings from the config file

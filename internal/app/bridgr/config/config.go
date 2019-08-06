@@ -18,7 +18,7 @@ type BridgrConf struct {
 	Ruby     interface{}
 	Python   interface{}
 	Jenkins  interface{}
-	Docker   interface{}
+	Docker   Docker
 	Npm      interface{}
 	Maven    interface{}
 	Git      interface{}
@@ -60,6 +60,7 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 	}
 	c.Files = parseFiles(temp)
 	c.Yum = parseYum(temp)
+	c.Docker = parseDocker(temp)
 	return &c, nil
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bridgr/internal/app/bridgr"
 	"bridgr/internal/app/bridgr/config"
 	"bridgr/internal/app/bridgr/workers"
 	"flag"
@@ -10,17 +11,11 @@ import (
 	"os"
 )
 
-// this interface may not be useful because each type of worker needs to be instantiated in main anyways
-// keeping for now in case it becomes useful to abstract handling of workers
-// type worker interface {
-// 	Run(config.BridgrConf) error
-// 	Setup(config.BridgrConf) error
-// 	Name() string
-// }
-
-var verbosePtr = flag.Bool("verbose", false, "Verbose logging (debug)")
-var configPtr = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
-var dryrunPtr = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
+var (
+	verbosePtr = flag.Bool("verbose", false, "Verbose logging (debug)")
+	configPtr  = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
+	dryrunPtr  = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
+)
 
 func init() {
 	flag.StringVar(configPtr, "c", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
@@ -29,8 +24,8 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Bridgr")
 	flag.Parse()
+	bridgr.Verbose = *verbosePtr
 
 	configFile, err := openConfig()
 	if err != nil {
@@ -44,22 +39,35 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// spew.Dump(config)
-	files := workers.NewFiles(conf)
-	yum := workers.NewYum(conf)
 
-	if *dryrunPtr {
-		_ = files.Setup()
-		_ = yum.Setup()
-	} else {
-		err := files.Run()
-		if err != nil {
-			log.Printf("Error processing files: %s", err)
+	workerList := initWorkers(conf)
+
+	subcmd := []string{"all"}
+	if len(os.Args) >= 2 {
+		subcmd = flag.Args()
+	}
+	switch subcmd[0] {
+	case "docker":
+		w := FindWorker(workerList, func(w workers.Worker) bool {
+			return w.Name() == "Docker"
+		})
+		doWorker(w)
+	case "yum":
+		w := FindWorker(workerList, func(w workers.Worker) bool {
+			return w.Name() == "Yum"
+		})
+		doWorker(w)
+	case "files":
+		w := FindWorker(workerList, func(w workers.Worker) bool {
+			return w.Name() == "Files"
+		})
+		doWorker(w)
+	case "all":
+		for _, w := range workerList {
+			doWorker(w)
 		}
-		err = yum.Run()
-		if err != nil {
-			log.Printf("Error processing Yum: %s", err)
-		}
+	default:
+		log.Printf("Unknown subcommand `%s`", subcmd)
 	}
 }
 
@@ -76,4 +84,33 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+// FindWorker looks through an array of Workers to find one specified by the function
+func FindWorker(items []workers.Worker, f func(workers.Worker) bool) workers.Worker {
+	for _, i := range items {
+		if f(i) {
+			return i
+		}
+	}
+	return nil
+}
+
+func initWorkers(conf *config.BridgrConf) []workers.Worker {
+	var w []workers.Worker
+	w = append(w, workers.NewYum(conf))
+	w = append(w, workers.NewFiles(conf))
+	w = append(w, workers.NewDocker(conf))
+	return w
+}
+
+func doWorker(w workers.Worker) {
+	log.Printf("Processing %s...", w.Name())
+	_ = w.Setup()
+	if !*dryrunPtr {
+		err := w.Run()
+		if err != nil {
+			log.Printf("Error processing Yum: %s", err)
+		}
+	}
 }
