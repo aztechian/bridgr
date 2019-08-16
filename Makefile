@@ -46,6 +46,9 @@ xunit: x2unit tests.out
 	go2xunit -fail -input tests.out -output tests.xml
 	@rm -f tests.out
 
+run:
+	@go run $(CMD) -c config/example.yml
+
 clean:
 	@rm -rf internal/app/bridgr/assets/templates.go coverage.out packages tests.xml tests.out coverage.out main $(PKG)
 	@docker rm --force bridgr_yum  &> /dev/null || true
@@ -61,5 +64,5 @@ $(PROJECT_NAME)-%: generate $(GO_FILES)
 	@echo "Created executable $@"
 
 download:
-	@go list -e $(shell go list -m all)
+	@go mod download
 # need something in here to check $TRAVIS_TAG an add version to the build command with -X Version=${TRAVIS_TAG}

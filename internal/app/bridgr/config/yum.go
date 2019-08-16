@@ -1,9 +1,11 @@
 package config
 
 import (
-	"bridgr/internal/app/bridgr"
 	"fmt"
+	"log"
 	"path"
+
+	"github.com/docker/distribution/reference"
 )
 
 const defaultYumImage = "centos:7"
@@ -12,7 +14,7 @@ const defaultYumImage = "centos:7"
 type Yum struct {
 	Repos []string
 	Items []string
-	Image string
+	Image reference.Named
 }
 
 // BaseDir is the top-level directory name for all objects written out under the Yum worker
@@ -21,8 +23,9 @@ func (y *Yum) BaseDir() string {
 }
 
 func parseYum(config tempConfig) Yum {
+	namedImg, _ := reference.ParseNormalizedNamed(defaultYumImage)
 	yum := Yum{
-		Image: bridgr.DockerImage(defaultYumImage),
+		Image: namedImg,
 	}
 	switch c := config.Yum.(type) {
 	case []interface{}:
@@ -31,10 +34,18 @@ func parseYum(config tempConfig) Yum {
 		repos := c["repos"]
 		packages := c["packages"]
 		if _, present := c["image"]; present {
-			yum.Image = c["image"].(string)
+			customImg, err := reference.ParseNormalizedNamed(c["image"].(string))
+			if err != nil {
+				yum.Image = namedImg
+				log.Printf("Invalid image given for YUM: %s, defaulting to %s", err, namedImg.Name())
+			} else {
+				yum.Image = customImg
+			}
 		}
 		_ = yum.parseRepos(repos.([]interface{}))
 		_ = yum.parsePackages(packages.([]interface{}))
+	case nil:
+
 	default:
 		fmt.Printf("DEBUG: Unknown configuration section for Yum: %+s", c)
 	}

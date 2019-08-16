@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"bridgr/internal/app/bridgr"
 	"bridgr/internal/app/bridgr/assets"
 	"bytes"
 	"context"
@@ -18,6 +19,7 @@ import (
 type Worker interface {
 	Setup() error
 	Run() error
+	Name() string
 }
 
 func loadTemplate(name string) (string, error) {
@@ -33,15 +35,21 @@ func loadTemplate(name string) (string, error) {
 	return string(content), nil
 }
 
-func cleanContainer(cli *client.Client, name string) error {
+func cleanContainer(cli client.ContainerAPIClient, name string) error {
 	return cli.ContainerRemove(context.Background(), name, types.ContainerRemoveOptions{Force: true})
 }
 
-func pullImage(cli *client.Client, image string) error {
-	_, err := cli.ImagePull(context.Background(), image, types.ImagePullOptions{})
+func pullImage(cli client.ImageAPIClient, image string) error {
+	output, err := cli.ImagePull(context.Background(), image, types.ImagePullOptions{})
+	writer := ioutil.Discard
 	if err != nil {
 		return err
 	}
+	defer output.Close()
+	if bridgr.Verbose {
+		writer = os.Stderr
+	}
+	_, _ = io.Copy(writer, output) // must wait for output before returning
 	return nil
 }
 

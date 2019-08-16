@@ -1,8 +1,8 @@
 package config
 
 import (
+	"bridgr/internal/app/bridgr"
 	"fmt"
-	"log"
 	"path"
 	"path/filepath"
 	"strings"
@@ -28,7 +28,7 @@ func (f *Files) BaseDir() string {
 func parseFiles(conf tempConfig) Files {
 	files := Files{}
 	for _, val := range conf.Files {
-		log.Println("DEBUG: Parsing Files entry for:", val)
+		bridgr.Debugln("Parsing Files entry for:", val)
 		newItem := FileItem{}
 		var err error
 		switch o := val.(type) {
@@ -40,7 +40,7 @@ func parseFiles(conf tempConfig) Files {
 			err = fmt.Errorf("Unsupported File type in config - %T", o)
 		}
 		if err != nil {
-			log.Println(err)
+			bridgr.Println(err)
 		} else {
 			files.Items = append(files.Items, newItem)
 		}
@@ -52,7 +52,7 @@ func (f *FileItem) parseSimple(s string) error {
 	f.Protocol = getFileProtocol(s)
 	f.Source = s
 	f.Target = getFileTarget(s)
-	log.Println("populated FileItem", f)
+	bridgr.Debugln("populated FileItem", f)
 	return nil
 }
 

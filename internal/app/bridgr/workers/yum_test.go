@@ -50,3 +50,10 @@ func TestYumSetup(t *testing.T) {
 		t.Error("Expected content in the yum.repo file, but got size 0")
 	}
 }
+
+func TestYumName(t *testing.T) {
+	y := workers.Yum{}
+	if y.Name() != "Yum" {
+		t.Errorf("Yum worker does not provide the correct Name() response (%s)", y.Name())
+	}
+}

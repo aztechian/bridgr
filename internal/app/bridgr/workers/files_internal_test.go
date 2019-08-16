@@ -3,17 +3,30 @@ package workers
 import (
 	"bridgr/internal/app/bridgr/config"
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"testing"
 )
 
-type MemWriteCloser struct {
+type fakeWriteCloser struct {
 	bytes.Buffer
+	isError bool
 }
 
-type HTTPMock struct {
+type httpMock struct {
 	http.RoundTripper
+}
+
+func (wc *fakeWriteCloser) Close() error {
+	return nil
+}
+
+func (wc *fakeWriteCloser) Write(p []byte) (n int, err error) {
+	if wc.isError {
+		return 0, errors.New("write error")
+	}
+	return wc.Write(p)
 }
 
 var defaultConf = config.BridgrConf{
@@ -28,10 +41,10 @@ var defaultConf = config.BridgrConf{
 
 var stubWorker = Files{
 	Config: &defaultConf,
-	HTTP:   &http.Client{Transport: &HTTPMock{}},
+	HTTP:   &http.Client{Transport: &httpMock{}},
 }
 
-func (m HTTPMock) RoundTrip(req *http.Request) (*http.Response, error) {
+func (m httpMock) RoundTrip(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 200,
 		Body:       ioutil.NopCloser(bytes.NewBufferString("OK")),
@@ -40,7 +53,7 @@ func (m HTTPMock) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func TestFilesHttp(t *testing.T) {
-	writer := MemWriteCloser{}
+	writer := fakeWriteCloser{}
 	err := stubWorker.httpFetch(defaultConf.Files.Items[1], &writer)
 	if err != nil {
 		t.Errorf("Unable to fetch HTTP source: %s", err)
@@ -51,18 +64,22 @@ func TestFilesHttp(t *testing.T) {
 }
 
 func TestFilesFtp(t *testing.T) {
-	err := stubWorker.ftpFetch(defaultConf.Files.Items[2], nil)
+	writer := fakeWriteCloser{}
+	err := stubWorker.ftpFetch(defaultConf.Files.Items[2], &writer)
 	if err == nil {
 		t.Error("Expected FTP source to be unimplemented")
 	}
 }
 
-// It doesn't make sense to test fileFetch(), because this relies on the OS's file system. The only other call
-//  here is io.Copy() - which we'll assume is working. I don't like moving the file opening to Run(), then that becomes
-//  untestable instead.
-// func TestFilesFile(t *testing.T) {
-// 	err := stubWorker.fileFetch(defaultConf.Files.Items[0], nil)
-// 	if err != nil {
-// 		t.Errorf("Unable to fetch FILE source: %s", err)
-// 	}
-// }
+func TestFilesFile(t *testing.T) {
+	want := "Awesome File Content."
+	in := ioutil.NopCloser(bytes.NewBufferString(want))
+	got := fakeWriteCloser{}
+	err := stubWorker.fileFetch(in, &got)
+	if err != nil {
+		t.Errorf("Unable to fetch FILE source: %s", err)
+	}
+	if want != got.String() {
+		t.Errorf("Expected %s to be written to output file, but got %s", want, got.String())
+	}
+}

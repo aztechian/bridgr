@@ -37,12 +37,21 @@ npm:
 
 # downloads docker images from provided image specs, and exports to file (or optionally, pushes to an alternate repository)
 docker:
-  repository: repository.internal.corp.com # exports to file if no target repo is specified
+  # a simple array can be used...
+  #- docker.io/openshift/oauth-proxy:v1.1.0
+  #- docker.io/openshift/origin-console:v3.11
+
+  # Specifying repository key pushes images to the specified repository. If repository is _not_ specifed,
+  # images are written to local filesystem as .tar files.
+  #repository: repository.internal.corp.com
   images:
     - centos:7
     - image: ubuntu
-      version: 18.04
-    - myrepo.org/alpine:3.7
+      version: "18.04"
+    - host: quay.io
+      image: prometheus/node-exporter
+      version: latest
+    - quay.io/prometheus/prometheus:v2.11.2
 
 # creates a Jenkins update site
 jenkins:
@@ -65,7 +74,7 @@ git:
 
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:
-  - https://server.com/releases/myfile.zip # will create files/myfile.zip
+  - https://releases.hashicorp.com/packer/1.4.3/packer_1.4.3_linux_amd64.zip # will create files/packer_1.4.3_linux_amd64.zip
   - source: https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 # will create files/assets/jq-linux64
     target: assets/
 
