@@ -1,13 +1,15 @@
 package workers
 
 import (
+	"bridgr/internal/app/bridgr"
 	"bridgr/internal/app/bridgr/config"
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
+	"net"
 	"net/http"
 	"os"
+	"path"
 	"time"
 )
 
@@ -25,10 +27,14 @@ func NewFiles(conf *config.BridgrConf) Worker {
 		HTTP: &http.Client{
 			// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
 			Transport: &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout:   time.Second * 20,
+					KeepAlive: time.Second * 3, // we don't expect more than one connection to a server before we move on
+				}).Dial,
 				// this will be _really_ bad if someday we supported 2-way SSL
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore SSL certificates
+				TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, // ignore SSL certificates
+				ResponseHeaderTimeout: time.Second * 5,
 			},
-			Timeout: time.Second * 10,
 		},
 	}
 }
@@ -40,14 +46,16 @@ func (worker *Files) Name() string {
 
 // Run sets up, creates and fetches static files based on the settings from the config file
 func (worker *Files) Run() error {
-	err := worker.Setup()
-	if err != nil {
-		return err
+	setupErr := worker.Setup()
+	if setupErr != nil {
+		return setupErr
 	}
 	for _, file := range worker.Config.Files.Items {
+		var err error
+		_ = os.MkdirAll(path.Dir(file.Target), os.ModePerm)
 		out, err := os.Create(file.Target)
 		if err != nil {
-			log.Printf("Unable to create target: %s", err)
+			bridgr.Printf("Unable to create target: %s", err)
 			continue
 		}
 		switch file.Protocol {
@@ -56,12 +64,16 @@ func (worker *Files) Run() error {
 		case "ftp":
 			err = worker.ftpFetch(file, out)
 		case "file":
-			err = worker.fileFetch(file, out)
+			in, openErr := os.Open(file.Source)
+			if openErr == nil {
+				bridgr.Debugf("Copying local file: %s", file.Source)
+				err = worker.fileFetch(in, out)
+			}
 		}
 		if err != nil {
-			log.Printf("Files - %+s", err)
+			bridgr.Printf("Files '%s' - %+s", file.Source, err)
+			_ = os.Remove(out.Name())
 		}
-		out.Close()
 	}
 	return nil
 }
@@ -71,12 +83,16 @@ func (worker *Files) Setup() error {
 	return nil
 }
 
-func (worker *Files) ftpFetch(f config.FileItem, out io.Writer) error {
+func (worker *Files) ftpFetch(f config.FileItem, out io.WriteCloser) error {
+	defer out.Close()
+	bridgr.Debugf("Downloading FTP file: %s", f.Source)
 	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", f.Source)
 }
 
-func (worker *Files) httpFetch(f config.FileItem, out io.Writer) error {
+func (worker *Files) httpFetch(f config.FileItem, out io.WriteCloser) error {
 	// Get the data
+	defer out.Close()
+	bridgr.Debugf("Downloading HTTP/S file: %s", f.Source)
 	resp, err := worker.HTTP.Get(f.Source)
 	if err != nil {
 		return err
@@ -88,13 +104,9 @@ func (worker *Files) httpFetch(f config.FileItem, out io.Writer) error {
 	return err
 }
 
-func (worker *Files) fileFetch(f config.FileItem, out io.Writer) error {
-	in, err := os.Open(f.Source)
-	if err != nil {
-		return err
-	}
+func (worker *Files) fileFetch(in io.ReadCloser, out io.WriteCloser) error {
+	defer out.Close()
 	defer in.Close()
-
-	_, err = io.Copy(out, in)
+	_, err := io.Copy(out, in)
 	return err
 }

@@ -6,7 +6,6 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"regexp"
@@ -42,19 +41,19 @@ func (d *Docker) Run() error {
 			dest := d.tagForRemote(img)
 			err := d.writeRemote(dest, img)
 			if err != nil {
-				log.Println(err)
+				bridgr.Print(err)
 			}
 		} else {
 			re := regexp.MustCompile(`[:/]`)
 			outFile := re.ReplaceAllString(reference.Path(img), "_") + ".tar"
 			out, err := os.Create(path.Join(d.Config.Docker.BaseDir(), outFile))
 			if err != nil {
-				log.Println(err)
+				bridgr.Print(err)
 				continue
 			}
 			err = d.writeLocal(out, img)
 			if err != nil {
-				log.Println(err)
+				bridgr.Print(err)
 				os.Remove(out.Name())
 				continue
 			}
@@ -67,7 +66,7 @@ func (d *Docker) Run() error {
 // Setup gets the environment ready to run the Docker worker
 func (d *Docker) Setup() error {
 	for _, img := range d.Config.Docker.Items {
-		bridgr.Debugf("pulling image %s", img.String())
+		bridgr.Printf("pulling image %s", img.String())
 		err := pullImage(d.Cli, img.String())
 		if err != nil {
 			bridgr.Printf("Error fetching Docker image `%s`: %s", img.String(), err)

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
-	"time"
 )
 
 type HTTPMock struct {
@@ -34,7 +33,7 @@ var defaultConf = config.BridgrConf{
 
 var stubWorker = workers.Files{
 	Config: &defaultConf,
-	HTTP:   &http.Client{Transport: &HTTPMock{}, Timeout: time.Second},
+	HTTP:   &http.Client{Transport: &HTTPMock{}},
 }
 
 func TestFilesSetup(t *testing.T) {
@@ -44,12 +43,14 @@ func TestFilesSetup(t *testing.T) {
 	}
 }
 
-func TestFilesRun(t *testing.T) {
-	err := stubWorker.Run()
-	if err != nil {
-		t.Error("Error running Run")
-	}
-}
+// Can't run this currently because it creates the base directory on the real OS.
+// TODO: add a filesytem abstraction to bridgr for better testing os calls.
+// func TestFilesRun(t *testing.T) {
+// 	err := stubWorker.Run()
+// 	if err != nil {
+// 		t.Error("Error running Run")
+// 	}
+// }
 
 func TestFilesName(t *testing.T) {
 	f := workers.Files{}

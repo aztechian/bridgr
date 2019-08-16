@@ -27,6 +27,10 @@ func main() {
 	flag.Parse()
 	bridgr.Verbose = *verbosePtr
 
+	if *dryrunPtr {
+		log.Println("Dry-Run requested, will not download artifacts.")
+	}
+
 	configFile, err := openConfig()
 	if err != nil {
 		log.Printf("Unable to open bridgr config \"%s\": %s", *configPtr, err)
@@ -42,33 +46,17 @@ func main() {
 
 	workerList := initWorkers(conf)
 
-	subcmd := []string{"all"}
-	if len(os.Args) >= 2 {
-		subcmd = flag.Args()
+	subcmd := flag.Args()
+	if len(subcmd) <= 0 {
+		subcmd = []string{"all"}
 	}
-	switch subcmd[0] {
-	case "docker":
-		w := FindWorker(workerList, func(w workers.Worker) bool {
-			return w.Name() == "Docker"
-		})
-		doWorker(w)
-	case "yum":
-		w := FindWorker(workerList, func(w workers.Worker) bool {
-			return w.Name() == "Yum"
-		})
-		doWorker(w)
-	case "files":
-		w := FindWorker(workerList, func(w workers.Worker) bool {
-			return w.Name() == "Files"
-		})
-		doWorker(w)
-	case "all":
-		for _, w := range workerList {
-			doWorker(w)
-		}
-	default:
-		log.Printf("Unknown subcommand `%s`", subcmd)
+	bridgr.Debugf("Running workers for subcommands: %+v\n", subcmd)
+	err = processWorkers(workerList, subcmd[0])
+	if err != nil {
+		log.Print(err)
+		os.Exit(255)
 	}
+	os.Exit(0)
 }
 
 func openConfig() (io.ReadCloser, error) {
@@ -97,20 +85,50 @@ func FindWorker(items []workers.Worker, f func(workers.Worker) bool) workers.Wor
 }
 
 func initWorkers(conf *config.BridgrConf) []workers.Worker {
-	var w []workers.Worker
-	w = append(w, workers.NewYum(conf))
-	w = append(w, workers.NewFiles(conf))
-	w = append(w, workers.NewDocker(conf))
-	return w
+	return []workers.Worker{
+		workers.NewYum(conf),
+		workers.NewFiles(conf),
+		workers.NewDocker(conf),
+	}
 }
 
 func doWorker(w workers.Worker) {
 	log.Printf("Processing %s...", w.Name())
-	_ = w.Setup()
-	if !*dryrunPtr {
-		err := w.Run()
-		if err != nil {
-			log.Printf("Error processing Yum: %s", err)
-		}
+	var err error
+	if *dryrunPtr {
+		err = w.Setup()
+	} else {
+		err = w.Run()
 	}
+	if err != nil {
+		log.Printf("Error processing %s: %s", w.Name(), err)
+	}
+}
+
+func processWorkers(list []workers.Worker, filter string) error {
+	// TODO: This only works on a single subcommand right now. Allow this to work on an array of subcommands.
+	switch filter {
+	case "docker":
+		w := FindWorker(list, func(w workers.Worker) bool {
+			return w.Name() == "Docker"
+		})
+		doWorker(w)
+	case "yum":
+		w := FindWorker(list, func(w workers.Worker) bool {
+			return w.Name() == "Yum"
+		})
+		doWorker(w)
+	case "files":
+		w := FindWorker(list, func(w workers.Worker) bool {
+			return w.Name() == "Files"
+		})
+		doWorker(w)
+	case "all":
+		for _, w := range list {
+			doWorker(w)
+		}
+	default:
+		log.Printf("Unknown subcommand `%s`", filter)
+	}
+	return nil
 }

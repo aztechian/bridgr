@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"bridgr/internal/app/bridgr"
 	"bridgr/internal/app/bridgr/config"
 	"bytes"
 	"html/template"
@@ -29,10 +30,10 @@ func NewYum(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Yum.BaseDir(), os.ModePerm)
 	repo, err := os.Create(path.Join(config.BaseDir(), "bridgr.repo"))
 	if err != nil {
-		log.Printf("Unable to creeate YUM repo file: %s", err)
+		bridgr.Printf("Unable to creeate YUM repo file: %s", err)
 		return nil
 	}
-	// log.Printf("Created %s for writing repo template\n", repo.Name())
+	bridgr.Debugf("Created %s for writing repo template", repo.Name())
 
 	return &Yum{
 		Config:     conf,
@@ -82,7 +83,7 @@ func (y *Yum) Run() error {
 
 // Setup only does the setup step of the YUM worker
 func (y *Yum) Setup() error {
-	log.Println("Called Yum.setup()")
+	bridgr.Print("Called Yum.setup()")
 
 	err := y.writeRepos()
 	if err != nil {
