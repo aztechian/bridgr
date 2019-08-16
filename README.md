@@ -23,38 +23,58 @@ in place Bridgr can allow:
 - Static website hosting of artifacts on the target network (with metadata, so repositories like YUM and Rubygems work)
 - Support for multiple output formats - local filesystem, object storage, DVD image(?)
 
-![header video](header.png)
+For more background and explanation of the use case for Bridgr, please see the [narrative](NARRATIVE.md).
+
+Below is an example of Bridgr running and creating a YUM repository, downloading some files, and exporting docker images.
+The file listings at the end show the artifacts created, including YUM metadata.
+
+![header video](doc/bridgr.gif)
 
 ## Installation
 
-OS X & Linux:
-
-```sh
-npm install my-crazy-module --save
-```
-
-Windows:
-
-```sh
-edit autoexec.bat
-```
+Simply download the appropriate architecture binary from the [releases](releases) page, and execute it from wherever you want.
 
 ## Usage example
 
-A few motivating and useful examples of how your product can be used. Spice this up with code blocks and potentially more screenshots.
+By default, Bridgr will create a `packages` directory with all artifacts gathered in the "current working directory" where you execute Bridgr.
 
-_For more examples and usage, please refer to the [Wiki][wiki]._
+Also by default, Bridgr will look for a `bridge.yml` manifest file in the directory where it is being run. This can be overridden with the `-c` option to bridgr to specify a configuration file elsewhere.
+
+``` shell
+./bridgr -c path/to/another/bridge.yml
+```
+
+To only run one of the repository types, simply give that type after any configuration options. As an example, to only run the Files type, execute Bridgr like this:
+
+``` shell
+./bridgr -v files
+```
+
+Additional command line options include:
+
+| Option | Meaning                                       |
+| ------ | --------------------------------------------- |
+| -v     | Verbose Output                                |
+| -n     | Dry-run. Only do setup, don't fetch artifacts |
+| -c     | Specify an alternate configuration file       |
 
 ## Development setup
 
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
-
-```sh
-make install
-npm test
-```
-
 Requires Go version 1.11 or higher.
+
+Bridgr uses Go modules available since GoLang 1.11 release. To do development on Bridgr, simply clone this repository to your preferred location
+and run `make`. This will download all dependencies using the controlled go modules configuration. You must have go properly installed and configured on your system first.
+
+Some handy make targets to help with development:
+
+| Target   | Meaning                                                            |
+| -------- | ------------------------------------------------------------------ |
+| test     | Run the unit tests                                                 |
+| coverage | Run the unit tests, and open a browser to show the coverage report |
+| download | Only download the module dependencies                              |
+| generate | Only generate the templated files to be bundled in the binary      |
+
+The default target is to build the bridgr binary. It will create a binary named `bridgr` in the root of the repository.
 
 ### Dependencies to use
 
@@ -65,13 +85,17 @@ Example project showing [CI pipeline](https://gitlab.com/pantomath-io/demo-tools
 We will use the following libraries to do heavy lifting:
 
 - go-git
-- docker.io/go-docker (also compare with github.com/fsouza/go-dockerclient)
+- docker.io/go-docker
+- yaml.v2
+- vfsgen
 
 Potential for schema definition/validation of the YAML config file: [https://github.com/rjbs/rx](https://github.com/rjbs/rx)
 Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski/iso9660](https://github.com/kdomanski/iso9660)
 
 ## Release History
 
+- 1.0.0
+  - Intial release of Bridgr with support for Yum, Files, and Docker artifacts
 - 0.0.1
   - Work in progress
 
