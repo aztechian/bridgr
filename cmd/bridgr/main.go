@@ -7,13 +7,14 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 )
 
 var (
+	version    = "development"
 	verbosePtr = flag.Bool("verbose", false, "Verbose logging (debug)")
+	versionPtr = flag.Bool("version", false, "Print version and exit")
 	configPtr  = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
 	dryrunPtr  = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
 )
@@ -28,13 +29,20 @@ func main() {
 	flag.Parse()
 	bridgr.Verbose = *verbosePtr
 
+	if *versionPtr {
+		fmt.Fprintln(os.Stderr, "Bridgr - (C) 2019 Ian Martin, MIT License. See https://github.com/aztechian/bridgr")
+		fmt.Printf("%s\n", version)
+		fmt.Fprintln(os.Stderr, "")
+		os.Exit(0)
+	}
+
 	if *dryrunPtr {
-		log.Println("Dry-Run requested, will not download artifacts.")
+		bridgr.Println("Dry-Run requested, will not download artifacts.")
 	}
 
 	configFile, err := openConfig()
 	if err != nil {
-		log.Printf("Unable to open bridgr config \"%s\": %s", *configPtr, err)
+		bridgr.Printf("Unable to open bridgr config \"%s\": %s", *configPtr, err)
 		if configFile != nil {
 			configFile.Close()
 		}
@@ -50,7 +58,7 @@ func main() {
 	bridgr.Debugf("Running workers for subcommands: %+v\n", flag.Args())
 	err = processWorkers(workerList, flag.Args())
 	if err != nil {
-		log.Print(err)
+		bridgr.Print(err)
 		os.Exit(255)
 	}
 	os.Exit(0)
@@ -91,7 +99,7 @@ func initWorkers(conf *config.BridgrConf) []workers.Worker {
 }
 
 func doWorker(w workers.Worker) {
-	log.Printf("Processing %s...", w.Name())
+	bridgr.Printf("Processing %s...", w.Name())
 	var err error
 	if *dryrunPtr {
 		err = w.Setup()
@@ -99,7 +107,7 @@ func doWorker(w workers.Worker) {
 		err = w.Run()
 	}
 	if err != nil {
-		log.Printf("Error processing %s: %s", w.Name(), err)
+		bridgr.Printf("Error processing %s: %s", w.Name(), err)
 	}
 }
 

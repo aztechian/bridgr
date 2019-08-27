@@ -1,6 +1,7 @@
 PROJECT_NAME := "bridgr"
 PKG := "$(PROJECT_NAME)"
 CMD := "cmd/bridgr/main.go"
+VERSION := $(shell git describe --always --long --dirty)
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 
 .PHONY: all coverage lint test race x2unit xunit clean generate download
@@ -57,10 +58,10 @@ generate: $(GO_FILES)
 	@GOOS="" go generate ./...
 
 $(PROJECT_NAME): generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ $(CMD)
+	@go build -tags dist -i -v -o $@ -ldflags="-X main.version=${VERSION}" $(CMD)
 
 $(PROJECT_NAME)-%: generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ $(CMD)
+	@go build -tags dist -i -v -o $@ -ldflags="-X main.version=${VERSION}" $(CMD)
 	@echo "Created executable $@"
 
 %.sha256:
