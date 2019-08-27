@@ -39,7 +39,7 @@ func parsePython(config tempConfig) Python {
 	default:
 		bridgr.Debugf("Unknown configuration section for Python: %+s", c)
 	}
-	bridgr.Print(py)
+	bridgr.Debugf("Final Python configuration %+v", py)
 	return py
 }
 
