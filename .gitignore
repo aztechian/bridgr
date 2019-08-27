@@ -17,6 +17,7 @@
 /packages
 /main
 /bridgr
+*.sha256
 
 # tooling files
 # this _could_ be committed in the future, but its preferrable to not risk polluting everyones vscode settings from here
