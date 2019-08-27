@@ -52,11 +52,13 @@ To only run one of the repository types, simply give that type after any configu
 
 Additional command line options include:
 
-| Option | Meaning                                       |
-| ------ | --------------------------------------------- |
-| -v     | Verbose Output                                |
-| -n     | Dry-run. Only do setup, don't fetch artifacts |
-| -c     | Specify an alternate configuration file       |
+| Option           | Meaning                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| -v  /  --verbose | Verbose Output                                                                                                            |
+|                  |
+| -n  /  --dry-run | Dry-run. Only do setup, don't fetch artifacts                                                                             |
+| -c  /  --config  | Specify an alternate configuration file                                                                                   |
+| --version        | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string. |
 
 ## Development setup
 
@@ -94,6 +96,8 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 ## Release History
 
+- 1.1.0
+  - Add PyPi support
 - 1.0.0
   - Intial release of Bridgr with support for Yum, Files, and Docker artifacts
 - 0.0.1
