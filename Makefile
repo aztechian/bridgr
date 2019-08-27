@@ -57,15 +57,17 @@ clean:
 generate: $(GO_FILES)
 	@GOOS="" go generate ./...
 
+# the sha256 rule must be above the executable rules, otherwise the exe targets will match first
+# and build an executable called "bridger-Linux.sha256"
+%.sha256:
+	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
+
 $(PROJECT_NAME): generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ -ldflags="-X main.version=${VERSION}" $(CMD)
 
 $(PROJECT_NAME)-%: generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ -ldflags="-X main.version=${VERSION}" $(CMD)
 	@echo "Created executable $@"
-
-%.sha256:
-	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
 
 download: generate
 	@go mod download
