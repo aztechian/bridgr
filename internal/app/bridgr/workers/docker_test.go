@@ -46,7 +46,7 @@ func (c *stubCli) ImageTag(ctx context.Context, image string, ref string) error 
 }
 
 var defaultNamedImg, _ = reference.ParseNormalizedNamed("mytest:3.2")
-var dockerConf = config.BridgrConf{Docker: config.Docker{Items: []reference.Named{defaultNamedImg}}}
+var dockerConf = config.Docker{Items: []reference.Named{defaultNamedImg}}
 
 func TestDockerRun(t *testing.T) {
 	// TODO: unfortunately, os.Create() makes this test difficult. Refactor Run() to take an abstracted filesystem
@@ -59,7 +59,7 @@ func TestDockerRun(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			conf := config.BridgrConf{Docker: config.Docker{Items: []reference.Named{defaultNamedImg}, Destination: "my.repo"}}
+			conf := config.Docker{Items: []reference.Named{defaultNamedImg}, Destination: "my.repo"}
 			d := workers.Docker{Cli: &test.cli, Config: &conf}
 			err := d.Run()
 			if err != nil {

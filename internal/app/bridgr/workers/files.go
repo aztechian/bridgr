@@ -80,6 +80,7 @@ func (worker *Files) Run() error {
 
 // Setup only does the setup step of the Files worker
 func (worker *Files) Setup() error {
+	bridgr.Print("Called Files.Setup()")
 	return nil
 }
 

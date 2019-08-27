@@ -63,6 +63,6 @@ $(PROJECT_NAME)-%: generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ $(CMD)
 	@echo "Created executable $@"
 
-download:
+download: generate
 	@go mod download
 # need something in here to check $TRAVIS_TAG an add version to the build command with -X Version=${TRAVIS_TAG}
