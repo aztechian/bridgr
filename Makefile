@@ -1,7 +1,7 @@
 PROJECT_NAME := "bridgr"
 PKG := "$(PROJECT_NAME)"
 CMD := "cmd/bridgr/main.go"
-VERSION := $(shell git describe --always --long --dirty)
+VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 
 .PHONY: all coverage lint test race x2unit xunit clean generate download
