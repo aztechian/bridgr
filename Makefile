@@ -6,13 +6,13 @@ GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 .PHONY: all coverage lint test race x2unit xunit clean generate download
 
 ifeq ($(GOOS), linux)
-all: $(PROJECT_NAME)-Linux
+all: $(PROJECT_NAME)-Linux $(PROJECT_NAME)-Linux.sha256
 else ifeq ($(GOOS), windows)
-all: $(PROJECT_NAME)-Windows
+all: $(PROJECT_NAME)-Windows $(PROJECT_NAME)-Windows.sha256
 else ifeq ($(GOOS), darwin)
-all: $(PROJECT_NAME)-MacOS
+all: $(PROJECT_NAME)-MacOS $(PROJECT_NAME)-MacOS.sha256
 else
-all: $(PROJECT_NAME)
+all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
 endif
 
 ifeq ($(TRAVIS),)
@@ -50,8 +50,8 @@ run:
 	@go run $(CMD) -c config/example.yml
 
 clean:
-	@rm -rf internal/app/bridgr/assets/templates.go coverage.out packages tests.xml tests.out coverage.out main $(PKG)
-	@docker rm --force bridgr_yum  &> /dev/null || true
+	@rm -rf internal/app/bridgr/assets/templates.go coverage.out packages tests.xml tests.out coverage.out *.sha256 main $(PKG)
+	@docker rm --force bridgr_yum bridgr_python bridgr_ruby &> /dev/null || true
 
 generate: $(GO_FILES)
 	@GOOS="" go generate ./...
@@ -63,6 +63,8 @@ $(PROJECT_NAME)-%: generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ $(CMD)
 	@echo "Created executable $@"
 
+%.sha256:
+	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
+
 download: generate
 	@go mod download
-# need something in here to check $TRAVIS_TAG an add version to the build command with -X Version=${TRAVIS_TAG}
