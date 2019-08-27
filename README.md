@@ -3,6 +3,8 @@
 > Bridging the air-gap for your artifacts
 
 [![Build Status][travis-image]][travis-url]
+[![Release Date][releasedate-image]][gh-dl-url]
+[![Release Version][releasever-image]][gh-dl-url]
 [![Downloads Stats][gh-downloads]][gh-dl-url]
 [![GitHub][license]][license-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
@@ -122,9 +124,9 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 <!-- Markdown link & img dfn's -->
 [gh-downloads]: https://img.shields.io/github/downloads/aztechian/bridgr/total.svg
 [gh-dl-url]: releases/
-[license]: https://img.shields.io/github/license/aztechian/bridgr.svg
+[license]: https://img.shields.io/github/license/aztechian/bridgr
 [license-url]: LICENSE
-[travis-image]: https://img.shields.io/travis/aztechian/bridgr/master.svg?style=flat-square
+[travis-image]: https://img.shields.io/travis/aztechian/bridgr
 [travis-url]: https://travis-ci.org/aztechian/bridgr
 [wiki]: https://github.com/aztechian/bridgr/wiki
 [reportcard-image]: https://goreportcard.com/badge/github.com/aztechian/bridgr
@@ -133,3 +135,5 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 [codecov-url]: https://codecov.io/gh/aztechian/bridgr
 [codescene-image]: https://codescene.io/projects/4859/status.svg
 [codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
+[releasedate-image]: https://img.shields.io/github/release-date/aztechian/bridgr?color=blueviolet
+[releasever-image]: https://img.shields.io/github/v/release/aztechian/bridgr
