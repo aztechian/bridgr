@@ -4,7 +4,7 @@ os:
   - linux
 env:
   global:
-    # Force-enable Go modules. This will be unnecessary when Go 1.12 lands.
+    # Force-enable Go modules. This will be unnecessary when Go 1.13 lands.
     - GO111MODULE=on
     - GOARCH=amd64
 stages:
@@ -12,16 +12,14 @@ stages:
   - test
   - build
 go:
-  - 1.11.x
+  - 1.12.x
 cache:
-  directories: $GOPATH/pkg/mod
+  directories: [$GOPATH/pkg/mod]
 
 # Only clone the most recent commit.
 git:
   depth: 1
 
-# Skip the install step. Don't `go get` dependencies. Only build with the code
-# in vendor/
 install: true
 
 # script always runs to completion (set +e). If we have linter issues AND a
