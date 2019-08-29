@@ -7,21 +7,25 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 )
 
 var (
-	version    = "development"
-	verbosePtr = flag.Bool("verbose", false, "Verbose logging (debug)")
-	versionPtr = flag.Bool("version", false, "Print version and exit")
-	configPtr  = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
-	dryrunPtr  = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
+	verbosePtr    = flag.Bool("verbose", false, "Verbose logging (debug)")
+	versionPtr    = flag.Bool("version", false, "Print version and exit")
+	hostPtr       = flag.Bool("host", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
+	hostListenPtr = flag.String("listen", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
+	configPtr     = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
+	dryrunPtr     = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
 )
 
 func init() {
 	flag.StringVar(configPtr, "c", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
 	flag.BoolVar(verbosePtr, "v", false, "Verbose logging (debug)")
+	flag.BoolVar(hostPtr, "H", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
+	flag.StringVar(hostListenPtr, "l", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
 	flag.BoolVar(dryrunPtr, "n", false, "Dry-run only. Do not actually download content")
 }
 
@@ -31,8 +35,18 @@ func main() {
 
 	if *versionPtr {
 		fmt.Fprintln(os.Stderr, "Bridgr - (C) 2019 Ian Martin, MIT License. See https://github.com/aztechian/bridgr")
-		fmt.Printf("%s\n", version)
+		fmt.Printf("%s\n", bridgr.Version)
 		fmt.Fprintln(os.Stderr, "")
+		os.Exit(0)
+	}
+
+	if *hostPtr {
+		dir := http.Dir(config.BaseDir())
+		err := bridgr.Serve(*hostListenPtr, dir)
+		if err != nil {
+			fmt.Printf("Unable to start HTTP Server: %s\n", err)
+			os.Exit(255)
+		}
 		os.Exit(0)
 	}
 

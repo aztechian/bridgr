@@ -54,13 +54,31 @@ To only run one of the repository types, simply give that type after any configu
 
 Additional command line options include:
 
-| Option           | Meaning                                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| -v  /  --verbose | Verbose Output                                                                                                            |
-|                  |
-| -n  /  --dry-run | Dry-run. Only do setup, don't fetch artifacts                                                                             |
-| -c  /  --config  | Specify an alternate configuration file                                                                                   |
-| --version        | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string. |
+| Option           | Meaning                                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -v  /  --verbose | Verbose Output                                                                                                                                      |
+| -n  /  --dry-run | Dry-run. Only do setup, don't fetch artifacts                                                                                                       |
+| -c  /  --config  | Specify an alternate configuration file                                                                                                             |
+| --version        | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string.                           |
+| -H  /  --host    | Run Bridgr in "hosting" mode. This mode does no downloading of artifacts, but makes Bridgr into a simple HTTP server. See `Hosting` for more detail |
+| -l  /  --listen  | The listen address for Bridgr in hosting mode. This is only effective when coupled with the `-H` flag. Default is `:8080`                           |
+
+## Hosting mode
+
+Once artifacts have been gathered by Bridgr and moved across the air-gap, it is required that there be an HTTP server available to the network for serving out these artifacts. In the absense of having an existing server available, Bridgr can itself act as a simple HTTP server. When run in "hosting" mode (`-H` command line option) Bridgr will not fetch
+any artifacts or look for a manifest file, but will only serve out static files from the `packages` directory where it is executed. When hosting mode is combined with the `--verbose` option, Bridgr will write HTTP logs to stdout in [Combined Log Format](http://httpd.apache.org/docs/current/logs.html#accesslog). If you desire logs be written to a file, then you are responsible for redirecting stdout to the appropriate file in your shell.
+
+Note, that there is no complex configuration available to Bridgr in hosting mode. If you require SSL/TLS for your artifacts, then you must use another product. A containerized Nginx server would be one option, for example. Likewise, there is no authentication for artifacts in hosting mode.
+
+However, if you need a quick-and-dirty HTTP server or as a proof-of-concept Bridgr can meet that need.
+
+An example of running Bridgr for a long term HTTP hosting mode
+
+```shell
+nohup ./bridgr -H -v &>/var/log/bridgr &
+```
+
+You may also create a systemd service file and be able to control Bridgr as an OS service.
 
 ## Development setup
 

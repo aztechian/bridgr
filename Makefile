@@ -63,10 +63,10 @@ generate: $(GO_FILES)
 	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
 
 $(PROJECT_NAME): generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ -ldflags="-X main.version=${VERSION}" $(CMD)
+	@go build -tags dist -i -v -o $@ -ldflags="-X bridgr.Version=${VERSION}" $(CMD)
 
 $(PROJECT_NAME)-%: generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ -ldflags="-X main.version=${VERSION}" $(CMD)
+	@go build -tags dist -i -v -o $@ -ldflags="-X bridgr.Version=${VERSION}" $(CMD)
 	@echo "Created executable $@"
 
 download: generate

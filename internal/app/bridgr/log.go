@@ -1,9 +1,15 @@
 package bridgr
 
-import "log"
+import (
+	"fmt"
+	"io"
+	"log"
+	"os"
+	"strings"
+)
 
-// Verbose determines whether debug logging is printed
-var Verbose = false
+// Out is the target output file for the Log() function. By default, it is Stdout
+var Out io.Writer = os.Stdout
 
 // Println prints log messages based on the verbosity of the current instantiation of Bridgr
 func Println(l ...interface{}) {
@@ -42,4 +48,15 @@ func Debug(v ...interface{}) {
 	if Verbose {
 		log.Print(v...)
 	}
+}
+
+// Log prints out HTTP server logs in CLF (Common Log Format), typical for HTTP servers (ie, Apache)
+func Log(format string, v ...interface{}) {
+	if !Verbose {
+		return
+	}
+	if !strings.HasSuffix(format, "\n") {
+		format = format + "\n"
+	}
+	fmt.Fprintf(Out, format, v...)
 }
