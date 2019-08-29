@@ -4,6 +4,7 @@ import (
 	"bridgr/internal/app/bridgr"
 	"bytes"
 	"log"
+	"os"
 	"strings"
 	"testing"
 )
@@ -168,4 +169,35 @@ func TestLogDebug(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLog(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		params   []interface{}
+		verbose  bool
+		expected string
+	}{
+		{"without debug", "thats why you %s %s", []interface{}{"always leave", "a note"}, false, "thats why you always leave a note"},
+		{"verbose", "Bob %s", []interface{}{"Loblaw"}, true, "Bob Loblaw"},
+		{"verbose with simple string", "Theres always money in the banana stand", nil, true, "Theres always money in the banana stand"},
+	}
+
+	for _, test := range tests {
+		logBuff.Reset()
+		bridgr.Out = &logBuff
+		bridgr.Verbose = test.verbose
+
+		t.Run(test.name, func(t *testing.T) {
+			bridgr.Log(test.input, test.params...)
+			if test.verbose && !strings.Contains(logBuff.String(), test.expected) {
+				t.Errorf("expected log to contain %s, got %s", test.expected, logBuff.String())
+			}
+			if !test.verbose && len(logBuff.String()) > 0 {
+				t.Errorf("Log buffer should be empty, but is %s", logBuff.String())
+			}
+		})
+	}
+	bridgr.Out = os.Stdout
 }
