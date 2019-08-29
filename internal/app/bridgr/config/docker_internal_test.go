@@ -59,7 +59,7 @@ func TestDockerParseComplex(t *testing.T) {
 		item   map[interface{}]interface{}
 		expect Docker
 	}{
-		{"image and verison", map[interface{}]interface{}{"image": "myimage", "version": "1.3"}, Docker{Items: []reference.Named{simpleRef}}},
+		{"image and version", map[interface{}]interface{}{"image": "myimage", "version": "1.3"}, Docker{Items: []reference.Named{simpleRef}}},
 		{"host no version", map[interface{}]interface{}{"host": "myrepo.io", "image": "awesome"}, Docker{Items: []reference.Named{hostRef}}},
 		{"error - missing image", map[interface{}]interface{}{"version": "x"}, Docker{}},
 		{"error - unsupported version", map[interface{}]interface{}{"image": "myimage", "version": 1.3}, Docker{}},
@@ -71,7 +71,7 @@ func TestDockerParseComplex(t *testing.T) {
 			d := Docker{}
 			err := d.parseComplex(test.item)
 			if strings.Contains(test.name, "error -") && err == nil {
-				t.Errorf("Expected a test failure for %s, but none was recieved", test.name)
+				t.Errorf("Expected a test failure for %s, but none was received", test.name)
 			}
 			if !cmp.Equal(d, test.expect, opt) {
 				t.Errorf("Docker config not parsed correctly. Expected %+v but got %+v", test.expect, d)
