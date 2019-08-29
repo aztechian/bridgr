@@ -13,8 +13,9 @@ stages:
   - build
 go:
   - 1.11.x
+  - 1.12.x
 cache:
-  directories: $GOPATH/pkg/mod
+  directories: [$GOPATH/pkg/mod]
 
 # Only clone the most recent commit.
 git:
@@ -54,6 +55,7 @@ jobs:
 deploy:
   on:
     tags: true
+    go: 1.12.x
     condition: $TRAVIS_BUILD_STAGE_NAME = Build
   provider: releases
   api_key:
