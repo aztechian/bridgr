@@ -1,0 +1,4 @@
+source 'https://rubygems.org'
+
+{{range .}}gem '{{.Package}}'{{if .Version}}, '{{.Version}}'{{end}}
+{{end}}

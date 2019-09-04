@@ -15,7 +15,7 @@ import (
 type BridgrConf struct {
 	Yum      Yum
 	Files    Files
-	Ruby     interface{}
+	Ruby     Ruby
 	Python   Python
 	Jenkins  interface{}
 	Docker   Docker
@@ -62,6 +62,7 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 	c.Yum = parseYum(temp)
 	c.Docker = parseDocker(temp)
 	c.Python = parsePython(temp)
+	c.Ruby = parseRuby(temp)
 	return &c, nil
 }
 
