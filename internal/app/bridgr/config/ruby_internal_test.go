@@ -9,6 +9,7 @@ import (
 
 var rbTestAltImg, _ = reference.ParseNormalizedNamed("ruby:2.6.4")
 var rbTestImg, _ = reference.ParseNormalizedNamed("ruby:2-alpine")
+var defaultSource = []string{"https://rubygems.org"}
 
 func TestParseRuby(t *testing.T) {
 	tests := []struct {
@@ -16,11 +17,11 @@ func TestParseRuby(t *testing.T) {
 		data   tempConfig
 		expect Ruby
 	}{
-		{"array of packages", tempConfig{Ruby: []interface{}{"package1", "package2"}}, Ruby{Items: []RubyItem{{Package: "package1"}, {Package: "package2"}}, Image: rbTestImg}},
-		{"map of pkg versions", tempConfig{Ruby: map[interface{}]interface{}{"gems": []interface{}{map[interface{}]interface{}{"package": "pkg", "version": "~3.3"}}}}, Ruby{Items: []RubyItem{{Package: "pkg", Version: "~3.3"}}, Image: rbTestImg}},
-		{"map with version", tempConfig{Ruby: map[interface{}]interface{}{"version": "2.6.4", "gems": []interface{}{"pkg"}}}, Ruby{Items: []RubyItem{{Package: "pkg"}}, Image: rbTestAltImg}},
+		{"array of packages", tempConfig{Ruby: []interface{}{"package1", "package2"}}, Ruby{Items: []RubyItem{{Package: "package1"}, {Package: "package2"}}, Sources: defaultSource, Image: rbTestImg}},
+		{"map of pkg versions", tempConfig{Ruby: map[interface{}]interface{}{"gems": []interface{}{map[interface{}]interface{}{"package": "pkg", "version": "~3.3"}}}}, Ruby{Items: []RubyItem{{Package: "pkg", Version: "~3.3"}}, Sources: defaultSource, Image: rbTestImg}},
+		{"map with version", tempConfig{Ruby: map[interface{}]interface{}{"version": "2.6.4", "gems": []interface{}{"pkg"}}}, Ruby{Items: []RubyItem{{Package: "pkg"}}, Sources: defaultSource, Image: rbTestAltImg}},
 		{"map with source", tempConfig{Ruby: map[interface{}]interface{}{"sources": []interface{}{"gemsource"}, "gems": []interface{}{"pkg"}}}, Ruby{Items: []RubyItem{{Package: "pkg"}}, Sources: []string{"gemsource"}, Image: rbTestImg}},
-		{"error - bad image version", tempConfig{Ruby: map[interface{}]interface{}{"version": "9#ks", "gems": []interface{}{"pkg"}}}, Ruby{Items: []RubyItem{{Package: "pkg"}}, Image: rbTestImg}},
+		{"error - bad image version", tempConfig{Ruby: map[interface{}]interface{}{"version": "9#ks", "gems": []interface{}{"pkg"}}}, Ruby{Items: []RubyItem{{Package: "pkg"}}, Sources: defaultSource, Image: rbTestImg}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
