@@ -110,6 +110,7 @@ func initWorkers(conf *config.BridgrConf) []workers.Worker {
 		workers.NewDocker(conf),
 		workers.NewPython(conf),
 		workers.NewRuby(conf),
+		workers.NewGit(conf),
 	}
 }
 

@@ -75,7 +75,10 @@ maven:
 
 # creates bare git repositories to be statically hosted
 git:
-  - https://github.com/org/project.git # will create git/project.git bare repository
+  - https://github.com/aztechian/bridgr.git # will create git/project.git bare repository
+  - repo: https://github.com/kubernetes-sigs/kubespray
+    bare: false
+    tree: master # default is master if not provided
 
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:
