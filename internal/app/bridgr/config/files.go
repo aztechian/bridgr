@@ -3,6 +3,7 @@ package config
 import (
 	"bridgr/internal/app/bridgr"
 	"fmt"
+	"net/url"
 	"path"
 	"path/filepath"
 	"strings"
@@ -28,7 +29,6 @@ func (f *Files) BaseDir() string {
 func parseFiles(conf tempConfig) Files {
 	files := Files{}
 	for _, val := range conf.Files {
-		bridgr.Debugln("Parsing Files entry for:", val)
 		newItem := FileItem{}
 		var err error
 		switch o := val.(type) {
@@ -45,6 +45,7 @@ func parseFiles(conf tempConfig) Files {
 			files.Items = append(files.Items, newItem)
 		}
 	}
+	bridgr.Debugf("Final Files configuration %+v", files)
 	return files
 }
 
@@ -52,7 +53,6 @@ func (f *FileItem) parseSimple(s string) error {
 	f.Protocol = getFileProtocol(s)
 	f.Source = s
 	f.Target = getFileTarget(s)
-	bridgr.Debugln("populated FileItem", f)
 	return nil
 }
 
@@ -70,15 +70,11 @@ func (f *FileItem) parseComplex(s map[interface{}]interface{}) error {
 }
 
 func getFileProtocol(src string) string {
-	if strings.HasPrefix(src, "/") {
+	url, _ := url.Parse(src)
+	if url.Scheme == "" {
 		return "file"
 	}
-	// TODO: probably better to switch to using net/url for parsing
-	proto := strings.Split(src, "://")[0]
-	if proto == src {
-		return "file"
-	}
-	return proto
+	return url.Scheme
 }
 
 func getFileTarget(src string) string {
