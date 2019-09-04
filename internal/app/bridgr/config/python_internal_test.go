@@ -12,8 +12,8 @@ var pyTestImg, _ = reference.ParseNormalizedNamed("python:2")
 
 // there are other unexported fields in Named interface implementations. We don't really care
 // this comparer says we just care about the final string outputted by Named
-var opt = cmp.Comparer(func(got, want Python) bool {
-	return got.Image.String() == want.Image.String() && cmp.Equal(got.Items, want.Items)
+var opt = cmp.Comparer(func(got, want reference.Named) bool {
+	return (got != nil && want != nil) && got.String() == want.String()
 })
 
 func TestParsePython(t *testing.T) {

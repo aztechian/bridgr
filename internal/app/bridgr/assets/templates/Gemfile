@@ -1,0 +1,5 @@
+{{range .Sources}}source '{{.}}'
+{{end}}
+
+{{range .Items}}gem '{{.Package}}'{{if .Version}}, '{{.Version}}'{{end}}
+{{end}}

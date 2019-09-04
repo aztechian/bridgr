@@ -13,10 +13,13 @@ yum:
 # creates a static rubygems repository
 ruby:
   version: 2.4.5
+  # sources can be populated if you need additional/alternative Rubygem repos. The default is rubygems.org
+  # sources:
+  #   - https://rubygems.org
   gems:
     - thor
     - package: rails
-      version: ~5.1.0
+      version: ~>5.1.0
 
 # creates a PyPi compatible static repository, both packages and wheels
 python:
