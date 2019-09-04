@@ -97,7 +97,7 @@ func (r *Ruby) writeGemfile() error {
 	}
 	defer r.ReqtWriter.Close()
 	tmpl, _ := template.New("rubygems").Parse(gemTmpl)
-	return tmpl.Execute(r.ReqtWriter, r.Config.Items)
+	return tmpl.Execute(r.ReqtWriter, r.Config)
 }
 
 func (r *Ruby) script() (string, error) {

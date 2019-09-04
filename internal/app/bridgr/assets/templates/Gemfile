@@ -1,4 +1,5 @@
-source 'https://rubygems.org'
+{{range .Sources}}source '{{.}}'
+{{end}}
 
-{{range .}}gem '{{.Package}}'{{if .Version}}, '{{.Version}}'{{end}}
+{{range .Items}}gem '{{.Package}}'{{if .Version}}, '{{.Version}}'{{end}}
 {{end}}

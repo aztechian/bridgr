@@ -34,8 +34,8 @@ func parseRuby(config tempConfig) Ruby {
 	case []interface{}:
 		_ = rb.parsePackages(c)
 	case map[interface{}]interface{}:
+		var err error
 		if _, present := c["version"]; present {
-			var err error
 			rb.Image, err = reference.ParseNormalizedNamed("ruby:" + c["version"].(string))
 			if err != nil {
 				bridgr.Debugf("Error using Ruby image of 'ruby:%s', falling back to %s", c["version"].(string), defaultRbImg.String())
@@ -43,12 +43,16 @@ func parseRuby(config tempConfig) Ruby {
 			}
 		}
 		if sources, present := c["sources"]; present {
-			rb.addSources(sources.([]interface{}))
+			_ = rb.addSources(sources.([]interface{}))
 		}
 		pkgList := c["gems"].([]interface{})
 		_ = rb.parsePackages(pkgList)
 	default:
 		bridgr.Debugf("Unknown configuration section for Ruby: %+s", c)
+	}
+
+	if len(rb.Sources) <= 0 {
+		rb.Sources = append(rb.Sources, defaultRbSrc)
 	}
 	bridgr.Debugf("Final Ruby configuration %+v", rb)
 	return rb
