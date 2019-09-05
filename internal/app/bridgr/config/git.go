@@ -4,6 +4,8 @@ import (
 	"bridgr/internal/app/bridgr"
 	"net/url"
 	"path"
+
+	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
 // Git is the struct for holding a Git configuration in Bridgr
@@ -13,9 +15,10 @@ type Git struct {
 
 // GitItem is the sub-struct of items in a Git struct
 type GitItem struct {
-	URL  *url.URL
-	Bare bool
-	Tree string
+	URL    *url.URL
+	Bare   bool
+	Branch plumbing.ReferenceName
+	Tag    plumbing.ReferenceName
 }
 
 // BaseDir is the top-level directory name for all objects written out under the Python worker
@@ -49,12 +52,16 @@ func (g *Git) parseComplex(pkg map[interface{}]interface{}) error {
 	if err != nil {
 		return err
 	}
-	item := GitItem{URL: url, Bare: true, Tree: "master"}
+	item := GitItem{URL: url, Bare: true}
 	if bare, present := pkg["bare"]; present {
 		item.Bare = bare.(bool)
 	}
-	if tree, present := pkg["tree"]; present {
-		item.Tree = tree.(string)
+	if branch, present := pkg["branch"]; present {
+		item.Branch = plumbing.NewBranchReferenceName(branch.(string))
+	}
+	// branch name wins if both are present in the config
+	if tag, present := pkg["tag"]; present && item.Branch == "" {
+		item.Tag = plumbing.NewTagReferenceName(tag.(string))
 	}
 	g.Items = append(g.Items, item)
 	return nil
@@ -65,6 +72,6 @@ func (g *Git) parseSimple(pkg string) error {
 	if err != nil {
 		return err
 	}
-	g.Items = append(g.Items, GitItem{URL: url, Bare: true, Tree: "master"})
+	g.Items = append(g.Items, GitItem{URL: url, Bare: true})
 	return nil
 }

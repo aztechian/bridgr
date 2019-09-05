@@ -78,7 +78,9 @@ git:
   - https://github.com/aztechian/bridgr.git # will create git/project.git bare repository
   - repo: https://github.com/kubernetes-sigs/kubespray
     bare: false
-    tree: master # default is master if not provided
+    # default branch is HEAD (ie, master) if not provided
+    # branch: master
+    tag: v2.11.0 # only one of "tag" or "branch" is allowed
 
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:
