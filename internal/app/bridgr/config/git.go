@@ -8,6 +8,14 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
+// // Git is the interface for using a Git configuration
+// type Git interface {
+// 	BaseDir() string
+// 	parseComplex(pkg map[interface{}]interface{}) error
+// 	parseSimple(pkg string) error
+// 	GetItems() []GitItem
+// }
+
 // Git is the struct for holding a Git configuration in Bridgr
 type Git struct {
 	Items []GitItem

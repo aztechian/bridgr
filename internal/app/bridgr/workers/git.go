@@ -93,10 +93,10 @@ func gitClone(item config.GitItem, dir string) (*git.Repository, error) {
 
 func generateRefInfo(repo *git.Repository, file io.Writer) {
 	refs, _ := repo.References()
-	refs.ForEach(func(ref *plumbing.Reference) error {
+	_ = refs.ForEach(func(ref *plumbing.Reference) error {
 		if ref.Type() == plumbing.HashReference {
 			line := fmt.Sprintf("%s\t%s\n", ref.Strings()[1], ref.Strings()[0])
-			file.Write([]byte(line))
+			_, _ = file.Write([]byte(line))
 		}
 		return nil
 	})
@@ -116,6 +116,6 @@ func generatePackInfo(repo *git.Repository, file io.Writer) {
 	// write out the info content to file
 	for _, pack := range hs {
 		line := fmt.Sprintf("P pack-%s.pack\n", pack.String())
-		file.Write([]byte(line))
+		_, _ = file.Write([]byte(line))
 	}
 }
