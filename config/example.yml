@@ -80,7 +80,7 @@ git:
     bare: false
     # default branch is HEAD (ie, master) if not provided
     # branch: master
-    tag: v2.11.0 # only one of "tag" or "branch" is allowed
+    # tag: v2.11.0 # only one of "tag" or "branch" is allowed
 
 # downloads any files from a network source (HTTP/S only) and gathers them for static hosting
 files:

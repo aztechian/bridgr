@@ -17,12 +17,12 @@ import (
 
 // Git is a struct that implements a Worker interface for fetching Git artifacts
 type Git struct {
-	Config config.Git
+	Config *config.Git
 }
 
 // NewGit creates a new Git worker struct
 func NewGit(conf *config.BridgrConf) Worker {
-	return &Git{Config: conf.Git}
+	return &Git{Config: &conf.Git}
 }
 
 // Name returns the friendly name of the Git struct
@@ -42,7 +42,7 @@ func (g *Git) Run() error {
 		return err
 	}
 	for _, item := range g.Config.Items {
-		dir := g.prepDir(*item.URL)
+		dir := g.prepDir(item.URL)
 		repo, err := gitClone(item, dir)
 		if err != nil {
 			bridgr.Printf("Error cloning Git repository '%s': %s", item.URL.String(), err)
@@ -63,7 +63,7 @@ func (g *Git) Run() error {
 	return nil
 }
 
-func (g *Git) prepDir(url url.URL) string {
+func (g *Git) prepDir(url *url.URL) string {
 	dir := path.Base(url.Path)
 	dir = strings.TrimSuffix(dir, git.GitDirName)
 	dir = path.Join(g.Config.BaseDir(), dir)
@@ -88,6 +88,7 @@ func gitClone(item config.GitItem, dir string) (*git.Repository, error) {
 		opts.ReferenceName = item.Branch
 		opts.SingleBranch = true
 	}
+	// TODO: PlainClone() is nice and simple, but we need to be able to pass in a filesystem for testing (ie, memory)
 	return git.PlainClone(dir, item.Bare, &opts)
 }
 
