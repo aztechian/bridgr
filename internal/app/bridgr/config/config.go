@@ -21,7 +21,7 @@ type BridgrConf struct {
 	Docker   Docker
 	Npm      interface{}
 	Maven    interface{}
-	Git      interface{}
+	Git      Git
 	Settings interface{}
 }
 
@@ -63,6 +63,7 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 	c.Docker = parseDocker(temp)
 	c.Python = parsePython(temp)
 	c.Ruby = parseRuby(temp)
+	c.Git = parseGit(temp)
 	return &c, nil
 }
 
