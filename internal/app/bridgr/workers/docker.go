@@ -36,6 +36,10 @@ func (d *Docker) Name() string {
 
 // Run executes the Docker worker to fetch artifacts
 func (d *Docker) Run() error {
+	setupErr := d.Setup()
+	if setupErr != nil {
+		return setupErr
+	}
 	for _, img := range d.Config.Items {
 		if d.Config.Destination != "" {
 			dest := d.tagForRemote(img)
