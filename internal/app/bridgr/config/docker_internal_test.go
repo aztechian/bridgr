@@ -8,12 +8,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+// there are other unexported fields in Named interface implementations. We don't really care
+// this comparer says we just care about the final string outputted by Named
+var namedComparer = cmp.Comparer(func(got, want reference.Named) bool {
+	return got.String() == want.String()
+})
+
 func TestDockerParseItems(t *testing.T) {
-	// there are other unexported fields in Named interface implementations. We don't really care
-	// this comparer says we just care about the final string outputted by Named
-	opt := cmp.Comparer(func(got, want reference.Named) bool {
-		return got.String() == want.String()
-	})
 	simpleRef, _ := reference.ParseNormalizedNamed("myimage:1.2")
 	longRef, _ := reference.ParseNormalizedNamed("myrepo.io/project/image:4.3-alpine")
 
@@ -36,20 +37,14 @@ func TestDockerParseItems(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			d := Docker{}
 			_ = d.parseItems(test.item)
-			if !cmp.Equal(d, test.expect, opt) {
-				t.Errorf("Docker config not parsed correctly. Expected %+v but got %+v", test.expect, d)
+			if !cmp.Equal(d, test.expect, namedComparer) {
+				t.Errorf("Docker config not parsed correctly: %s", cmp.Diff(d, test.expect, opt))
 			}
 		})
 	}
 }
 
 func TestDockerParseComplex(t *testing.T) {
-	// there are other unexported fields in Named interface implementations. We don't really care
-	// this comparer says we just care about the final string outputted by Named
-	opt := cmp.Comparer(func(got, want reference.Named) bool {
-		return got.String() == want.String()
-	})
-
 	simpleRef, _ := reference.ParseNormalizedNamed("myimage:1.3")
 	hostRef, _ := reference.ParseNormalizedNamed("myrepo.io/awesome")
 	intVersionRef, _ := reference.ParseNormalizedNamed("myimage:4")
@@ -73,20 +68,14 @@ func TestDockerParseComplex(t *testing.T) {
 			if strings.Contains(test.name, "error -") && err == nil {
 				t.Errorf("Expected a test failure for %s, but none was received", test.name)
 			}
-			if !cmp.Equal(d, test.expect, opt) {
-				t.Errorf("Docker config not parsed correctly. Expected %+v but got %+v", test.expect, d)
+			if !cmp.Equal(d, test.expect, namedComparer) {
+				t.Errorf("Docker config not parsed correctly %s", cmp.Diff(test.expect, d, namedComparer))
 			}
 		})
 	}
 }
 
 func TestParseDocker(t *testing.T) {
-	// there are other unexported fields in Named interface implementations. We don't really care
-	// this comparer says we just care about the final string outputted by Named
-	opt := cmp.Comparer(func(got, want reference.Named) bool {
-		return got.String() == want.String()
-	})
-
 	simpleRef, _ := reference.ParseNormalizedNamed("myimage:1.3")
 	hostRef, _ := reference.ParseNormalizedNamed("myrepo.io/awesome")
 
@@ -106,7 +95,7 @@ func TestParseDocker(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			result := parseDocker(test.in)
-			if !cmp.Equal(result, test.expect, opt) {
+			if !cmp.Equal(result, test.expect, namedComparer) {
 				t.Errorf("Expected %v in Docker struct, got %v", test.expect.Items, result.Items)
 			}
 		})
