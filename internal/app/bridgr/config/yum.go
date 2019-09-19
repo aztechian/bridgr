@@ -31,8 +31,11 @@ func parseYum(config tempConfig) Yum {
 	case []interface{}:
 		_ = yum.parsePackages(c)
 	case map[interface{}]interface{}:
-		repos := c["repos"]
 		packages := c["packages"]
+		repos := c["repos"]
+		if repos == nil {
+			repos = []interface{}{}
+		}
 		if _, present := c["image"]; present {
 			customImg, err := reference.ParseNormalizedNamed(c["image"].(string))
 			if err != nil {

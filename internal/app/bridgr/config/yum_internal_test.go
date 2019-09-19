@@ -1,9 +1,10 @@
 package config
 
 import (
+	"testing"
+
 	"github.com/docker/distribution/reference"
 	"github.com/google/go-cmp/cmp"
-	"testing"
 )
 
 func TestParseRepos(t *testing.T) {
@@ -59,18 +60,6 @@ func TestParsePackages(t *testing.T) {
 }
 
 func TestParseYum(t *testing.T) {
-	// there are other unexported fields in Named interface implementations. We don't really care
-	// this comparer says we just care about the final string outputted by Named
-	opt := cmp.Comparer(func(got, want reference.Named) bool {
-		if got == nil && want == nil {
-			return true
-		}
-		if got == nil || want == nil {
-			return false
-		}
-		return got.String() == want.String()
-	})
-
 	defaultImg, _ := reference.ParseNormalizedNamed("centos:7")
 	customImg, _ := reference.ParseNormalizedNamed("my/centos:1.0")
 
@@ -81,6 +70,7 @@ func TestParseYum(t *testing.T) {
 	}{
 		{"array of packages", tempConfig{Yum: []interface{}{"package1", "package2"}}, Yum{Repos: nil, Items: []string{"package1", "package2"}, Image: defaultImg}},
 		{"map with repos", tempConfig{Yum: map[interface{}]interface{}{"repos": []interface{}{"testrepo"}, "packages": []interface{}{"pkg"}}}, Yum{Repos: []string{"testrepo"}, Items: []string{"pkg"}, Image: defaultImg}},
+		{"map missing repos", tempConfig{Yum: map[interface{}]interface{}{"packages": []interface{}{"pkg"}}}, Yum{Repos: nil, Items: []string{"pkg"}, Image: defaultImg}},
 		{"map with image", tempConfig{Yum: map[interface{}]interface{}{"image": "my/centos:1.0", "repos": []interface{}{"testrepo"}, "packages": []interface{}{"pkg"}}}, Yum{Repos: []string{"testrepo"}, Items: []string{"pkg"}, Image: customImg}},
 		{"map with bad image", tempConfig{Yum: map[interface{}]interface{}{"image": "my/", "repos": []interface{}{"testrepo"}, "packages": []interface{}{"pkg"}}}, Yum{Repos: []string{"testrepo"}, Items: []string{"pkg"}, Image: defaultImg}},
 		{"nil config", tempConfig{Yum: map[string]int{"ford": 42}}, Yum{Image: defaultImg}},
@@ -88,8 +78,8 @@ func TestParseYum(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			y := parseYum(test.data)
-			if !cmp.Equal(y, test.expect, opt) {
-				t.Errorf("YUM config not parsed correctly. Expected %+v but got %+v", test.expect, y)
+			if !cmp.Equal(y, test.expect, namedComparer) {
+				t.Errorf("YUM config not parsed correctly %s", cmp.Diff(test.expect, y, namedComparer))
 			}
 		})
 	}
