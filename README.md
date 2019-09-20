@@ -116,6 +116,8 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 ## Release History
 
+- 1.2.1
+  - Fixes for usability bugs
 - 1.2.0
   - Bridgr is now itself a static HTTP server (use the `-H` option flag)
   - Added Git repo cloning support

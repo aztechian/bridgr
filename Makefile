@@ -1,20 +1,21 @@
-PROJECT_NAME := "bridgr"
+PROJECT_NAME := bridgr
 PKG := "$(PROJECT_NAME)"
-CMD := "cmd/bridgr/main.go"
+CMD := cmd/bridgr/main.go
 VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 
+.SUFFIXES:
 .PHONY: all coverage lint test race x2unit xunit clean generate download
 
 ifeq ($(GOOS), linux)
-all: $(PROJECT_NAME)-Linux $(PROJECT_NAME)-Linux.sha256
+PROJECT_NAME := $(PROJECT_NAME)-Linux
 else ifeq ($(GOOS), windows)
-all: $(PROJECT_NAME)-Windows $(PROJECT_NAME)-Windows.sha256
+PROJECT_NAME := $(PROJECT_NAME)-Windows
 else ifeq ($(GOOS), darwin)
-all: $(PROJECT_NAME)-MacOS $(PROJECT_NAME)-MacOS.sha256
-else
-all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
+PROJECT_NAME := $(PROJECT_NAME)-MacOS
 endif
+
+all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
 
 ifeq ($(TRAVIS),)
 coverage: html
@@ -57,17 +58,11 @@ clean:
 generate: $(GO_FILES)
 	@GOOS="" go generate ./...
 
-# the sha256 rule must be above the executable rules, otherwise the exe targets will match first
-# and build an executable called "bridger-Linux.sha256"
-%.sha256:
-	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
-
 $(PROJECT_NAME): generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ -ldflags="-X bridgr.Version=${VERSION}" $(CMD)
 
-$(PROJECT_NAME)-%: generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ -ldflags="-X bridgr.Version=${VERSION}" $(CMD)
-	@echo "Created executable $@"
+%.sha256:
+	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
 
 download: generate
 	@go mod download
