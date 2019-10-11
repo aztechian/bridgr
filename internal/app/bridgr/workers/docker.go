@@ -52,12 +52,12 @@ func (d *Docker) Run() error {
 			outFile := re.ReplaceAllString(reference.Path(img), "_") + ".tar"
 			out, err := os.Create(path.Join(d.Config.BaseDir(), outFile))
 			if err != nil {
-				bridgr.Print(err)
+				bridgr.Printf("error creating %s for saving Docker image %s - %s", outFile, img.String(), err)
 				continue
 			}
 			err = d.writeLocal(out, img)
 			if err != nil {
-				bridgr.Print(err)
+				bridgr.Printf("error saving %s - %s", img.String(), err)
 				os.Remove(out.Name())
 				continue
 			}
@@ -71,10 +71,10 @@ func (d *Docker) Run() error {
 func (d *Docker) Setup() error {
 	bridgr.Print("Called Docker.Setup()")
 	for _, img := range d.Config.Items {
-		bridgr.Printf("pulling image %s", img.String())
-		err := pullImage(d.Cli, img.String())
+		bridgr.Debugf("pulling image %s", img.String())
+		err := pullImage(d.Cli, img)
 		if err != nil {
-			bridgr.Printf("Error fetching Docker image `%s`: %s", img.String(), err)
+			bridgr.Printf("Error pulling Docker image `%s`: %s", img.String(), err)
 		}
 	}
 	return nil

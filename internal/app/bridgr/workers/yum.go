@@ -83,7 +83,7 @@ func (y *Yum) Run() error {
 
 // Setup only does the setup step of the YUM worker
 func (y *Yum) Setup() error {
-	bridgr.Print("Called Yum.Setup()")
+	bridgr.Debug("Called Yum.Setup()")
 
 	err := y.writeRepos()
 	if err != nil {
