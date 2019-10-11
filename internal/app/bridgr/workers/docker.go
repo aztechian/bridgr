@@ -4,6 +4,8 @@ import (
 	"bridgr/internal/app/bridgr"
 	"bridgr/internal/app/bridgr/config"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,6 +22,11 @@ import (
 type Docker struct {
 	Config *config.Docker
 	Cli    client.ImageAPIClient
+}
+
+type dockerCredential struct {
+	types.AuthConfig
+	workerCredentialReader
 }
 
 // NewDocker creates a Docker worker from the configuration object
@@ -52,12 +59,12 @@ func (d *Docker) Run() error {
 			outFile := re.ReplaceAllString(reference.Path(img), "_") + ".tar"
 			out, err := os.Create(path.Join(d.Config.BaseDir(), outFile))
 			if err != nil {
-				bridgr.Print(err)
+				bridgr.Printf("error creating %s for saving Docker image %s - %s", outFile, img.String(), err)
 				continue
 			}
 			err = d.writeLocal(out, img)
 			if err != nil {
-				bridgr.Print(err)
+				bridgr.Printf("error saving %s - %s", img.String(), err)
 				os.Remove(out.Name())
 				continue
 			}
@@ -71,10 +78,10 @@ func (d *Docker) Run() error {
 func (d *Docker) Setup() error {
 	bridgr.Print("Called Docker.Setup()")
 	for _, img := range d.Config.Items {
-		bridgr.Printf("pulling image %s", img.String())
-		err := pullImage(d.Cli, img.String())
+		bridgr.Debugf("pulling image %s", img.String())
+		err := pullImage(d.Cli, img)
 		if err != nil {
-			bridgr.Printf("Error fetching Docker image `%s`: %s", img.String(), err)
+			bridgr.Printf("Error pulling Docker image `%s`: %s", img.String(), err)
 		}
 	}
 	return nil
@@ -115,4 +122,18 @@ func (d *Docker) tagForRemote(local reference.Named) string {
 
 	_ = d.Cli.ImageTag(context.Background(), local.Name(), remoteTag)
 	return remoteTag
+}
+
+func (credWriter *dockerCredential) Write(c Credential) error {
+	credWriter.Username = c.Username
+	credWriter.Password = c.Password
+	return nil
+}
+
+func (credWriter *dockerCredential) String() string {
+	if credWriter.Username == "" && credWriter.Password == "" {
+		return ""
+	}
+	jsonAuth, _ := json.Marshal(credWriter)
+	return base64.URLEncoding.EncodeToString(jsonAuth)
 }

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
@@ -21,13 +22,14 @@ func (m HTTPMock) RoundTrip(req *http.Request) (*http.Response, error) {
 	}, nil
 }
 
-var defaultConf = config.BridgrConf{
-	Files: config.Files{
-		Items: []config.FileItem{
-			{Source: "/source1", Target: "packages/files/file1", Protocol: "file"},
-			{Source: "http://nothing.net/file2", Target: "packages/files/file2", Protocol: "http"},
-			{Source: "ftp://nothing.net/file3", Target: "packages/files/file3", Protocol: "ftp"},
-		},
+var fileSource, _ = url.Parse("/source1")
+var httpSource, _ = url.Parse("http://nothing.net/file2")
+var ftpSource, _ = url.Parse("ftp://nothing.net/file3")
+var defaultConf = config.Files{
+	Items: []config.FileItem{
+		{Source: fileSource, Target: "file1"},
+		{Source: httpSource, Target: "file2"},
+		{Source: ftpSource, Target: "file3"},
 	},
 }
 

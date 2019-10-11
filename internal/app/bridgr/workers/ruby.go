@@ -73,6 +73,7 @@ func (r *Ruby) Setup() error {
 
 // Run fetches all artifacts for the Python configuration
 func (r *Ruby) Run() error {
+	bridgr.Debug("Called Ruby.Setup()")
 	err := r.Setup()
 	if err != nil {
 		return err

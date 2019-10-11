@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bridgr/internal/app/bridgr"
 	"fmt"
 	"log"
 	"path"
@@ -50,6 +51,7 @@ func parseDocker(conf tempConfig) Docker {
 	default:
 		log.Printf("DEBUG: Unknown configuration section for Docker: %+v", cfgBlock)
 	}
+	bridgr.Debugf("Final Docker configuration %+v", d)
 	return d
 }
 

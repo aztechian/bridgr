@@ -15,6 +15,27 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+type MockGitCredentailRW struct {
+	isError bool
+	user    string
+	pass    string
+	bytes.Buffer
+	CredentialReaderWriter
+}
+
+func (mgcrw *MockGitCredentailRW) Write(c Credential) error {
+	// up := append([]byte(c.Username + c.Password))
+	mgcrw.Buffer.Write([]byte(c.Username + c.Password))
+	return nil
+}
+
+func (mgcrw *MockGitCredentailRW) Read(url *url.URL) (Credential, bool) {
+	if mgcrw.isError {
+		return Credential{}, false
+	}
+	return Credential{Username: mgcrw.user, Password: mgcrw.pass}, true
+}
+
 func TestGitPrepDir(t *testing.T) {
 	conf := config.Git{}
 	baseDir := conf.BaseDir()
@@ -63,4 +84,56 @@ func TestGitGeneratePackInfo(t *testing.T) {
 	t.Log(repo.References())
 	generatePackInfo(repo, &buff)
 	// I don't know how to create a packfile for this, so... we don't care what our function returns
+}
+
+func TestGitAuth(t *testing.T) {
+	dummyURL, _ := url.Parse("nothing")
+	tests := []struct {
+		name    string
+		envUser string
+		envPass string
+		found   bool
+		expect  string
+	}{
+		{"user + pass found", "buster", "monster!", true, "bustermonster!"},
+		{"user + pass not found", "buster", "monster!", false, ""},
+		{"only token", "", "her?", true, "her?"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			creds := MockGitCredentailRW{isError: !test.found, user: test.envUser, pass: test.envPass}
+			gitAuth(dummyURL, &creds)
+			if !cmp.Equal(creds.Buffer.String(), test.expect) {
+				t.Error(cmp.Diff(creds.Buffer.String(), test.expect))
+			}
+		})
+	}
+}
+
+func TestGitCredentialWrite(t *testing.T) {
+	tests := []struct {
+		name  string
+		creds Credential
+	}{
+		{"user and password", Credential{Username: "buster", Password: "monster!"}},
+		{"empty", Credential{}},
+		{"only password", Credential{Password: "monster?"}},
+		{"only user", Credential{Username: "buster"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gitCreds := gitCredentials{}
+			gitCreds.Write(test.creds)
+			expectedUser := test.creds.Username
+			if expectedUser == "" {
+				expectedUser = "git"
+			}
+			if !cmp.Equal(gitCreds.Username, expectedUser) || !cmp.Equal(gitCreds.Password, test.creds.Password) {
+				t.Error("Mismatch credential username/password")
+				t.Errorf("gitCredential: %v   credential: %v", gitCreds, test.creds)
+			}
+		})
+	}
 }
