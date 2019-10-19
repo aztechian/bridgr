@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
@@ -29,13 +30,14 @@ func (wc *fakeWriteCloser) Write(p []byte) (n int, err error) {
 	return wc.Write(p)
 }
 
-var defaultConf = config.BridgrConf{
-	Files: config.Files{
-		Items: []config.FileItem{
-			{Source: "/source1", Target: "file1", Protocol: "file"},
-			{Source: "http://nothing.net/file2", Target: "file2", Protocol: "http"},
-			{Source: "ftp://nothing.net/file3", Target: "file3", Protocol: "ftp"},
-		},
+var fileSource, _ = url.Parse("/source1")
+var httpSource, _ = url.Parse("http://nothing.net/file2")
+var ftpSource, _ = url.Parse("ftp://nothing.net/file3")
+var defaultConf = config.Files{
+	Items: []config.FileItem{
+		{Source: fileSource, Target: "file1"},
+		{Source: httpSource, Target: "file2"},
+		{Source: ftpSource, Target: "file3"},
 	},
 }
 
@@ -54,7 +56,7 @@ func (m httpMock) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func TestFilesHttp(t *testing.T) {
 	writer := fakeWriteCloser{}
-	err := stubWorker.httpFetch(defaultConf.Files.Items[1], &writer)
+	err := stubWorker.httpFetch(defaultConf.Items[1], &writer)
 	if err != nil {
 		t.Errorf("Unable to fetch HTTP source: %s", err)
 	}
@@ -65,7 +67,7 @@ func TestFilesHttp(t *testing.T) {
 
 func TestFilesFtp(t *testing.T) {
 	writer := fakeWriteCloser{}
-	err := stubWorker.ftpFetch(defaultConf.Files.Items[2], &writer)
+	err := stubWorker.ftpFetch(defaultConf.Items[2], &writer)
 	if err == nil {
 		t.Error("Expected FTP source to be unimplemented")
 	}

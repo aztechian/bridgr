@@ -15,7 +15,7 @@ import (
 
 // Files is the work type for fetching plain files of various protocols
 type Files struct {
-	Config *config.BridgrConf
+	Config *config.Files
 	HTTP   *http.Client
 }
 
@@ -23,7 +23,7 @@ type Files struct {
 func NewFiles(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
 	return &Files{
-		Config: conf,
+		Config: &conf.Files,
 		HTTP: &http.Client{
 			// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
 			Transport: &http.Transport{
@@ -40,38 +40,38 @@ func NewFiles(conf *config.BridgrConf) Worker {
 }
 
 // Name returns the string name of the Files worker
-func (worker *Files) Name() string {
+func (f *Files) Name() string {
 	return "Files"
 }
 
 // Run sets up, creates and fetches static files based on the settings from the config file
-func (worker *Files) Run() error {
-	setupErr := worker.Setup()
+func (f *Files) Run() error {
+	setupErr := f.Setup()
 	if setupErr != nil {
 		return setupErr
 	}
-	for _, file := range worker.Config.Files.Items {
+	for _, item := range f.Config.Items {
 		var err error
-		_ = os.MkdirAll(path.Dir(file.Target), os.ModePerm)
-		out, err := os.Create(file.Target)
+		_ = os.MkdirAll(path.Dir(item.Target), os.ModePerm)
+		out, err := os.Create(item.Target)
 		if err != nil {
 			bridgr.Printf("Unable to create target: %s", err)
 			continue
 		}
-		switch file.Protocol {
+		switch item.Source.Scheme {
 		case "http", "https":
-			err = worker.httpFetch(file, out)
+			err = f.httpFetch(item, out)
 		case "ftp":
-			err = worker.ftpFetch(file, out)
-		case "file":
-			in, openErr := os.Open(file.Source)
+			err = f.ftpFetch(item, out)
+		case "file", "":
+			in, openErr := os.Open(item.Source.String())
 			if openErr == nil {
-				bridgr.Debugf("Copying local file: %s", file.Source)
-				err = worker.fileFetch(in, out)
+				bridgr.Debugf("Copying local file: %s", item.Source.String())
+				err = f.fileFetch(in, out)
 			}
 		}
 		if err != nil {
-			bridgr.Printf("Files '%s' - %+s", file.Source, err)
+			bridgr.Printf("Files '%s' - %+s", item.Source.String(), err)
 			_ = os.Remove(out.Name())
 		}
 	}
@@ -79,22 +79,23 @@ func (worker *Files) Run() error {
 }
 
 // Setup only does the setup step of the Files worker
-func (worker *Files) Setup() error {
+func (f *Files) Setup() error {
 	bridgr.Print("Called Files.Setup()")
 	return nil
 }
 
-func (worker *Files) ftpFetch(f config.FileItem, out io.WriteCloser) error {
+func (f *Files) ftpFetch(item config.FileItem, out io.WriteCloser) error {
 	defer out.Close()
-	bridgr.Debugf("Downloading FTP file: %s", f.Source)
-	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", f.Source)
+	bridgr.Debugf("Downloading FTP file: %s", item.Source)
+	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", item.Source)
 }
 
-func (worker *Files) httpFetch(f config.FileItem, out io.WriteCloser) error {
+func (f *Files) httpFetch(item config.FileItem, out io.WriteCloser) error {
 	// Get the data
 	defer out.Close()
-	bridgr.Debugf("Downloading HTTP/S file: %s", f.Source)
-	resp, err := worker.HTTP.Get(f.Source)
+
+	bridgr.Debugf("Downloading HTTP/S file: %s", item.Source)
+	resp, err := f.HTTP.Get(item.Source.String())
 	if err != nil {
 		return err
 	}
@@ -105,7 +106,15 @@ func (worker *Files) httpFetch(f config.FileItem, out io.WriteCloser) error {
 	return err
 }
 
-func (worker *Files) fileFetch(in io.ReadCloser, out io.WriteCloser) error {
+// func (f *Files) createHTTPRequest(source *URL) Request {
+// 	source, _ := url.Parse(item.Source)
+// 	u, p, ok := credentials(source)
+// 	if ok {
+
+// 	}
+// }
+
+func (f *Files) fileFetch(in io.ReadCloser, out io.WriteCloser) error {
 	defer out.Close()
 	defer in.Close()
 	_, err := io.Copy(out, in)

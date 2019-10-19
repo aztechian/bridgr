@@ -13,11 +13,17 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 // Git is a struct that implements a Worker interface for fetching Git artifacts
 type Git struct {
 	Config *config.Git
+}
+
+type gitCredentials struct {
+	*http.BasicAuth
+	workerCredentialReader
 }
 
 // NewGit creates a new Git worker struct
@@ -77,7 +83,9 @@ func (g *Git) prepDir(url *url.URL) string {
 
 func gitClone(item config.GitItem, dir string) (*git.Repository, error) {
 	bridgr.Debugf("About to clone %s into %s", item.URL.String(), dir)
-	opts := git.CloneOptions{URL: item.URL.String(), SingleBranch: false}
+	creds := &gitCredentials{}
+	gitAuth(item.URL, creds)
+	opts := git.CloneOptions{URL: item.URL.String(), SingleBranch: false, Auth: creds}
 	if item.Tag != "" {
 		bridgr.Debugf("Getting specific tag %s", item.Tag.String())
 		opts.ReferenceName = item.Tag
@@ -90,6 +98,13 @@ func gitClone(item config.GitItem, dir string) (*git.Repository, error) {
 	}
 	// TODO: PlainClone() is nice and simple, but we need to be able to pass in a filesystem for testing (ie, memory)
 	return git.PlainClone(dir, item.Bare, &opts)
+}
+
+func gitAuth(url *url.URL, rw CredentialReaderWriter) {
+	if creds, ok := rw.Read(url); ok {
+		bridgr.Debugf("Git: Found credentials for %s", url.String())
+		_ = rw.Write(creds)
+	}
 }
 
 func generateRefInfo(repo *git.Repository, file io.Writer) {
@@ -119,4 +134,13 @@ func generatePackInfo(repo *git.Repository, file io.Writer) {
 		line := fmt.Sprintf("P pack-%s.pack\n", pack.String())
 		_, _ = file.Write([]byte(line))
 	}
+}
+
+func (c *gitCredentials) Write(creds Credential) error {
+	c.Username = creds.Username
+	if c.Username == "" {
+		c.Username = "git" // for token auth, the username must be anything _but_ blank
+	}
+	c.Password = creds.Password
+	return nil
 }

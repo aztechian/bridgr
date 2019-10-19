@@ -5,8 +5,6 @@ import (
 	"bridgr/internal/app/bridgr/assets"
 	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -27,6 +25,8 @@ type Worker interface {
 	Name() string
 }
 
+type workerCredentialReader struct{}
+
 func loadTemplate(name string) (string, error) {
 	f, err := assets.Templates.Open(name)
 	if err != nil {
@@ -45,24 +45,9 @@ func cleanContainer(cli client.ContainerAPIClient, name string) error {
 }
 
 func pullImage(cli client.ImageAPIClient, image reference.Named) error {
-	imgDomain := "https://" + reference.Domain(image) // by putting scheme in front, it forces url.Parse to correctly identify the host portion
-	bridgr.Debugf("Got image domain of %s", imgDomain)
-	url, err := url.Parse(imgDomain)
-	bridgr.Debugf("Parsed URL: %s", url)
-	encodedAuth := ""
-	if err == nil {
-		username, password := credentials(url)
-		if username != "" && password != "" {
-			imgAuth := types.AuthConfig{
-				Username: username,
-				Password: password,
-			}
-			bridgr.Debugf("Docker: Found credentials for %s", url.Hostname())
-			jsonAuth, _ := json.Marshal(imgAuth)
-			encodedAuth = base64.URLEncoding.EncodeToString(jsonAuth)
-		}
-	}
-	output, err := cli.ImagePull(context.Background(), image.String(), types.ImagePullOptions{RegistryAuth: encodedAuth})
+	creds := dockerCredential{}
+	getDockerAuth(image, &creds)
+	output, err := cli.ImagePull(context.Background(), image.String(), types.ImagePullOptions{RegistryAuth: creds.String()})
 	writer := ioutil.Discard
 	if err != nil {
 		return err
@@ -73,6 +58,16 @@ func pullImage(cli client.ImageAPIClient, image reference.Named) error {
 	}
 	_, _ = io.Copy(writer, output) // must wait for output before returning
 	return nil
+}
+
+func getDockerAuth(image reference.Named, rw CredentialReaderWriter) {
+	imgDomain := "https://" + reference.Domain(image) // by putting scheme in front, it forces url.Parse to correctly identify the host portion
+	url, _ := url.Parse(imgDomain)
+
+	if creds, ok := rw.Read(url); ok {
+		bridgr.Debugf("Docker: Found credentials for %s", url.Hostname())
+		_ = rw.Write(creds)
+	}
 }
 
 func runContainer(name string, containerConfig *container.Config, hostConfig *container.HostConfig, script string) error {
@@ -112,24 +107,23 @@ func runContainer(name string, containerConfig *container.Config, hostConfig *co
 	return nil
 }
 
-func credentials(url *url.URL) (string, string) {
+func (w *workerCredentialReader) Read(url *url.URL) (Credential, bool) {
 	basename := "BRIDGR_" + strings.ToUpper(strings.ReplaceAll(url.Hostname(), ".", "_"))
-	uservar := basename + "_USER"
-	passwdvar := basename + "_PASS"
-	bridgr.Debugf("Looking for env var: %s", uservar)
-	if value, ok := os.LookupEnv(uservar); ok {
-		return value, os.Getenv(passwdvar)
+	bridgr.Debugf("Looking up credentials for: %s", basename)
+	found := false
+	userVal, ok := os.LookupEnv(basename + "_USER")
+	found = found || ok
+	passwdVal := ""
+	if pw, ok := os.LookupEnv(basename + "_PASS"); ok {
+		passwdVal = pw
+		found = found || ok
+	} else {
+		token, tok := os.LookupEnv(basename + "_TOKEN")
+		passwdVal = token
+		found = found || tok
 	}
-	bridgr.Debugf("Env Var %s was not found :(", uservar)
-	return "", ""
-}
-
-func credentialsConjoined(url *url.URL) string {
-	u, p := credentials(url)
-	return u + ":" + p
-}
-
-func credentialsBase64(url *url.URL) string {
-	v := credentialsConjoined(url)
-	return base64.StdEncoding.EncodeToString([]byte(v))
+	return Credential{
+		userVal,
+		passwdVal,
+	}, found
 }

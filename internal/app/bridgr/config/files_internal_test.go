@@ -1,11 +1,20 @@
 package config
 
 import (
+	"net/url"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
+var rootFile, _ = url.Parse("/afile.xyz")
+var relativeFile, _ = url.Parse("my/file.abc")
+var file, _ = url.Parse("file://some/file/toget.zip")
+var httpFile, _ = url.Parse("http://mysite.com/file.gz")
+var httpsFile, _ = url.Parse("https://mysite.com/archive.tar")
+var blahFile, _ = url.Parse("blah://mysite.com/file.js")
 var cwd, _ = os.Getwd()
 var dir = path.Join(cwd, "packages", "files")
 
@@ -23,6 +32,7 @@ func TestParseFiles(t *testing.T) {
 		{"nil", tempConfig{Files: nil}, 0, 0, 0},
 		{"non string", tempConfig{Files: []interface{}{2}}, 0, 0, 0},
 		{"multiple entries", tempConfig{Files: []interface{}{"file1.zip", "file2.tar"}}, 2, 2, 0},
+		{"error - bad url", tempConfig{Files: []interface{}{"\x7f"}}, 0, 0, 0},
 	}
 
 	for _, test := range tests {
@@ -40,24 +50,26 @@ func TestParseSimple(t *testing.T) {
 	tests := []struct {
 		given    string
 		expected FileItem
+		isError  bool
 	}{
-		{"/afile.zyx", FileItem{"/afile.zyx", path.Join(dir, "afile.zyx"), "file"}},
-		{"my/file.abc", FileItem{"my/file.abc", path.Join(dir, "file.abc"), "file"}},
-		{"file://some/file/toget.zip", FileItem{"file://some/file/toget.zip", path.Join(dir, "toget.zip"), "file"}},
-		{"http://mysite.com/file.gz", FileItem{"http://mysite.com/file.gz", path.Join(dir, "file.gz"), "http"}},
-		{"https://mysite.com/archive.tar", FileItem{"https://mysite.com/archive.tar", path.Join(dir, "archive.tar"), "https"}},
-		{"blah://mysite.com/file.js", FileItem{"blah://mysite.com/file.js", path.Join(dir, "file.js"), "blah"}},
+		{rootFile.String(), FileItem{rootFile, path.Join(dir, "afile.xyz")}, false},
+		{relativeFile.String(), FileItem{relativeFile, path.Join(dir, "file.abc")}, false},
+		{file.String(), FileItem{file, path.Join(dir, "toget.zip")}, false},
+		{httpFile.String(), FileItem{httpFile, path.Join(dir, "file.gz")}, false},
+		{httpsFile.String(), FileItem{httpsFile, path.Join(dir, "archive.tar")}, false},
+		{blahFile.String(), FileItem{blahFile, path.Join(dir, "file.js")}, false},
+		{"\x7f", FileItem{}, true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.given, func(t *testing.T) {
 			result := FileItem{}
 			err := result.parseSimple(test.given)
-			if err != nil {
-				t.Errorf("Got error from parseSimple: %s", err)
+			if err != nil && !test.isError {
+				t.Error(err)
 			}
-			if result != test.expected {
-				t.Errorf("Expected %+v from parseSimple(), got %+v", test.expected, result)
+			if !cmp.Equal(result, test.expected) {
+				t.Errorf("unexpected result from parseSimple() %s", cmp.Diff(result, test.expected))
 			}
 		})
 	}
@@ -67,48 +79,27 @@ func TestParseComplex(t *testing.T) {
 	tests := []struct {
 		given    map[interface{}]interface{}
 		expected FileItem
+		isError  bool
 	}{
-		{map[interface{}]interface{}{"source": "/afile.zyx", "target": "/afile.zyx"}, FileItem{"/afile.zyx", path.Join(dir, "afile.zyx"), "file"}},
-		{map[interface{}]interface{}{"source": "my/file.abc", "target": "file.xyz"}, FileItem{"my/file.abc", path.Join(dir, "file.xyz"), "file"}},
-		{map[interface{}]interface{}{"source": "my/file.bac", "target": "myfolder/"}, FileItem{"my/file.bac", path.Join(dir, "myfolder", "file.bac"), "file"}},
-		{map[interface{}]interface{}{"source": "file://some/file/toget.zip", "target": "file.toget.zip"}, FileItem{"file://some/file/toget.zip", path.Join(dir, "file.toget.zip"), "file"}},
-		{map[interface{}]interface{}{"source": "http://mysite.com/file.gz", "target": "file.gz"}, FileItem{"http://mysite.com/file.gz", path.Join(dir, "file.gz"), "http"}},
-		{map[interface{}]interface{}{"source": "https://mysite.com/archive.tar", "target": "archive.tgz"}, FileItem{"https://mysite.com/archive.tar", path.Join(dir, "archive.tgz"), "https"}},
-		{map[interface{}]interface{}{"source": "blah://mysite.com/file.js", "target": "myfile.js"}, FileItem{"blah://mysite.com/file.js", path.Join(dir, "myfile.js"), "blah"}},
+		{map[interface{}]interface{}{"source": rootFile.String(), "target": "/afile.zyx"}, FileItem{rootFile, path.Join(dir, "afile.zyx")}, false},
+		{map[interface{}]interface{}{"source": relativeFile.String(), "target": "file.xyz"}, FileItem{relativeFile, path.Join(dir, "file.xyz")}, false},
+		{map[interface{}]interface{}{"source": relativeFile.String(), "target": "myfolder/"}, FileItem{relativeFile, path.Join(dir, "myfolder", "file.abc")}, false},
+		{map[interface{}]interface{}{"source": file.String(), "target": "file.toget.zip"}, FileItem{file, path.Join(dir, "file.toget.zip")}, false},
+		{map[interface{}]interface{}{"source": httpFile.String(), "target": "file.gz"}, FileItem{httpFile, path.Join(dir, "file.gz")}, false},
+		{map[interface{}]interface{}{"source": httpsFile.String(), "target": "archive.tgz"}, FileItem{httpsFile, path.Join(dir, "archive.tgz")}, false},
+		{map[interface{}]interface{}{"source": blahFile.String(), "target": "myfile.js"}, FileItem{blahFile, path.Join(dir, "myfile.js")}, false},
+		{map[interface{}]interface{}{"source": "\x7f", "target": "*shrug*"}, FileItem{}, true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.given["source"].(string), func(t *testing.T) {
 			result := FileItem{}
 			err := result.parseComplex(test.given)
-			if err != nil {
-				t.Errorf("Got error from parseComplex: %s", err)
+			if err != nil && !test.isError {
+				t.Error(err)
 			}
-			if result != test.expected {
-				t.Errorf("Expected %s from parseComplex(), got %s", test.expected, result)
-			}
-		})
-	}
-}
-
-func TestGetFileProtocol(t *testing.T) {
-	tests := []struct {
-		given    string
-		expected string
-	}{
-		{"/afile.zyx", "file"},
-		{"my/file.abc", "file"},
-		{"file://some/file/toget.zip", "file"},
-		{"http://mysite.com/file.gz", "http"},
-		{"https://mysite.com/archive.tar", "https"},
-		{"blah://mysite.com/file.js", "blah"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.given, func(t *testing.T) {
-			result := getFileProtocol(test.given)
-			if result != test.expected {
-				t.Errorf("Expected %s from getFileProtocol(), got %s", test.expected, result)
+			if !cmp.Equal(result, test.expected) {
+				t.Errorf("unexpected result from parseComplex() %s", cmp.Diff(result, test.expected))
 			}
 		})
 	}

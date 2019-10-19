@@ -16,9 +16,8 @@ type Files struct {
 
 // FileItem is a discreet file definition object
 type FileItem struct {
-	Source   string
-	Target   string
-	Protocol string
+	Source *url.URL
+	Target string
 }
 
 // BaseDir is the top-level directory name for all objects written out under the Files worker
@@ -50,8 +49,12 @@ func parseFiles(conf tempConfig) Files {
 }
 
 func (f *FileItem) parseSimple(s string) error {
-	f.Protocol = getFileProtocol(s)
-	f.Source = s
+	url, err := url.Parse(s)
+	if err != nil {
+		return err
+	}
+	// setProtocol(url)
+	f.Source = url
 	f.Target = getFileTarget(s)
 	return nil
 }
@@ -59,22 +62,17 @@ func (f *FileItem) parseSimple(s string) error {
 func (f *FileItem) parseComplex(s map[interface{}]interface{}) error {
 	source := s["source"].(string)
 	target := s["target"].(string)
-	f.Protocol = getFileProtocol(source)
-	f.Source = source
+	url, err := url.Parse(source)
+	if err != nil {
+		return err
+	}
+	f.Source = url
 	if strings.HasSuffix(target, "/") {
 		f.Target = filepath.Join(new(Files).BaseDir(), target, filepath.Base(source))
 	} else {
 		f.Target = getFileTarget(target)
 	}
 	return nil
-}
-
-func getFileProtocol(src string) string {
-	url, _ := url.Parse(src)
-	if url.Scheme == "" {
-		return "file"
-	}
-	return url.Scheme
 }
 
 func getFileTarget(src string) string {

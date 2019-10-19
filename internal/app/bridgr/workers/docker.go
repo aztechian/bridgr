@@ -4,6 +4,8 @@ import (
 	"bridgr/internal/app/bridgr"
 	"bridgr/internal/app/bridgr/config"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,6 +22,11 @@ import (
 type Docker struct {
 	Config *config.Docker
 	Cli    client.ImageAPIClient
+}
+
+type dockerCredential struct {
+	types.AuthConfig
+	workerCredentialReader
 }
 
 // NewDocker creates a Docker worker from the configuration object
@@ -115,4 +122,18 @@ func (d *Docker) tagForRemote(local reference.Named) string {
 
 	_ = d.Cli.ImageTag(context.Background(), local.Name(), remoteTag)
 	return remoteTag
+}
+
+func (credWriter *dockerCredential) Write(c Credential) error {
+	credWriter.Username = c.Username
+	credWriter.Password = c.Password
+	return nil
+}
+
+func (credWriter *dockerCredential) String() string {
+	if credWriter.Username == "" && credWriter.Password == "" {
+		return ""
+	}
+	jsonAuth, _ := json.Marshal(credWriter)
+	return base64.URLEncoding.EncodeToString(jsonAuth)
 }
