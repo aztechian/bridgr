@@ -20,7 +20,7 @@ require (
 	google.golang.org/grpc v1.20.1 // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v2 v2.2.4
+	gopkg.in/yaml.v2 v2.2.5
 	gotest.tools v2.2.0+incompatible
 )
 
