@@ -15,15 +15,16 @@ import (
 
 // Files is the work type for fetching plain files of various protocols
 type Files struct {
-	Config *config.BridgrConf
+	Config *config.Files
 	HTTP   *http.Client
+	workerCredentialReader
 }
 
 // NewFiles is the constructor for a new Files worker struct
 func NewFiles(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
 	return &Files{
-		Config: conf,
+		Config: &conf.Files,
 		HTTP: &http.Client{
 			// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
 			Transport: &http.Transport{
@@ -40,38 +41,38 @@ func NewFiles(conf *config.BridgrConf) Worker {
 }
 
 // Name returns the string name of the Files worker
-func (worker *Files) Name() string {
+func (f *Files) Name() string {
 	return "Files"
 }
 
 // Run sets up, creates and fetches static files based on the settings from the config file
-func (worker *Files) Run() error {
-	setupErr := worker.Setup()
+func (f *Files) Run() error {
+	setupErr := f.Setup()
 	if setupErr != nil {
 		return setupErr
 	}
-	for _, file := range worker.Config.Files.Items {
+	for _, item := range f.Config.Items {
 		var err error
-		_ = os.MkdirAll(path.Dir(file.Target), os.ModePerm)
-		out, err := os.Create(file.Target)
+		_ = os.MkdirAll(path.Dir(item.Target), os.ModePerm)
+		out, err := os.Create(item.Target)
 		if err != nil {
 			bridgr.Printf("Unable to create target: %s", err)
 			continue
 		}
-		switch file.Protocol {
+		creds, ok := f.Read(item.Source)
+		if ok {
+			bridgr.Printf("Found credentials for File %s", item.Source.String())
+		}
+		switch item.Source.Scheme {
 		case "http", "https":
-			err = worker.httpFetch(file, out)
+			err = f.httpFetch(item, out, creds)
 		case "ftp":
-			err = worker.ftpFetch(file, out)
-		case "file":
-			in, openErr := os.Open(file.Source)
-			if openErr == nil {
-				bridgr.Debugf("Copying local file: %s", file.Source)
-				err = worker.fileFetch(in, out)
-			}
+			err = f.ftpFetch(item, out, creds)
+		case "file", "":
+			err = f.fileFetch(item, out)
 		}
 		if err != nil {
-			bridgr.Printf("Files '%s' - %+s", file.Source, err)
+			bridgr.Printf("Files '%s' - %+s", item.Source.String(), err)
 			_ = os.Remove(out.Name())
 		}
 	}
@@ -79,22 +80,45 @@ func (worker *Files) Run() error {
 }
 
 // Setup only does the setup step of the Files worker
-func (worker *Files) Setup() error {
+func (f *Files) Setup() error {
 	bridgr.Print("Called Files.Setup()")
 	return nil
 }
 
-func (worker *Files) ftpFetch(f config.FileItem, out io.WriteCloser) error {
-	defer out.Close()
-	bridgr.Debugf("Downloading FTP file: %s", f.Source)
-	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", f.Source)
+func (f *Files) fileFetch(item config.FileItem, out io.WriteCloser) error {
+	if in, openErr := os.Open(item.Source.String()); openErr == nil {
+		bridgr.Debugf("Copying local file: %s", item.Source.String())
+		defer out.Close()
+		defer in.Close()
+		_, err := io.Copy(out, in)
+		if err != nil {
+			return err
+		}
+	} else {
+		return openErr
+	}
+	return nil
 }
 
-func (worker *Files) httpFetch(f config.FileItem, out io.WriteCloser) error {
+func (f *Files) ftpFetch(item config.FileItem, out io.WriteCloser, creds Credential) error {
+	defer out.Close()
+	bridgr.Debugf("Downloading FTP file: %s", item.Source.String())
+	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", item.Source.String())
+}
+
+func (f *Files) httpFetch(item config.FileItem, out io.WriteCloser, creds Credential) error {
 	// Get the data
 	defer out.Close()
-	bridgr.Debugf("Downloading HTTP/S file: %s", f.Source)
-	resp, err := worker.HTTP.Get(f.Source)
+
+	bridgr.Debugf("Downloading HTTP/S file: %s", item.Source)
+	req, err := http.NewRequest(http.MethodGet, item.Source.String(), nil)
+	if err != nil {
+		return err
+	}
+	if len(creds.Username+creds.Password) > 0 {
+		req.SetBasicAuth(creds.Username, creds.Password)
+	}
+	resp, err := f.HTTP.Do(req)
 	if err != nil {
 		return err
 	}
@@ -102,12 +126,5 @@ func (worker *Files) httpFetch(f config.FileItem, out io.WriteCloser) error {
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
-	return err
-}
-
-func (worker *Files) fileFetch(in io.ReadCloser, out io.WriteCloser) error {
-	defer out.Close()
-	defer in.Close()
-	_, err := io.Copy(out, in)
 	return err
 }

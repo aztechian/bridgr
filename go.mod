@@ -18,7 +18,6 @@ require (
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	google.golang.org/grpc v1.20.1 // indirect
-	gopkg.in/src-d/go-billy.v4 v4.3.2
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.7
 	gotest.tools v2.2.0+incompatible
@@ -26,3 +25,5 @@ require (
 
 // docker 18.06.1-ce
 replace github.com/docker/docker v1.13.1 => github.com/docker/engine v0.0.0-20180816081446-320063a2ad06
+
+go 1.13
