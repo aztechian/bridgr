@@ -25,7 +25,8 @@ ruby:
 python:
   # simplest case is a plain string array
   #- awscli
-  version: 2.7.16
+  # The version of python to use may be specified
+  #version: 2.7.16
   packages:
     - django
     - package: flask
