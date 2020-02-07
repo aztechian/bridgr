@@ -8,7 +8,7 @@ import (
 )
 
 var pyTestAltImg, _ = reference.ParseNormalizedNamed("python:3.7.5-alpine")
-var pyTestImg, _ = reference.ParseNormalizedNamed("python:2")
+var pyTestImg, _ = reference.ParseNormalizedNamed("python:3.7")
 
 // there are other unexported fields in Named interface implementations. We don't really care
 // this comparer says we just care about the final string outputted by Named
