@@ -5,6 +5,7 @@ import (
 	"bridgr/internal/app/bridgr/assets"
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -74,8 +75,8 @@ func runContainer(name string, containerConfig *container.Config, hostConfig *co
 	ctx := context.Background()
 	cli, _ := client.NewClientWithOpts(client.FromEnv)
 	img, _ := reference.ParseNormalizedNamed(containerConfig.Image)
-	// log.Printf("%+v", cli)
-	_ = cleanContainer(cli, name)
+	name = fmt.Sprintf("%s_%d", name, os.Getpid()) // suffix the PID to the container name to not conflict with concurrent runs
+	defer cleanContainer(cli, name)
 	_ = pullImage(cli, img)
 
 	resp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, name)
