@@ -47,7 +47,7 @@ func NewRuby(conf *config.BridgrConf) Worker {
 		},
 		ContainerConfig: &container.Config{
 			Image:        conf.Ruby.Image.String(),
-			Cmd:          []string{"/bin/bash", "-"},
+			Cmd:          []string{"/bin/sh", "-"},
 			Tty:          false,
 			OpenStdin:    true,
 			AttachStdout: true,

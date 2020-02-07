@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 mkdir -p /packages/gems
 gem install builder
 bundle package --all --no-install --cache-path=/packages/gems
