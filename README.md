@@ -42,26 +42,62 @@ By default, Bridgr will create a `packages` directory with all artifacts gathere
 
 Also by default, Bridgr will look for a `bridge.yml` manifest file in the directory where it is being run. This can be overridden with the `-c` option to bridgr to specify a configuration file elsewhere.
 
-``` shell
+```shell
 ./bridgr -c path/to/another/bridge.yml
 ```
 
 To only run one of the repository types, simply give that type after any configuration options. As an example, to only run the Files type, execute Bridgr like this:
 
-``` shell
+```shell
 ./bridgr -v files
 ```
 
 Additional command line options include:
 
-| Option           | Meaning                                                                                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| -v  /  --verbose | Verbose Output                                                                                                                                      |
-| -n  /  --dry-run | Dry-run. Only do setup, don't fetch artifacts                                                                                                       |
-| -c  /  --config  | Specify an alternate configuration file                                                                                                             |
-| --version        | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string.                           |
-| -H  /  --host    | Run Bridgr in "hosting" mode. This mode does no downloading of artifacts, but makes Bridgr into a simple HTTP server. See `Hosting` for more detail |
-| -l  /  --listen  | The listen address for Bridgr in hosting mode. This is only effective when coupled with the `-H` flag. Default is `:8080`                           |
+| Option         | Meaning                                                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -v / --verbose | Verbose Output                                                                                                                                      |
+| -n / --dry-run | Dry-run. Only do setup, don't fetch artifacts                                                                                                       |
+| -c / --config  | Specify an alternate configuration file                                                                                                             |
+| --version      | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string.                           |
+| -H / --host    | Run Bridgr in "hosting" mode. This mode does no downloading of artifacts, but makes Bridgr into a simple HTTP server. See `Hosting` for more detail |
+| -l / --listen  | The listen address for Bridgr in hosting mode. This is only effective when coupled with the `-H` flag. Default is `:8080`                           |
+
+### Artifacts requiring authentication
+
+Bridgr support getting authenticated artifacts for `Files`, `Docker` and `Git`. Sensitive credential information is passed to Bridgr with environment variables. It does not support putting credentials in the configuration file because it risks users comitting these credentials into version control. Bridgr intends to promote good credential hygene.
+
+Providing credentials follows a pattern of environment variable naming
+
+- Username -> `BRIDGR_[HOST]_USER`
+- Password -> `BRIDGR_[HOST]_PASS`
+- API Token -> `BRIDGR_[HOST]_TOKEN`
+
+Only one of Password or Token can be given. If both are provided, token will override.
+
+The `[HOST]` portion of the environment variable above should be the hostname of the URL being fetched, converted to uppercase and `.` replaced with `_`. This is most easily shown with examples.
+
+Fetching authentication protected docker hub image:
+
+```shell
+BRIDGR_DOCKER_IO_USER=user BRIDGR_DOCKER_IO_PASS=secret bridgr docker
+```
+
+In this case we have provided a username (user) and password (secret) for the default docker registry (docker.io). When the docker worker is run, and any images are specified from docker.io, bridgr will look for these two variables for credential information.
+
+Another example for files:
+
+```shell
+BRIDGR_PROTECTED_MYSERVER_COM_USER=user BRIDGR_PROTECTED_MYSERVER_COM_PASS=secret bridgr files
+```
+
+And, finally for git - but this time showing a token (typical with Github and Gitlab):
+
+```shell
+BRIDGR_GITHUB_COM_TOKEN=abcdefg123456789 bridgr git
+```
+
+In this case, we don't need to specify the `_USER` part of the credential, because the git worker assumes a username of `git`, and Github or Gitlab just need it to _not_ be blank. The worker does this for you.
 
 ## Hosting mode
 
@@ -104,11 +140,11 @@ Using new (as of go 1.11) [modules-style](https://github.com/golang/go/wiki/Modu
 Project structure following [these guidelines](https://github.com/golang-standards/project-layout)
 Example project showing [CI pipeline](https://gitlab.com/pantomath-io/demo-tools)
 
-We will use the following libraries to do heavy lifting:
+Significant Go modules used by `Bridgr`:
 
 - go-git
 - docker.io/go-docker
-- yaml.v2
+- yaml.v3
 - vfsgen
 
 Potential for schema definition/validation of the YAML config file: [https://github.com/rjbs/rx](https://github.com/rjbs/rx)
@@ -116,6 +152,9 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 ## Release History
 
+- 1.3.0
+  - Add authentication support
+  - Update to Go version 1.13
 - 1.2.1
   - Fixes for usability bugs
 - 1.2.0
@@ -134,19 +173,20 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 Ian Martin – ian@imartin.net
 
-Distributed under the MIT license. See ``LICENSE`` for more information.
+Distributed under the MIT license. See `LICENSE` for more information.
 
 [https://github.com/aztechian/bridgr](https://github.com/aztechian/)
 
 ## Contributing
 
-1. Fork it (<https://github.com/aztechian/bridgr/fork>)
+1. [Fork it](https://github.com/aztechian/bridgr/fork)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push -u origin feature/fooBar`)
+4. Push to the branch (`git push -u origin HEAD`)
 5. Create a new Pull Request
 
 <!-- Markdown link & img dfn's -->
+
 [gh-downloads]: https://img.shields.io/github/downloads/aztechian/bridgr/total.svg
 [gh-dl-url]: releases/
 [license]: https://img.shields.io/github/license/aztechian/bridgr
