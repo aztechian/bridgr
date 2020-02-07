@@ -13,7 +13,7 @@ type Python struct {
 	Image reference.Named
 }
 
-var defaultPyImg, _ = reference.ParseNormalizedNamed("python:2")
+var defaultPyImg, _ = reference.ParseNormalizedNamed("python:3.7") // https://github.com/wolever/pip2pi/issues/96 3.8 doesn't work
 
 // BaseDir is the top-level directory name for all objects written out under the Python worker
 func (p *Python) BaseDir() string {
