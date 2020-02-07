@@ -1,13 +1,15 @@
 package config
 
 import (
+	"github.com/davecgh/go-spew/spew"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
+	"github.com/mitchellh/mapstructure"
 )
 
 // BridgrConf is the in-memory representation of the provided YAML config file
@@ -25,18 +27,18 @@ type BridgrConf struct {
 	Settings interface{}
 }
 
-type tempConfig struct {
-	Yum      interface{}
-	Files    []interface{}
-	Ruby     interface{}
-	Python   interface{}
-	Jenkins  interface{}
-	Docker   interface{}
-	Npm      interface{}
-	Maven    []interface{}
-	Git      []interface{}
-	Settings []interface{}
-}
+// type tempConfig struct {
+// 	Yum      interface{}
+// 	Files    []interface{}
+// 	Ruby     interface{}
+// 	Python   interface{}
+// 	Jenkins  interface{}
+// 	Docker   interface{}
+// 	Npm      interface{}
+// 	Maven    []interface{}
+// 	Git      []interface{}
+// 	Settings []interface{}
+// }
 
 // Helper interface translates top-level config file sections into normalized structs for use by workers
 // type Helper interface {
@@ -53,17 +55,21 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 		return &c, err
 	}
 
-	temp := tempConfig{}
+	var temp = make([]interface{}, 1)
+	// temp := tempConfig{}
 	err = yaml.Unmarshal(confData, &temp)
 	if err != nil {
 		return &c, err
 	}
-	c.Files = parseFiles(temp)
-	c.Yum = parseYum(temp)
-	c.Docker = parseDocker(temp)
-	c.Python = parsePython(temp)
-	c.Ruby = parseRuby(temp)
-	c.Git = parseGit(temp)
+
+	mapstructure.Decode(temp, &c)
+	spew.Dump(c)
+	// c.Files = parseFiles(temp)
+	// c.Yum = parseYum(temp)
+	// c.Docker = parseDocker(temp)
+	// c.Python = parsePython(temp)
+	// c.Ruby = parseRuby(temp)
+	// c.Git = parseGit(temp)
 	return &c, nil
 }
 

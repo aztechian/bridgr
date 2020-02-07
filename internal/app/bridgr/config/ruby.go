@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bridgr/internal/app/bridgr"
 	"path"
 
 	"github.com/docker/distribution/reference"
@@ -28,35 +27,35 @@ func (r *Ruby) BaseDir() string {
 	return path.Join(BaseDir(), "ruby")
 }
 
-func parseRuby(config tempConfig) Ruby {
-	rb := Ruby{Image: defaultRbImg}
-	switch c := config.Ruby.(type) {
-	case []interface{}:
-		_ = rb.parsePackages(c)
-	case map[interface{}]interface{}:
-		var err error
-		if _, present := c["version"]; present {
-			rb.Image, err = reference.ParseNormalizedNamed("ruby:" + c["version"].(string))
-			if err != nil {
-				bridgr.Debugf("Error using Ruby image of 'ruby:%s', falling back to %s", c["version"].(string), defaultRbImg.String())
-				rb.Image = defaultRbImg
-			}
-		}
-		if sources, present := c["sources"]; present {
-			_ = rb.addSources(sources.([]interface{}))
-		}
-		pkgList := c["gems"].([]interface{})
-		_ = rb.parsePackages(pkgList)
-	default:
-		bridgr.Debugf("Unknown configuration section for Ruby: %+s", c)
-	}
+// func parseRuby(config tempConfig) Ruby {
+// 	rb := Ruby{Image: defaultRbImg}
+// 	switch c := config.Ruby.(type) {
+// 	case []interface{}:
+// 		_ = rb.parsePackages(c)
+// 	case map[interface{}]interface{}:
+// 		var err error
+// 		if _, present := c["version"]; present {
+// 			rb.Image, err = reference.ParseNormalizedNamed("ruby:" + c["version"].(string))
+// 			if err != nil {
+// 				bridgr.Debugf("Error using Ruby image of 'ruby:%s', falling back to %s", c["version"].(string), defaultRbImg.String())
+// 				rb.Image = defaultRbImg
+// 			}
+// 		}
+// 		if sources, present := c["sources"]; present {
+// 			_ = rb.addSources(sources.([]interface{}))
+// 		}
+// 		pkgList := c["gems"].([]interface{})
+// 		_ = rb.parsePackages(pkgList)
+// 	default:
+// 		bridgr.Debugf("Unknown configuration section for Ruby: %+s", c)
+// 	}
 
-	if len(rb.Sources) <= 0 {
-		rb.Sources = append(rb.Sources, defaultRbSrc)
-	}
-	bridgr.Debugf("Final Ruby configuration %+v", rb)
-	return rb
-}
+// 	if len(rb.Sources) <= 0 {
+// 		rb.Sources = append(rb.Sources, defaultRbSrc)
+// 	}
+// 	bridgr.Debugf("Final Ruby configuration %+v", rb)
+// 	return rb
+// }
 
 func (r *Ruby) parsePackages(pkgList []interface{}) error {
 	for _, pkg := range pkgList {

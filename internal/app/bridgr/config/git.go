@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bridgr/internal/app/bridgr"
 	"net/url"
 	"path"
 
@@ -34,26 +33,26 @@ func (g *Git) BaseDir() string {
 	return path.Join(BaseDir(), "git")
 }
 
-func parseGit(config tempConfig) Git {
-	g := Git{}
-	for _, entry := range config.Git {
-		var err error
-		switch repoObj := entry.(type) {
-		case string: //simple string entry
-			err = g.parseSimple(repoObj)
-		case map[interface{}]interface{}: // complex type
-			err = g.parseComplex(repoObj)
-		default:
-			bridgr.Debugf("Unknown configuration section for Git: %+s", repoObj)
-		}
-		if err != nil {
-			bridgr.Debug(err)
-		}
-	}
+// func parseGit(config tempConfig) Git {
+// 	g := Git{}
+// 	for _, entry := range config.Git {
+// 		var err error
+// 		switch repoObj := entry.(type) {
+// 		case string: //simple string entry
+// 			err = g.parseSimple(repoObj)
+// 		case map[interface{}]interface{}: // complex type
+// 			err = g.parseComplex(repoObj)
+// 		default:
+// 			bridgr.Debugf("Unknown configuration section for Git: %+s", repoObj)
+// 		}
+// 		if err != nil {
+// 			bridgr.Debug(err)
+// 		}
+// 	}
 
-	bridgr.Debugf("Final Git configuration %+v", g)
-	return g
-}
+// 	bridgr.Debugf("Final Git configuration %+v", g)
+// 	return g
+// }
 
 func (g *Git) parseComplex(pkg map[interface{}]interface{}) error {
 	url, err := url.Parse(pkg["repo"].(string))

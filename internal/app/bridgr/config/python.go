@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bridgr/internal/app/bridgr"
 	"path"
 
 	"github.com/docker/distribution/reference"
@@ -20,28 +19,28 @@ func (p *Python) BaseDir() string {
 	return path.Join(BaseDir(), "python")
 }
 
-func parsePython(config tempConfig) Python {
-	py := Python{Image: defaultPyImg}
-	switch c := config.Python.(type) {
-	case []interface{}:
-		_ = py.parsePackages(c)
-	case map[interface{}]interface{}:
-		if _, present := c["version"]; present {
-			var err error
-			py.Image, err = reference.ParseNormalizedNamed("python:" + c["version"].(string))
-			if err != nil {
-				bridgr.Debugf("Error using Python image of 'python:%s', falling back to %s", c["version"].(string), defaultPyImg.String())
-				py.Image = defaultPyImg
-			}
-		}
-		pkgList := c["packages"].([]interface{})
-		_ = py.parsePackages(pkgList)
-	default:
-		bridgr.Debugf("Unknown configuration section for Python: %+s", c)
-	}
-	bridgr.Debugf("Final Python configuration %+v", py)
-	return py
-}
+// func parsePython(config tempConfig) Python {
+// 	py := Python{Image: defaultPyImg}
+// 	switch c := config.Python.(type) {
+// 	case []interface{}:
+// 		_ = py.parsePackages(c)
+// 	case map[interface{}]interface{}:
+// 		if _, present := c["version"]; present {
+// 			var err error
+// 			py.Image, err = reference.ParseNormalizedNamed("python:" + c["version"].(string))
+// 			if err != nil {
+// 				bridgr.Debugf("Error using Python image of 'python:%s', falling back to %s", c["version"].(string), defaultPyImg.String())
+// 				py.Image = defaultPyImg
+// 			}
+// 		}
+// 		pkgList := c["packages"].([]interface{})
+// 		_ = py.parsePackages(pkgList)
+// 	default:
+// 		bridgr.Debugf("Unknown configuration section for Python: %+s", c)
+// 	}
+// 	bridgr.Debugf("Final Python configuration %+v", py)
+// 	return py
+// }
 
 func (p *Python) parsePackages(pkgList []interface{}) error {
 	for _, pkg := range pkgList {

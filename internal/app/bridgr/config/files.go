@@ -1,8 +1,6 @@
 package config
 
 import (
-	"bridgr/internal/app/bridgr"
-	"fmt"
 	"net/url"
 	"path"
 	"path/filepath"
@@ -25,28 +23,28 @@ func (f *Files) BaseDir() string {
 	return path.Join(BaseDir(), "files")
 }
 
-func parseFiles(conf tempConfig) Files {
-	files := Files{}
-	for _, val := range conf.Files {
-		newItem := FileItem{}
-		var err error
-		switch o := val.(type) {
-		case string: //simple string entry
-			err = newItem.parseSimple(o)
-		case map[interface{}]interface{}: // complex type
-			err = newItem.parseComplex(o)
-		default:
-			err = fmt.Errorf("Unsupported File type in config - %T", o)
-		}
-		if err != nil {
-			bridgr.Println(err)
-		} else {
-			files.Items = append(files.Items, newItem)
-		}
-	}
-	bridgr.Debugf("Final Files configuration %+v", files)
-	return files
-}
+// func parseFiles(conf tempConfig) Files {
+//   files := Files{}
+//   for _, val := range conf.Files {
+//     newItem := FileItem{}
+//     var err error
+//     switch o := val.(type) {
+//     case string: //simple string entry
+//       err = newItem.parseSimple(o)
+//     case map[interface{}]interface{}: // complex type
+//       err = newItem.parseComplex(o)
+//     default:
+//       err = fmt.Errorf("Unsupported File type in config - %T", o)
+//     }
+//     if err != nil {
+//       bridgr.Println(err)
+//     } else {
+//       files.Items = append(files.Items, newItem)
+//     }
+//   }
+//   bridgr.Debugf("Final Files configuration %+v", files)
+//   return files
+// }
 
 func (f *FileItem) parseSimple(s string) error {
 	url, err := url.Parse(s)

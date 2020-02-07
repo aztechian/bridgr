@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-	"log"
 	"path"
 
 	"github.com/docker/distribution/reference"
@@ -22,38 +20,38 @@ func (y *Yum) BaseDir() string {
 	return path.Join(BaseDir(), "yum")
 }
 
-func parseYum(config tempConfig) Yum {
-	namedImg, _ := reference.ParseNormalizedNamed(defaultYumImage)
-	yum := Yum{
-		Image: namedImg,
-	}
-	switch c := config.Yum.(type) {
-	case []interface{}:
-		_ = yum.parsePackages(c)
-	case map[interface{}]interface{}:
-		packages := c["packages"]
-		repos := c["repos"]
-		if repos == nil {
-			repos = []interface{}{}
-		}
-		if _, present := c["image"]; present {
-			customImg, err := reference.ParseNormalizedNamed(c["image"].(string))
-			if err != nil {
-				yum.Image = namedImg
-				log.Printf("Invalid image given for YUM: %s, defaulting to %s", err, namedImg.Name())
-			} else {
-				yum.Image = customImg
-			}
-		}
-		_ = yum.parseRepos(repos.([]interface{}))
-		_ = yum.parsePackages(packages.([]interface{}))
-	case nil:
+// func parseYum(config tempConfig) Yum {
+// 	namedImg, _ := reference.ParseNormalizedNamed(defaultYumImage)
+// 	yum := Yum{
+// 		Image: namedImg,
+// 	}
+// 	switch c := config.Yum.(type) {
+// 	case []interface{}:
+// 		_ = yum.parsePackages(c)
+// 	case map[interface{}]interface{}:
+// 		packages := c["packages"]
+// 		repos := c["repos"]
+// 		if repos == nil {
+// 			repos = []interface{}{}
+// 		}
+// 		if _, present := c["image"]; present {
+// 			customImg, err := reference.ParseNormalizedNamed(c["image"].(string))
+// 			if err != nil {
+// 				yum.Image = namedImg
+// 				log.Printf("Invalid image given for YUM: %s, defaulting to %s", err, namedImg.Name())
+// 			} else {
+// 				yum.Image = customImg
+// 			}
+// 		}
+// 		_ = yum.parseRepos(repos.([]interface{}))
+// 		_ = yum.parsePackages(packages.([]interface{}))
+// 	case nil:
 
-	default:
-		fmt.Printf("DEBUG: Unknown configuration section for Yum: %+s", c)
-	}
-	return yum
-}
+// 	default:
+// 		fmt.Printf("DEBUG: Unknown configuration section for Yum: %+s", c)
+// 	}
+// 	return yum
+// }
 
 func (y *Yum) parseRepos(repolist []interface{}) error {
 	for _, repo := range repolist {
