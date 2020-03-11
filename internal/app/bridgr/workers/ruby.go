@@ -33,7 +33,7 @@ func NewRuby(conf *config.BridgrConf) Worker {
 	}
 	bridgr.Debugf("Created %s for writing Gemfile template", reqt.Name())
 	return &Ruby{
-		Config:     &conf.Ruby,
+		Config:     conf.Ruby,
 		ReqtWriter: reqt,
 		PackageMount: mount.Mount{
 			Type:   mount.TypeBind,
@@ -46,7 +46,7 @@ func NewRuby(conf *config.BridgrConf) Worker {
 			Target: "/Gemfile",
 		},
 		ContainerConfig: &container.Config{
-			Image:        conf.Ruby.Image.String(),
+			Image:        conf.Ruby.Image().String(),
 			Cmd:          []string{"/bin/sh", "-"},
 			Tty:          false,
 			OpenStdin:    true,

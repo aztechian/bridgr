@@ -1,55 +1,87 @@
 package config
 
 import (
+	"fmt"
 	"path"
+	"reflect"
 
 	"github.com/docker/distribution/reference"
 )
 
-// Python is the configuration object specifically for the Python section of the config file
-type Python struct {
-	Items []string
-	Image reference.Named
+var defaultPyImg reference.Named
+
+const defaultPySrc = "https://pypi.org"
+const basePyImage = "python"
+
+func init() {
+	defaultPyImg, _ = reference.ParseNormalizedNamed(basePyImage + ":3.7") // https://github.com/wolever/pip2pi/issues/96 3.8 doesn't work
 }
 
-var defaultPyImg, _ = reference.ParseNormalizedNamed("python:3.7") // https://github.com/wolever/pip2pi/issues/96 3.8 doesn't work
+// Python is the configuration object specifically for the Python section of the config file
+type Python struct {
+	Packages []pythonPackage
+	Version  pythonVersion
+	Sources  []string
+}
+
+type pythonVersion reference.Named
+
+type pythonPackage struct {
+	Package string
+	Version string
+}
 
 // BaseDir is the top-level directory name for all objects written out under the Python worker
-func (p *Python) BaseDir() string {
+func (p Python) BaseDir() string {
 	return path.Join(BaseDir(), "python")
 }
 
-// func parsePython(config tempConfig) Python {
-// 	py := Python{Image: defaultPyImg}
-// 	switch c := config.Python.(type) {
-// 	case []interface{}:
-// 		_ = py.parsePackages(c)
-// 	case map[interface{}]interface{}:
-// 		if _, present := c["version"]; present {
-// 			var err error
-// 			py.Image, err = reference.ParseNormalizedNamed("python:" + c["version"].(string))
-// 			if err != nil {
-// 				bridgr.Debugf("Error using Python image of 'python:%s', falling back to %s", c["version"].(string), defaultPyImg.String())
-// 				py.Image = defaultPyImg
-// 			}
-// 		}
-// 		pkgList := c["packages"].([]interface{})
-// 		_ = py.parsePackages(pkgList)
-// 	default:
-// 		bridgr.Debugf("Unknown configuration section for Python: %+s", c)
-// 	}
-// 	bridgr.Debugf("Final Python configuration %+v", py)
-// 	return py
-// }
+func (p Python) Count() int {
+	return len(p.Packages)
+}
 
-func (p *Python) parsePackages(pkgList []interface{}) error {
-	for _, pkg := range pkgList {
-		switch pkgObj := pkg.(type) {
-		case string:
-			p.Items = append(p.Items, pkgObj)
-		case map[interface{}]interface{}:
-			p.Items = append(p.Items, pkgObj["package"].(string)+pkgObj["version"].(string))
-		}
+func (p Python) Image() reference.Named {
+	if p.Version == nil {
+		return defaultPyImg
 	}
-	return nil
+	return p.Version
+}
+
+func (p Python) Repositories() []string {
+	return p.Sources
+}
+
+func NewPython() *Python {
+	return &Python{
+		Version: defaultPyImg,
+	}
+}
+
+func versionToPythonImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if t != reflect.TypeOf((*pythonVersion)(nil)).Elem() {
+		return data, nil
+	}
+	if f.Kind() == reflect.Float64 {
+		return reference.ParseAnyReference(basePyImage + ":" + fmt.Sprintf("%.1f", data.(float64)))
+	}
+	if f.Kind() == reflect.String {
+		return reference.ParseAnyReference(basePyImage + ":" + data.(string))
+	}
+	return data, nil
+}
+
+func arrayToPython(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.Slice || t != reflect.TypeOf(Python{}) {
+		return data, nil
+	}
+	var pkgs []pythonPackage
+	for _, p := range data.([]interface{}) {
+		pkgs = append(pkgs, pythonPackage{Package: p.(string)})
+	}
+
+	return &Python{
+		Version:  defaultPyImg,
+		Packages: pkgs,
+		Sources:  []string{defaultPySrc},
+	}, nil
 }

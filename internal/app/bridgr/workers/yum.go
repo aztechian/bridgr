@@ -36,7 +36,7 @@ func NewYum(conf *config.BridgrConf) Worker {
 	bridgr.Debugf("Created %s for writing repo template", repo.Name())
 
 	return &Yum{
-		Config:     &conf.Yum,
+		Config:     conf.Yum,
 		RepoWriter: repo,
 		PackageMount: mount.Mount{
 			Type:   mount.TypeBind,
@@ -49,7 +49,7 @@ func NewYum(conf *config.BridgrConf) Worker {
 			Target: "/etc/yum.repos.d/bridgr.repo",
 		},
 		ContainerConfig: container.Config{
-			Image:        conf.Yum.Image.String(),
+			Image:        conf.Yum.Image().String(),
 			Cmd:          []string{"/bin/bash", "-"},
 			Tty:          false,
 			OpenStdin:    true,
@@ -71,7 +71,7 @@ func (y *Yum) Run() error {
 	if err != nil {
 		return err
 	}
-	script, _ := y.script(y.Config.Items)
+	script, _ := y.script(y.Config.Packages)
 	hostConfig := container.HostConfig{
 		Mounts: []mount.Mount{
 			y.PackageMount,
@@ -100,7 +100,7 @@ func (y *Yum) writeRepos() error {
 	defer y.RepoWriter.Close()
 	tmpl := template.New("yumrepo")
 	_, _ = tmpl.Parse(yumTmpl)
-	return tmpl.Execute(y.RepoWriter, y.Config.Repos)
+	return tmpl.Execute(y.RepoWriter, y.Config.Repositories())
 }
 
 func (y *Yum) script(packages []string) (string, error) {

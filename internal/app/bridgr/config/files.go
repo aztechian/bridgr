@@ -4,13 +4,13 @@ import (
 	"net/url"
 	"path"
 	"path/filepath"
-	"strings"
+	"reflect"
+
+	"github.com/docker/distribution/reference"
 )
 
 // Files is the worker implementation for static File repositories
-type Files struct {
-	Items []FileItem
-}
+type Files []FileItem
 
 // FileItem is a discreet file definition object
 type FileItem struct {
@@ -23,56 +23,34 @@ func (f *Files) BaseDir() string {
 	return path.Join(BaseDir(), "files")
 }
 
-// func parseFiles(conf tempConfig) Files {
-//   files := Files{}
-//   for _, val := range conf.Files {
-//     newItem := FileItem{}
-//     var err error
-//     switch o := val.(type) {
-//     case string: //simple string entry
-//       err = newItem.parseSimple(o)
-//     case map[interface{}]interface{}: // complex type
-//       err = newItem.parseComplex(o)
-//     default:
-//       err = fmt.Errorf("Unsupported File type in config - %T", o)
-//     }
-//     if err != nil {
-//       bridgr.Println(err)
-//     } else {
-//       files.Items = append(files.Items, newItem)
-//     }
-//   }
-//   bridgr.Debugf("Final Files configuration %+v", files)
-//   return files
-// }
+func (f *Files) Count() int {
+	return len(*f)
+}
 
-func (f *FileItem) parseSimple(s string) error {
-	url, err := url.Parse(s)
-	if err != nil {
-		return err
-	}
-	// setProtocol(url)
-	f.Source = url
-	f.Target = getFileTarget(s)
+func (f *Files) Image() reference.Named {
 	return nil
 }
 
-func (f *FileItem) parseComplex(s map[interface{}]interface{}) error {
-	source := s["source"].(string)
-	target := s["target"].(string)
-	url, err := url.Parse(source)
-	if err != nil {
-		return err
+func (fi *FileItem) GetTarget() string {
+	src := fi.Target
+	if src == "" {
+		src = fi.Source.EscapedPath()
 	}
-	f.Source = url
-	if strings.HasSuffix(target, "/") {
-		f.Target = filepath.Join(new(Files).BaseDir(), target, filepath.Base(source))
-	} else {
-		f.Target = getFileTarget(target)
-	}
-	return nil
+	return getFileTarget(src)
+}
+
+func NewFileItem(s string) FileItem {
+	url, _ := url.Parse(s)
+	return FileItem{Source: url}
 }
 
 func getFileTarget(src string) string {
 	return filepath.Join(new(Files).BaseDir(), filepath.Base(src))
+}
+
+func stringToFileItem(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.String || t != reflect.TypeOf(FileItem{}) {
+		return data, nil
+	}
+	return NewFileItem(data.(string)), nil
 }

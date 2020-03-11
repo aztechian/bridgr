@@ -1,81 +1,95 @@
 package config
 
 import (
+	"fmt"
 	"path"
+	"reflect"
 
 	"github.com/docker/distribution/reference"
 )
 
+var defaultRbImg reference.Named
+
+const defaultRbSrc = "https://rubygems.org"
+const baseRbImage = "ruby"
+
+func init() {
+	defaultRbImg, _ = reference.ParseNormalizedNamed(baseRbImage + ":2-alpine")
+}
+
 // Ruby struct is the configuration object specifically for the Ruby section of the config file
 type Ruby struct {
-	Items   []RubyItem
+	Gems    []rubyItem
+	Version rubyVersion
 	Sources []string
-	Image   reference.Named
+}
+
+type rubyVersion reference.Named
+
+func NewRuby() *Ruby {
+	return &Ruby{
+		Version: defaultRbImg,
+		Sources: []string{defaultRbSrc},
+	}
 }
 
 // RubyItem is a struct to hold a ruby gem specification
-type RubyItem struct {
+type rubyItem struct {
 	Package string
 	Version string
 }
 
-var defaultRbImg, _ = reference.ParseNormalizedNamed("ruby:2-alpine")
-var defaultRbSrc = "https://rubygems.org"
+func (ri rubyItem) String() string {
+	if ri.Version != "" {
+		return fmt.Sprintf("%s, %s", ri.Package, ri.Version)
+	}
+	return ri.Package
+}
 
 // BaseDir is the top-level directory name for all objects written out under the Python worker
 func (r *Ruby) BaseDir() string {
 	return path.Join(BaseDir(), "ruby")
 }
 
-// func parseRuby(config tempConfig) Ruby {
-// 	rb := Ruby{Image: defaultRbImg}
-// 	switch c := config.Ruby.(type) {
-// 	case []interface{}:
-// 		_ = rb.parsePackages(c)
-// 	case map[interface{}]interface{}:
-// 		var err error
-// 		if _, present := c["version"]; present {
-// 			rb.Image, err = reference.ParseNormalizedNamed("ruby:" + c["version"].(string))
-// 			if err != nil {
-// 				bridgr.Debugf("Error using Ruby image of 'ruby:%s', falling back to %s", c["version"].(string), defaultRbImg.String())
-// 				rb.Image = defaultRbImg
-// 			}
-// 		}
-// 		if sources, present := c["sources"]; present {
-// 			_ = rb.addSources(sources.([]interface{}))
-// 		}
-// 		pkgList := c["gems"].([]interface{})
-// 		_ = rb.parsePackages(pkgList)
-// 	default:
-// 		bridgr.Debugf("Unknown configuration section for Ruby: %+s", c)
-// 	}
-
-// 	if len(rb.Sources) <= 0 {
-// 		rb.Sources = append(rb.Sources, defaultRbSrc)
-// 	}
-// 	bridgr.Debugf("Final Ruby configuration %+v", rb)
-// 	return rb
-// }
-
-func (r *Ruby) parsePackages(pkgList []interface{}) error {
-	for _, pkg := range pkgList {
-		switch pkgObj := pkg.(type) {
-		case string:
-			r.Items = append(r.Items, RubyItem{Package: pkgObj})
-		case map[interface{}]interface{}:
-			item := RubyItem{
-				Package: pkgObj["package"].(string),
-				Version: pkgObj["version"].(string),
-			}
-			r.Items = append(r.Items, item)
-		}
-	}
-	return nil
+func (r *Ruby) Count() int {
+	return len(r.Gems)
 }
 
-func (r *Ruby) addSources(srcList []interface{}) error {
-	for _, src := range srcList {
-		r.Sources = append(r.Sources, src.(string))
+func (r *Ruby) Image() reference.Named {
+	if r.Version == nil {
+		return defaultRbImg
 	}
-	return nil
+	return r.Version
+}
+
+func stringToRuby(t reflect.Type, f reflect.Type, data interface{}) (interface{}, error) {
+	if f == reflect.TypeOf(rubyItem{}) && t.Kind() == reflect.String {
+		return rubyItem{
+			Package: data.(string),
+		}, nil
+	}
+	return data, nil
+}
+
+func versionToRubyImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.String || t != reflect.TypeOf((*rubyVersion)(nil)).Elem() {
+		return data, nil
+	}
+	return reference.ParseAnyReference(baseRbImage + ":" + data.(string))
+}
+
+func arrayToRuby(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.Slice || t != reflect.TypeOf(Ruby{}) {
+		return data, nil
+	}
+	var gemList []rubyItem
+	for _, g := range data.([]interface{}) {
+		gemList = append(gemList, rubyItem{Package: g.(string)})
+	}
+
+	return &Ruby{
+		Version: defaultRbImg,
+		Gems:    gemList,
+		Sources: []string{defaultRbSrc},
+	}, nil
 }

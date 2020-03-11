@@ -33,7 +33,7 @@ type dockerCredential struct {
 func NewDocker(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Docker.BaseDir(), os.ModePerm)
 	cli, _ := client.NewClientWithOpts(client.FromEnv)
-	return &Docker{Config: &conf.Docker, Cli: cli}
+	return &Docker{Config: conf.Docker, Cli: cli}
 }
 
 // Name returns the string name of the Docker struct
@@ -47,7 +47,7 @@ func (d *Docker) Run() error {
 	if setupErr != nil {
 		return setupErr
 	}
-	for _, img := range d.Config.Items {
+	for _, img := range d.Config.Images {
 		if d.Config.Destination != "" {
 			dest := d.tagForRemote(img)
 			err := d.writeRemote(dest, img)
@@ -77,7 +77,7 @@ func (d *Docker) Run() error {
 // Setup gets the environment ready to run the Docker worker
 func (d *Docker) Setup() error {
 	bridgr.Print("Called Docker.Setup()")
-	for _, img := range d.Config.Items {
+	for _, img := range d.Config.Images {
 		bridgr.Debugf("pulling image %s", img.String())
 		err := pullImage(d.Cli, img)
 		if err != nil {

@@ -3,22 +3,14 @@ package config
 import (
 	"net/url"
 	"path"
+	"reflect"
 
+	"github.com/docker/distribution/reference"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
-// // Git is the interface for using a Git configuration
-// type Git interface {
-// 	BaseDir() string
-// 	parseComplex(pkg map[interface{}]interface{}) error
-// 	parseSimple(pkg string) error
-// 	GetItems() []GitItem
-// }
-
 // Git is the struct for holding a Git configuration in Bridgr
-type Git struct {
-	Items []GitItem
-}
+type Git []GitItem
 
 // GitItem is the sub-struct of items in a Git struct
 type GitItem struct {
@@ -28,57 +20,64 @@ type GitItem struct {
 	Tag    plumbing.ReferenceName
 }
 
+func (gi GitItem) String() string {
+	return gi.URL.String()
+}
+
+func (g Git) Count() int {
+	return len(g)
+}
+
+func (g Git) Image() reference.Named {
+	return nil
+}
+
+// NewGitItem creates a new, default GitItem struct
+func NewGitItem(repo string) GitItem {
+	var u *url.URL = nil
+	if len(repo) > 0 {
+		u, _ = url.Parse(repo)
+	}
+	return GitItem{URL: u, Bare: true}
+}
+
 // BaseDir is the top-level directory name for all objects written out under the Python worker
 func (g *Git) BaseDir() string {
 	return path.Join(BaseDir(), "git")
 }
 
-// func parseGit(config tempConfig) Git {
-// 	g := Git{}
-// 	for _, entry := range config.Git {
-// 		var err error
-// 		switch repoObj := entry.(type) {
-// 		case string: //simple string entry
-// 			err = g.parseSimple(repoObj)
-// 		case map[interface{}]interface{}: // complex type
-// 			err = g.parseComplex(repoObj)
-// 		default:
-// 			bridgr.Debugf("Unknown configuration section for Git: %+s", repoObj)
-// 		}
-// 		if err != nil {
-// 			bridgr.Debug(err)
-// 		}
-// 	}
-
-// 	bridgr.Debugf("Final Git configuration %+v", g)
-// 	return g
-// }
-
-func (g *Git) parseComplex(pkg map[interface{}]interface{}) error {
+func (gi *GitItem) parseComplex(pkg map[string]interface{}) error {
 	url, err := url.Parse(pkg["repo"].(string))
 	if err != nil {
 		return err
 	}
-	item := GitItem{URL: url, Bare: true}
+
+	gi.URL = url
 	if bare, present := pkg["bare"]; present {
-		item.Bare = bare.(bool)
+		gi.Bare = bare.(bool)
 	}
 	if branch, present := pkg["branch"]; present {
-		item.Branch = plumbing.NewBranchReferenceName(branch.(string))
+		gi.Branch = plumbing.NewBranchReferenceName(branch.(string))
 	}
 	// branch name wins if both are present in the config
-	if tag, present := pkg["tag"]; present && item.Branch == "" {
-		item.Tag = plumbing.NewTagReferenceName(tag.(string))
+	if tag, present := pkg["tag"]; present && gi.Branch == "" {
+		gi.Tag = plumbing.NewTagReferenceName(tag.(string))
 	}
-	g.Items = append(g.Items, item)
 	return nil
 }
 
-func (g *Git) parseSimple(pkg string) error {
-	url, err := url.Parse(pkg)
-	if err != nil {
-		return err
+func stringToGitItem(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() == reflect.String && t == reflect.TypeOf(GitItem{}) {
+		return NewGitItem(data.(string)), nil
 	}
-	g.Items = append(g.Items, GitItem{URL: url, Bare: true})
-	return nil
+	return data, nil
+}
+
+func mapToGitItem(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() == reflect.Map && t == reflect.TypeOf(GitItem{}) {
+		item := NewGitItem("")
+		_ = item.parseComplex(data.(map[string]interface{}))
+		return item, nil
+	}
+	return data, nil
 }

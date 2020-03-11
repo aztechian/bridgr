@@ -33,7 +33,7 @@ func NewPython(conf *config.BridgrConf) Worker {
 	}
 	bridgr.Debugf("Created %s for writing repo template", reqt.Name())
 	return &Python{
-		Config:     &conf.Python,
+		Config:     conf.Python,
 		ReqtWriter: reqt,
 		PackageMount: mount.Mount{
 			Type:   mount.TypeBind,
@@ -46,7 +46,7 @@ func NewPython(conf *config.BridgrConf) Worker {
 			Target: "/requirements.txt",
 		},
 		ContainerConfig: &container.Config{
-			Image:        conf.Python.Image.String(),
+			Image:        conf.Python.Image().String(),
 			Cmd:          []string{"/bin/bash", "-"},
 			Tty:          false,
 			OpenStdin:    true,
@@ -97,7 +97,7 @@ func (p *Python) writeRequirements() error {
 	}
 	defer p.ReqtWriter.Close()
 	tmpl, _ := template.New("pythonreqt").Parse(reqtTmpl)
-	return tmpl.Execute(p.ReqtWriter, p.Config.Items)
+	return tmpl.Execute(p.ReqtWriter, p.Config.Packages)
 }
 
 func (p *Python) script() (string, error) {

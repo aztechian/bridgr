@@ -1,53 +1,68 @@
 package config
 
 import (
-	"github.com/davecgh/go-spew/spew"
+	"bridgr/internal/app/bridgr"
 	"io"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"path"
+	"reflect"
 
-	"gopkg.in/yaml.v3"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/docker/distribution/reference"
+
 	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v3"
+)
+
+var decodeHooks = mapstructure.ComposeDecodeHookFunc(
+	debugHook,
+	versionToRubyImage,
+	versionToYumImage,
+	versionToPythonImage,
+	stringToImage,
+	stringToURL,
+	stringToGitItem,
+	stringToFileItem,
+	stringToRuby,
+	arrayToRuby,
+	arrayToPython,
+	arrayToYum,
+	mapToImage,
+	mapToGitItem,
 )
 
 // BridgrConf is the in-memory representation of the provided YAML config file
 //
 type BridgrConf struct {
-	Yum      Yum
-	Files    Files
-	Ruby     Ruby
-	Python   Python
-	Jenkins  interface{}
-	Docker   Docker
-	Npm      interface{}
-	Maven    interface{}
-	Git      Git
-	Settings interface{}
+	Yum      *Yum
+	Files    *Files
+	Ruby     *Ruby
+	Python   *Python
+	Jenkins  *Jenkins
+	Docker   *Docker
+	Npm      *Npm
+	Maven    *Maven
+	Git      *Git
+	Settings *Settings
 }
 
-// type tempConfig struct {
-// 	Yum      interface{}
-// 	Files    []interface{}
-// 	Ruby     interface{}
-// 	Python   interface{}
-// 	Jenkins  interface{}
-// 	Docker   interface{}
-// 	Npm      interface{}
-// 	Maven    []interface{}
-// 	Git      []interface{}
-// 	Settings []interface{}
-// }
+// place holders for types until they get implemented
 
-// Helper interface translates top-level config file sections into normalized structs for use by workers
-// type Helper interface {
-// 	parse(BridgrConf) (interface{}, error)
-// }
+type Jenkins interface{}
+type Npm interface{}
+type Maven interface{}
+type Settings interface{}
+
+type Imager interface {
+	Image() reference.Named
+}
 
 // New is a factory method that instantiates and populates a BridgrConf object
 func New(f io.ReadCloser) (*BridgrConf, error) {
-	var c BridgrConf
+	c := BridgrConf{}
 	confData, err := ioutil.ReadAll(f)
 	defer f.Close()
 	if err != nil {
@@ -55,21 +70,20 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 		return &c, err
 	}
 
-	var temp = make([]interface{}, 1)
-	// temp := tempConfig{}
+	var temp map[string]interface{}
 	err = yaml.Unmarshal(confData, &temp)
 	if err != nil {
 		return &c, err
 	}
 
-	mapstructure.Decode(temp, &c)
+	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		DecodeHook:       decodeHooks,
+		WeaklyTypedInput: true,
+		Result:           &c,
+		ZeroFields:       true,
+	})
+	decoder.Decode(temp)
 	spew.Dump(c)
-	// c.Files = parseFiles(temp)
-	// c.Yum = parseYum(temp)
-	// c.Docker = parseDocker(temp)
-	// c.Python = parsePython(temp)
-	// c.Ruby = parseRuby(temp)
-	// c.Git = parseGit(temp)
 	return &c, nil
 }
 
@@ -78,4 +92,23 @@ func New(f io.ReadCloser) (*BridgrConf, error) {
 func BaseDir() string {
 	var cwd, _ = os.Getwd()
 	return path.Join(cwd, "packages")
+}
+
+func stringToImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.String || t != reflect.TypeOf((*reference.Reference)(nil)).Elem() {
+		return data, nil
+	}
+	return reference.ParseNormalizedNamed(data.(string))
+}
+
+func stringToURL(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.String || t != reflect.TypeOf(&url.URL{}) {
+		return data, nil
+	}
+	return url.Parse(data.(string))
+}
+
+func debugHook(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	bridgr.Debugf("%s -> %s\n%s\n\n", f, t, data)
+	return data, nil
 }

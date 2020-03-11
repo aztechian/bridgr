@@ -24,7 +24,7 @@ type Files struct {
 func NewFiles(conf *config.BridgrConf) Worker {
 	_ = os.MkdirAll(conf.Files.BaseDir(), os.ModePerm)
 	return &Files{
-		Config: &conf.Files,
+		Config: conf.Files,
 		HTTP: &http.Client{
 			// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
 			Transport: &http.Transport{
@@ -51,10 +51,10 @@ func (f *Files) Run() error {
 	if setupErr != nil {
 		return setupErr
 	}
-	for _, item := range f.Config.Items {
+	for _, item := range *f.Config {
 		var err error
-		_ = os.MkdirAll(path.Dir(item.Target), os.ModePerm)
-		out, err := os.Create(item.Target)
+		_ = os.MkdirAll(path.Dir(item.GetTarget()), os.ModePerm)
+		out, err := os.Create(item.GetTarget())
 		if err != nil {
 			bridgr.Printf("Unable to create target: %s", err)
 			continue
