@@ -21,6 +21,7 @@ in place Bridgr can allow:
 
 - CM control of artifacts - without necessarily needing the space to physically store them
 - DevOps and pipeline friendly-ness
+- Software supply chain protection (reduces chance of picking up [typosquatting](https://en.wikipedia.org/wiki/Typosquatting) packages)
 - Review of changes to artifacts by security teams or CM _before_ the artifact makes it to the target network
 - Static website hosting of artifacts on the target network (with metadata, so repositories like YUM and Rubygems work)
 - Support for multiple output formats - local filesystem, object storage, DVD image(?)
