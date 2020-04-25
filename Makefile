@@ -5,7 +5,7 @@ VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 
 .SUFFIXES:
-.PHONY: all coverage lint test race x2unit xunit clean generate download
+.PHONY: all coverage lint test race x2unit xunit clean generate download locallint cilint
 
 ifeq ($(GOOS), linux)
 PROJECT_NAME := $(PROJECT_NAME)-Linux
@@ -19,12 +19,17 @@ all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
 
 ifeq ($(TRAVIS),)
 coverage: html
+lint: locallint
 else
 coverage: coverage.out
+lint: cilint
 endif
 
-lint:
-	@golint --set_exit_status ./...
+locallint:
+	@golangci-lint run
+
+cilint:
+	@golangci-lint run --out-format=code-climate  --issues-exit-code=0 --new-from-rev=HEAD~1 > code-quality-report.json
 
 test:
 	@go test -short ./...
@@ -52,7 +57,7 @@ run:
 	@go run $(CMD) -c config/example.yml
 
 clean:
-	@rm -rf internal/app/bridgr/assets/templates.go coverage.out packages tests.xml tests.out coverage.out *.sha256 main $(PKG)
+	@rm -rf internal/bridgr/asset/templates.go coverage.out packages tests.xml tests.out coverage.out *.sha256 main code-quality-report.json $(PKG)
 	@docker rm --force bridgr_yum bridgr_python bridgr_ruby &> /dev/null || true
 
 generate: $(GO_FILES)
