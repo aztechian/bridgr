@@ -129,7 +129,11 @@ func (d *Docker) Setup() error {
 	return nil
 }
 
-func (d *Docker) writeLocal(cli *client.Client, out io.WriteCloser, in reference.Named) error {
+type imageSaver interface {
+	ImageSave(ctx context.Context, images []string) (io.ReadCloser, error)
+}
+
+func (d *Docker) writeLocal(cli imageSaver, out io.WriteCloser, in reference.Named) error {
 	ctx := context.Background()
 	reader, err := cli.ImageSave(ctx, []string{in.String()})
 	if err != nil {
@@ -138,13 +142,14 @@ func (d *Docker) writeLocal(cli *client.Client, out io.WriteCloser, in reference
 	defer reader.Close()
 	defer out.Close()
 	_, err = io.Copy(out, reader)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
-func (d *Docker) writeRemote(cli *client.Client, remote string, in reference.Named) error {
+type imagePusher interface {
+	ImagePush(ctx context.Context, ref string, options types.ImagePushOptions) (io.ReadCloser, error)
+}
+
+func (d *Docker) writeRemote(cli imagePusher, remote string, in reference.Named) error {
 	writer := ioutil.Discard
 	if Verbose {
 		writer = os.Stderr
@@ -158,10 +163,14 @@ func (d *Docker) writeRemote(cli *client.Client, remote string, in reference.Nam
 	return err
 }
 
-func (d *Docker) tagForRemote(cli *client.Client, local reference.Named) string {
+type imageTagger interface {
+	ImageTag(ctx context.Context, image, ref string) error
+}
+
+func (d *Docker) tagForRemote(cli imageTagger, local reference.Named) string {
 	destReg := d.Destination
 	remoteTag := strings.Replace(local.String(), reference.Domain(local), destReg, -1)
 
-	_ = cli.ImageTag(context.Background(), local.Name(), remoteTag)
+	_ = cli.ImageTag(context.Background(), local.String(), remoteTag)
 	return remoteTag
 }

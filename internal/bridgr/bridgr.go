@@ -53,13 +53,13 @@ func PullImage(cli ImagePuller, image reference.Named) error {
 	creds := &DockerCredential{}
 	dockerAuth(image, creds)
 	output, err := cli.ImagePull(context.Background(), image.String(), types.ImagePullOptions{RegistryAuth: creds.String()})
-	defer output.Close()
+	defer output.Close() // nolint
 	if err != nil {
 		return err
 	}
 
-	_, _ = io.Copy(writer(), output) // must wait for output before returning
-	return nil
+	_, err = io.Copy(writer(), output) // must wait for output before returning
+	return err
 }
 
 func dockerAuth(image reference.Named, rw CredentialReaderWriter) {

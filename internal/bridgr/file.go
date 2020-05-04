@@ -45,7 +45,7 @@ func (f File) dir() string {
 
 // Normalize sets the FileItems' Target filed to the proper destination string
 func (fi FileItem) Normalize() string {
-	return filepath.Join(BaseDir("files"), filepath.Base(fi.Source.String()))
+	return filepath.Join(BaseDir("files"), fi.Target, filepath.Base(fi.Source.String()))
 }
 
 // Fetch gets a FileItem from it's source and writes it to the destination

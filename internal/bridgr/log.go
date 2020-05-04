@@ -59,7 +59,8 @@ func Debug(v ...interface{}) {
 	}
 }
 
-// Log prints out HTTP server logs in CLF (Common Log Format), typical for HTTP servers (ie, Apache)
+// Log prints out HTTP server logs in CLF (Common Log Format), typical for HTTP servers (ie, Apache).
+// To log output to somewhere besides stdout, set bridgr.Out to the desired io.Writer object before calling Log.
 func Log(format string, v ...interface{}) {
 	if !strings.HasSuffix(format, "\n") {
 		format = format + "\n"
