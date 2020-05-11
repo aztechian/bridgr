@@ -43,5 +43,8 @@ func TestPullImage(t *testing.T) {
 	cli := fakeCLI{}
 	img, _ := reference.ParseNormalizedNamed("nginx:2")
 	cli.On("ImagePull", context.Background(), img.String(), types.ImagePullOptions{}).Return(ioutil.NopCloser(bytes.NewReader([]byte("hello world"))), nil)
-	bridgr.PullImage(&cli, img)
+	err := bridgr.PullImage(&cli, img)
+	if err != nil {
+		t.Error(err)
+	}
 }

@@ -38,6 +38,14 @@ type FileItem struct {
 	Target string
 }
 
+type fetcher interface {
+	httpFetch(*http.Client, string, io.WriteCloser, Credential) error
+	ftpFetch(string, io.WriteCloser, Credential) error
+	fileFetch(string, io.WriteCloser) error
+}
+
+type fileFetcher struct{}
+
 // BaseDir is the top-level directory name for all objects written out under the Files worker
 func (f File) dir() string {
 	return BaseDir(f.Name())
@@ -49,23 +57,18 @@ func (fi FileItem) Normalize() string {
 }
 
 // Fetch gets a FileItem from it's source and writes it to the destination
-func (fi *FileItem) Fetch() error {
-	fi.Target = fi.Normalize()
-	out, err := os.Create(fi.Target)
-	if err != nil {
-		return err
-	}
-	creds, ok := new(WorkerCredentialReader).Read(fi.Source)
+func (fi *FileItem) fetch(fetcher fetcher, cr CredentialReader, output io.WriteCloser) error {
+	creds, ok := cr.Read(fi.Source)
 	if ok {
 		Debugf("Found credentials for File %s", fi.Source.String())
 	}
 	switch fi.Source.Scheme {
 	case "http", "https":
-		return httpFetch(httpClient, fi.Source.String(), out, creds)
+		return fetcher.httpFetch(httpClient, fi.Source.String(), output, creds)
 	case "ftp":
-		return ftpFetch(fi.Source.String(), out, creds)
+		return fetcher.ftpFetch(fi.Source.String(), output, creds)
 	case "file", "":
-		return fileFetch(fi.Source.String(), out)
+		return fetcher.fileFetch(fi.Source.String(), output)
 	default:
 		Printf("unsupported FileItem schema: %s, from %s", fi.Source.Scheme, fi.Source)
 	}
@@ -86,8 +89,8 @@ func stringToFileItem(f reflect.Type, t reflect.Type, data interface{}) (interfa
 	if f.Kind() != reflect.String || t != reflect.TypeOf(FileItem{}) {
 		return data, nil
 	}
-	url, _ := url.Parse(data.(string))
-	return FileItem{Source: url}, nil
+	url, err := url.Parse(data.(string))
+	return FileItem{Source: url}, err
 }
 
 // Hook implements the Parser interface, returns a function for use by mapstructure when parsing config files
@@ -102,10 +105,17 @@ func (f File) Run() error {
 	if err := f.Setup(); err != nil {
 		return err
 	}
+	credentials := WorkerCredentialReader{}
+	fetcher := fileFetcher{}
 	for _, item := range f {
-		if err := item.Fetch(); err != nil {
+		out, createErr := os.Create(item.Target)
+		if createErr != nil {
+			Printf("Unable to create local file %s (for %s)", item.Target, item.Source.String())
+			continue
+		}
+		if err := item.fetch(&fetcher, &credentials, out); err != nil {
 			Printf("Files '%s' - %+s", item.Source.String(), err)
-			_ = os.Remove(item.Normalize())
+			_ = os.Remove(item.Target)
 		}
 	}
 	return nil
@@ -115,36 +125,37 @@ func (f File) Run() error {
 func (f File) Setup() error {
 	Debug("Called Files.Setup()")
 	_ = os.MkdirAll(f.dir(), os.ModePerm)
-	return nil
-}
-
-func fileFetch(source string, out io.WriteCloser) error {
-	if in, openErr := os.Open(source); openErr == nil {
-		Debugf("Copying local file: %s", source)
-		defer out.Close()
-		defer in.Close()
-		_, err := io.Copy(out, in)
-		if err != nil {
-			return err
-		}
-	} else {
-		return openErr
+	for _, item := range f {
+		item.Target = item.Normalize()
 	}
 	return nil
 }
 
-func ftpFetch(source string, out io.WriteCloser, creds Credential) error {
+func (ff *fileFetcher) fileFetch(source string, out io.WriteCloser) error {
+	in, openErr := os.Open(source)
+	if openErr != nil {
+		return openErr
+	}
+
+	Debugf("Copying local file: %s", source)
+	defer out.Close()
+	defer in.Close()
+	_, err := io.Copy(out, in)
+	return err
+}
+
+func (ff *fileFetcher) ftpFetch(source string, out io.WriteCloser, creds Credential) error {
 	defer out.Close()
 	Debugf("Downloading FTP file: %s", source)
 	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", source)
 }
 
-func httpFetch(httpClient *http.Client, url string, out io.WriteCloser, creds Credential) error {
+func (ff *fileFetcher) httpFetch(httpClient *http.Client, source string, out io.WriteCloser, creds Credential) error {
 	// Get the data
 	defer out.Close()
 
-	Debugf("Downloading HTTP/S file: %s", url)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	Debugf("Downloading HTTP/S file: %s", source)
+	req, err := http.NewRequest(http.MethodGet, source, nil)
 	if err != nil {
 		return err
 	}

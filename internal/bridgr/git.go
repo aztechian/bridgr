@@ -58,7 +58,7 @@ func (g Git) dir() string {
 
 // Name returns the name of this Configuration
 func (g Git) Name() string {
-	return "yum"
+	return "git"
 }
 
 func (gi *GitItem) parseComplex(pkg map[interface{}]interface{}) error {
