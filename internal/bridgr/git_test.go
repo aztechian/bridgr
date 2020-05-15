@@ -2,6 +2,8 @@ package bridgr_test
 
 import (
 	"net/url"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
@@ -28,6 +30,14 @@ func TestGitItemString(t *testing.T) {
 	git := bridgr.GitItem{URL: src}
 	if !cmp.Equal(git.String(), expect) {
 		t.Error(cmp.Diff(git.String(), expect))
+	}
+}
+
+func TestGitHook(t *testing.T) {
+	git := bridgr.Git{}
+	result := reflect.TypeOf(git.Hook())
+	if strings.HasPrefix(result.Name(), "func(") {
+		t.Error(cmp.Diff(result.Name(), reflect.Func))
 	}
 }
 
