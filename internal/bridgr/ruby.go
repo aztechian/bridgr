@@ -86,11 +86,10 @@ func arrayToRuby(f reflect.Type, t reflect.Type, data interface{}) (interface{},
 	}
 	var gemList []rubyItem
 	for _, g := range data.([]interface{}) {
-		fmt.Print("here")
 		gemList = append(gemList, rubyItem{Package: g.(string)})
 	}
 
-	return &Ruby{
+	return Ruby{
 		Version: rbImage,
 		Sources: []string{defaultRbSource},
 		Gems:    gemList,

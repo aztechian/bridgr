@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/aztechian/bridgr/internal/bridgr/asset"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 )
@@ -57,6 +58,7 @@ func (p Python) Name() string {
 }
 
 func versionToPythonImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	spew.Dump(t)
 	if t != reflect.TypeOf((*pythonVersion)(nil)).Elem() {
 		return data, nil
 	}
@@ -77,7 +79,7 @@ func arrayToPython(f reflect.Type, t reflect.Type, data interface{}) (interface{
 	for _, p := range data.([]interface{}) {
 		pkgs = append(pkgs, pythonPackage{Package: p.(string)})
 	}
-	return &Python{
+	return Python{
 		Version:  pyImage,
 		Sources:  []string{defaultPySource},
 		Packages: pkgs,

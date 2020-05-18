@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/mock"
 )
@@ -42,6 +43,11 @@ func (mfi *fakeFetcher) ftpFetch(source string, out io.WriteCloser, creds Creden
 
 func (mfi *fakeFetcher) fileFetch(source string, out io.WriteCloser) error {
 	args := mfi.Called(source, out)
+	return args.Error(0)
+}
+
+func (mfi *fakeFetcher) s3Fetch(client *s3.S3, source *url.URL, out io.WriteCloser, cred Credential) error {
+	args := mfi.Called(client, source, out, cred)
 	return args.Error(0)
 }
 

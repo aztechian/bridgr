@@ -35,6 +35,14 @@ func (mgcrw *MockGitCredentailRW) Read(url *url.URL) (Credential, bool) {
 	return Credential{Username: mgcrw.user, Password: mgcrw.pass}, true
 }
 
+func TestGitDir(t *testing.T) {
+	expected := BaseDir("git")
+	result := Git{}.dir()
+	if !cmp.Equal(result, expected) {
+		t.Error(cmp.Diff(result, expected))
+	}
+}
+
 func TestGitPrepDir(t *testing.T) {
 	baseDir := BaseDir("git")
 	tests := []struct {
