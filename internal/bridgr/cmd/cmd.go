@@ -83,8 +83,7 @@ func decode(p bridgr.Configuration, configSection interface{}) error {
 		Result:           p,
 		ZeroFields:       true,
 	})
-	err := decoder.Decode(configSection)
-	return err
+	return decoder.Decode(configSection)
 }
 
 func stringToImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
