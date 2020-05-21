@@ -88,8 +88,8 @@ func TestNewBatch(t *testing.T) {
 
 	result := newBatch("george", "michael", "george michael", "bluth")
 
-	if !cmp.Equal(result, expect, cmpopts.IgnoreFields(result, "Client")) {
-		t.Error(cmp.Diff(result, expect))
+	if !cmp.Equal(expect, result, cmpopts.IgnoreFields(result, "Client")) {
+		t.Error(cmp.Diff(expect, result))
 	}
 }
 

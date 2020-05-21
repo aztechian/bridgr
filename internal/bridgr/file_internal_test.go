@@ -70,8 +70,8 @@ func TestStringToFileItem(t *testing.T) {
 			if err == nil && test.expect == nil {
 				t.Errorf("Expected an error, but got %+v", err)
 			}
-			if test.expect != nil && !cmp.Equal(result, test.expect) {
-				t.Error(cmp.Diff(result, test.expect))
+			if test.expect != nil && !cmp.Equal(test.expect, result) {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
@@ -80,8 +80,8 @@ func TestStringToFileItem(t *testing.T) {
 func TestFilesDir(t *testing.T) {
 	expected := BaseDir("files")
 	result := File{}.dir()
-	if !cmp.Equal(result, expected) {
-		t.Error(cmp.Diff(result, expected))
+	if !cmp.Equal(expected, result) {
+		t.Error(cmp.Diff(expected, result))
 	}
 }
 

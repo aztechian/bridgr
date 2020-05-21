@@ -65,17 +65,15 @@ func versionToYumImage(f reflect.Type, t reflect.Type, data interface{}) (interf
 	return data, nil
 }
 
-func arrayToYum(t reflect.Type, f reflect.Type, data interface{}) (interface{}, error) {
-	if f != reflect.TypeOf(Yum{}) {
+func arrayToYum(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.Slice || t != reflect.TypeOf(Yum{}) {
 		return data, nil
 	}
-	if t.Kind() != reflect.Slice && t.Elem().Kind() != reflect.String {
-		return data, nil
-	}
-
 	var pkgList []string
 	for _, pkg := range data.([]interface{}) {
-		pkgList = append(pkgList, pkg.(string))
+		if pkg, ok := pkg.(string); ok {
+			pkgList = append(pkgList, pkg)
+		}
 	}
 	return Yum{
 		Version:  yumImage,

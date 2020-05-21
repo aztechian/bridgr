@@ -11,8 +11,8 @@ import (
 func TestPythonDir(t *testing.T) {
 	expected := BaseDir("python")
 	result := Python{}.dir()
-	if !cmp.Equal(result, expected) {
-		t.Error(cmp.Diff(result, expected))
+	if !cmp.Equal(expected, result) {
+		t.Error(cmp.Diff(expected, result))
 	}
 }
 
@@ -41,8 +41,8 @@ func TestVersionToPythonImage(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
@@ -73,8 +73,8 @@ func TestArrayToPython(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}

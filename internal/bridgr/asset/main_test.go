@@ -57,8 +57,8 @@ func TestRender(t *testing.T) {
 	tmpl, _ := template.New("example").Parse(exampleTemplate)
 	result := bytes.Buffer{}
 	asset.Render(tmpl, "Such", &result)
-	if !cmp.Equal(result.String(), expected) {
-		t.Error(cmp.Diff(result.String(), expected))
+	if !cmp.Equal(expected, result.String()) {
+		t.Error(cmp.Diff(expected, result.String()))
 	}
 }
 
@@ -68,7 +68,7 @@ func TestRenderFile(t *testing.T) {
 	buffer := bytes.Buffer{}
 	result := myWriteCloser{&buffer}
 	asset.RenderFile(tmpl, "Such", &result)
-	if !cmp.Equal(buffer.String(), expected) {
-		t.Error(cmp.Diff(buffer.String(), expected))
+	if !cmp.Equal(expected, buffer.String()) {
+		t.Error(cmp.Diff(expected, buffer.String()))
 	}
 }

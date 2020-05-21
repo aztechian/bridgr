@@ -11,8 +11,8 @@ import (
 func TestRubyDir(t *testing.T) {
 	expected := BaseDir("ruby")
 	result := Ruby{}.dir()
-	if !cmp.Equal(result, expected) {
-		t.Error(cmp.Diff(result, expected))
+	if !cmp.Equal(expected, result) {
+		t.Error(cmp.Diff(expected, result))
 	}
 }
 
@@ -40,8 +40,8 @@ func TestVersionToRubyImage(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
@@ -68,8 +68,8 @@ func TestStringToRuby(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
@@ -99,8 +99,8 @@ func TestArrayToRuby(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
@@ -120,8 +120,8 @@ func TestRubyItemString(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			result := test.input.String()
-			if !cmp.Equal(result, test.expect) {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result) {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}

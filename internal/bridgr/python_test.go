@@ -28,9 +28,10 @@ func TestPythonImage(t *testing.T) {
 }
 
 func TestPythonName(t *testing.T) {
+	expected := "python"
 	python := bridgr.Python{}
-	if !cmp.Equal(python.Name(), "python") {
-		t.Errorf(cmp.Diff(python.Name(), "python"))
+	if !cmp.Equal(expected, python.Name()) {
+		t.Errorf(cmp.Diff(expected, python.Name()))
 	}
 }
 

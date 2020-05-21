@@ -64,8 +64,8 @@ func (r Ruby) Name() string {
 	return "ruby"
 }
 
-func stringToRuby(t reflect.Type, f reflect.Type, data interface{}) (interface{}, error) {
-	if f == reflect.TypeOf(rubyItem{}) && t.Kind() == reflect.String {
+func stringToRuby(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if t == reflect.TypeOf(rubyItem{}) && f.Kind() == reflect.String {
 		return rubyItem{
 			Package: data.(string),
 		}, nil
@@ -86,7 +86,9 @@ func arrayToRuby(f reflect.Type, t reflect.Type, data interface{}) (interface{},
 	}
 	var gemList []rubyItem
 	for _, g := range data.([]interface{}) {
-		gemList = append(gemList, rubyItem{Package: g.(string)})
+		if pkg, ok := g.(string); ok {
+			gemList = append(gemList, rubyItem{Package: pkg})
+		}
 	}
 
 	return Ruby{

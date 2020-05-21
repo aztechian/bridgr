@@ -74,8 +74,8 @@ func TestDockerAuth(t *testing.T) {
 			result := &copy
 
 			dockerAuth(test.image, result)
-			if !cmp.Equal(result, test.expect) {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result) {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}

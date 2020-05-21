@@ -13,20 +13,21 @@ import (
 func TestYumImage(t *testing.T) {
 	dflt, _ := reference.ParseNormalizedNamed("centos:7")
 	yum := bridgr.Yum{}
-	if !cmp.Equal(yum.Image(), dflt, namedComparer) {
-		t.Error(cmp.Diff(yum.Image(), dflt))
+	if !cmp.Equal(dflt, yum.Image(), namedComparer) {
+		t.Error(cmp.Diff(dflt, yum.Image()))
 	}
 
 	yum2 := bridgr.Yum{Version: dflt}
-	if !cmp.Equal(yum2.Image(), dflt, namedComparer) {
-		t.Error(cmp.Diff(yum2.Image(), dflt))
+	if !cmp.Equal(dflt, yum2.Image(), namedComparer) {
+		t.Error(cmp.Diff(dflt, yum2.Image()))
 	}
 }
 
 func TestYumName(t *testing.T) {
+	expected := "yum"
 	yum := bridgr.Yum{}
-	if !cmp.Equal(yum.Name(), "yum") {
-		t.Errorf(cmp.Diff(yum.Name(), "yum"))
+	if !cmp.Equal(expected, yum.Name()) {
+		t.Errorf(cmp.Diff(expected, yum.Name()))
 	}
 }
 

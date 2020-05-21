@@ -19,9 +19,10 @@ func TestFileImage(t *testing.T) {
 }
 
 func TestFileName(t *testing.T) {
+	expected := "files"
 	file := bridgr.File{}
-	if !cmp.Equal(file.Name(), "files") {
-		t.Errorf(cmp.Diff(file.Name(), "files"))
+	if !cmp.Equal(expected, file.Name()) {
+		t.Errorf(cmp.Diff(expected, file.Name()))
 	}
 }
 
@@ -49,8 +50,8 @@ func TestFileNormalize(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			expect := path.Join(bridgr.BaseDir("files"), test.expect)
 			result := test.item.Normalize()
-			if !cmp.Equal(result, expect) {
-				t.Error(cmp.Diff(result, expect))
+			if !cmp.Equal(expect, result) {
+				t.Error(cmp.Diff(expect, result))
 			}
 		})
 	}

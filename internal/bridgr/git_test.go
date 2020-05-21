@@ -18,9 +18,10 @@ func TestGitImage(t *testing.T) {
 }
 
 func TestGitName(t *testing.T) {
+	expected := "git"
 	git := bridgr.Git{}
-	if !cmp.Equal(git.Name(), "git") {
-		t.Errorf(cmp.Diff(git.Name(), "git"))
+	if !cmp.Equal(expected, git.Name()) {
+		t.Errorf(cmp.Diff(expected, git.Name()))
 	}
 }
 
@@ -37,7 +38,7 @@ func TestGitHook(t *testing.T) {
 	git := bridgr.Git{}
 	result := reflect.TypeOf(git.Hook())
 	if strings.HasPrefix(result.Name(), "func(") {
-		t.Error(cmp.Diff(result.Name(), reflect.Func))
+		t.Error(cmp.Diff(reflect.Func, result.Name()))
 	}
 }
 
@@ -46,13 +47,13 @@ func TestGetNew(t *testing.T) {
 
 	g := bridgr.NewGitItem(src.String())
 	expect := bridgr.GitItem{URL: src, Bare: true}
-	if !cmp.Equal(g, expect) {
-		t.Error(cmp.Diff(g, expect))
+	if !cmp.Equal(expect, g) {
+		t.Error(cmp.Diff(expect, g))
 	}
 
 	g2 := bridgr.NewGitItem("")
 	expect2 := bridgr.GitItem{URL: nil, Bare: true}
-	if !cmp.Equal(g2, expect2) {
-		t.Error(cmp.Diff(g2, expect2))
+	if !cmp.Equal(expect2, g2) {
+		t.Error(cmp.Diff(expect2, g2))
 	}
 }

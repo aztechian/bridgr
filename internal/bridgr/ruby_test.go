@@ -13,20 +13,21 @@ import (
 func TestRubyImage(t *testing.T) {
 	dflt, _ := reference.ParseNormalizedNamed("ruby:2-alpine")
 	ruby := bridgr.Ruby{}
-	if !cmp.Equal(ruby.Image(), dflt, namedComparer) {
-		t.Error(cmp.Diff(ruby.Image(), dflt))
+	if !cmp.Equal(dflt, ruby.Image(), namedComparer) {
+		t.Error(cmp.Diff(dflt, ruby.Image()))
 	}
 
 	rb := bridgr.Ruby{Version: dflt}
-	if !cmp.Equal(rb.Image(), dflt, namedComparer) {
-		t.Error(cmp.Diff(rb.Image(), dflt))
+	if !cmp.Equal(dflt, rb.Image(), namedComparer) {
+		t.Error(cmp.Diff(dflt, rb.Image()))
 	}
 }
 
 func TestRubyName(t *testing.T) {
+	expected := "ruby"
 	ruby := bridgr.Ruby{}
-	if !cmp.Equal(ruby.Name(), "ruby") {
-		t.Errorf(cmp.Diff(ruby.Name(), "ruby"))
+	if !cmp.Equal(expected, ruby.Name()) {
+		t.Errorf(cmp.Diff(expected, ruby.Name()))
 	}
 }
 

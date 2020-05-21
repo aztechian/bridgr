@@ -38,8 +38,8 @@ func (mgcrw *MockGitCredentailRW) Read(url *url.URL) (Credential, bool) {
 func TestGitDir(t *testing.T) {
 	expected := BaseDir("git")
 	result := Git{}.dir()
-	if !cmp.Equal(result, expected) {
-		t.Error(cmp.Diff(result, expected))
+	if !cmp.Equal(expected, result) {
+		t.Error(cmp.Diff(expected, result))
 	}
 }
 
@@ -184,8 +184,8 @@ func TestMapToGitItem(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
@@ -213,8 +213,8 @@ func TestStringToGitItem(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !cmp.Equal(result, test.expect, namedComparer) && !test.isError {
-				t.Error(cmp.Diff(result, test.expect))
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
 			}
 		})
 	}
