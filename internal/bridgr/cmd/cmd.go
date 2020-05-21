@@ -10,7 +10,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v1"
+	"gopkg.in/yaml.v3"
 )
 
 // Bridgr needs documentation
@@ -27,8 +27,7 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 	}
 
 	var temp map[string]interface{}
-	err = yaml.Unmarshal(confData, &temp)
-	if err != nil {
+	if err = yaml.Unmarshal(confData, &temp); err != nil {
 		return &c, err
 	}
 
@@ -49,8 +48,12 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 			section = &bridgr.Git{}
 		default:
 			bridgr.Printf("Unable to create repository \"%s\", skipping.", key)
+			continue
 		}
-		decode(section, cfg)
+		err = decode(section, cfg)
+		if err != nil {
+			bridgr.Printf("error decoding section \"%s\": %s", key, err)
+		}
 		c = append(c, section)
 	}
 	bridgr.Debug(spew.Sdump(c))
@@ -59,7 +62,6 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 
 // Execute runs the specified workers from the configuration
 func Execute(config Bridgr, filter []string) error {
-	// workers := filterWorkers(workers, filter)
 	for _, w := range config {
 		bridgr.Printf("Processing %s...", w.Name())
 		var err error
