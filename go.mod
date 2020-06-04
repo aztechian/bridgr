@@ -15,7 +15,7 @@ require (
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/mitchellh/mapstructure v1.2.2
+	github.com/mitchellh/mapstructure v1.3.1
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect

@@ -51,9 +51,31 @@ func mapToImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, 
 	return data, nil
 }
 
+func arrayToDocker(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+	if f.Kind() != reflect.Slice || t != reflect.TypeOf(Docker{}) {
+		return data, nil
+	}
+
+	var images []reference.Named
+	for _, g := range data.([]interface{}) {
+		if pkg, ok := g.(string); ok {
+			img, err := reference.ParseNormalizedNamed(pkg)
+			if err != nil {
+				continue
+			}
+			images = append(images, img)
+		}
+	}
+
+	return Docker{
+		Images: images,
+	}, nil
+}
+
 // Hook implements the Parser interface, returns a function for use by mapstructure when parsing config files
 func (d *Docker) Hook() mapstructure.DecodeHookFunc {
 	return mapstructure.ComposeDecodeHookFunc(
+		arrayToDocker,
 		mapToImage,
 	)
 }

@@ -26,6 +26,13 @@ var (
 	defaultError    = fmt.Errorf("Gene Parmesean")
 )
 
+func dockerMust(ref reference.Named, err error) reference.Named {
+	if err != nil {
+		panic(err)
+	}
+	return ref
+}
+
 type dockMock struct {
 	mock.Mock
 }
@@ -43,6 +50,37 @@ func (d *dockMock) ImageTag(ctx context.Context, image, ref string) error {
 func (d *dockMock) ImageSave(ctx context.Context, images []string) (io.ReadCloser, error) {
 	args := d.Called(ctx, images)
 	return args.Get(0).(io.ReadCloser), args.Error(1)
+}
+
+func TestArrayToDocker(t *testing.T) {
+	imageSrc := []interface{}{"cinco:5.4", "norman-md", "bluth.com/cinco/cuatro:latest"}
+	images := []reference.Named{dockerMust(reference.ParseNormalizedNamed("cinco:5.4")), dockerMust(reference.ParseNormalizedNamed("norman-md")), dockerMust(reference.ParseNormalizedNamed("bluth.com/cinco/cuatro:latest"))}
+	tests := []struct {
+		name    string
+		target  reflect.Type
+		input   interface{}
+		isError bool
+		expect  interface{}
+	}{
+		{"invalid type", reflect.TypeOf(""), "", false, ""},
+		{"valid", reflect.TypeOf(Docker{}), imageSrc, false, Docker{Images: images}},
+		{"error parsing", reflect.TypeOf(Docker{}), []interface{}{`\/.`}, false, Docker{}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result, err := arrayToDocker(reflect.TypeOf(test.input), test.target, test.input)
+			if test.isError && err != nil {
+				return
+			}
+			if err != nil {
+				t.Error(err)
+			}
+			if !cmp.Equal(test.expect, result, namedComparer) && !test.isError {
+				t.Error(cmp.Diff(test.expect, result))
+			}
+		})
+	}
 }
 
 func TestDockerMapToImage(t *testing.T) {
