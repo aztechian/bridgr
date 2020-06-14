@@ -19,7 +19,7 @@ const (
 	cfgErr  = 4
 	srvErr  = 255
 
-	defaultTimeout = 20
+	defaultTimeout = time.Second * 20
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 	configPtr      = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
 	threadsPtr     = flag.Int("threads", 1, "Number of threads to use for fetching artifacts")
 	dryrunPtr      = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
-	fileTimeoutPtr = flag.Duration("file-timeout", time.Second*defaultTimeout, "Timeout duration for downloading files, uses Golang duration strings")
+	fileTimeoutPtr = flag.Duration("file-timeout", defaultTimeout, "Timeout duration for downloading files, uses Golang duration strings")
 )
 
 func init() {
@@ -40,7 +40,7 @@ func init() {
 	flag.StringVar(hostListenPtr, "l", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
 	flag.IntVar(threadsPtr, "t", runtime.NumCPU(), "Number of threads to use for fetching artifacts")
 	flag.BoolVar(dryrunPtr, "n", false, "Dry-run only. Do not actually download content")
-	flag.DurationVar(fileTimeoutPtr, "x", time.Second*20, "Timeout duration for downloading files, uses Golang duration strings")
+	flag.DurationVar(fileTimeoutPtr, "x", defaultTimeout, "Timeout duration for downloading files, uses Golang duration strings")
 }
 
 func main() {
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	if fileTimeoutPtr != nil {
-		bridgr.Print("setting file timeout")
+		bridgr.Debugf("setting file timeout to %s", *fileTimeoutPtr)
 		bridgr.FileTimeout = *fileTimeoutPtr
 	}
 
