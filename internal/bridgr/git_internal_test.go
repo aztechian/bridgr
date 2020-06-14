@@ -172,7 +172,7 @@ func TestMapToGitItem(t *testing.T) {
 		expect  interface{}
 	}{
 		{"invalid type", reflect.TypeOf(""), "", false, ""},
-		{"valid", reflect.TypeOf(&GitItem{}).Elem(), map[interface{}]interface{}{"repo": source.String(), "bare": false}, false, GitItem{URL: source, Bare: false}},
+		{"valid", reflect.TypeOf(&GitItem{}).Elem(), map[string]interface{}{"repo": source.String(), "bare": false}, false, GitItem{URL: source, Bare: false}},
 	}
 
 	for _, test := range tests {
@@ -224,15 +224,15 @@ func TestGitParseComplex(t *testing.T) {
 	src, _ := url.Parse("https://motherboy.com/results.git")
 	tests := []struct {
 		name   string
-		input  map[interface{}]interface{}
+		input  map[string]interface{}
 		expect *GitItem
 	}{
-		{"only repo", map[interface{}]interface{}{"repo": src.String()}, &GitItem{URL: src}},
-		{"missing repo", map[interface{}]interface{}{"repo": "\007forget-me-now"}, nil},
-		{"has bare", map[interface{}]interface{}{"repo": src.String(), "bare": false}, &GitItem{URL: src, Bare: false}},
-		{"has tag", map[interface{}]interface{}{"repo": src.String(), "tag": "cornballer"}, &GitItem{URL: src, Tag: "refs/tags/cornballer"}},
-		{"has branch", map[interface{}]interface{}{"repo": src.String(), "branch": "thething"}, &GitItem{URL: src, Branch: "refs/heads/thething"}},
-		{"has tag and branch", map[interface{}]interface{}{"repo": src.String(), "tag": "cornballer", "branch": "thething"}, &GitItem{URL: src, Branch: "refs/heads/thething"}},
+		{"only repo", map[string]interface{}{"repo": src.String()}, &GitItem{URL: src}},
+		{"missing repo", map[string]interface{}{"repo": "\007forget-me-now"}, nil},
+		{"has bare", map[string]interface{}{"repo": src.String(), "bare": false}, &GitItem{URL: src, Bare: false}},
+		{"has tag", map[string]interface{}{"repo": src.String(), "tag": "cornballer"}, &GitItem{URL: src, Tag: "refs/tags/cornballer"}},
+		{"has branch", map[string]interface{}{"repo": src.String(), "branch": "thething"}, &GitItem{URL: src, Branch: "refs/heads/thething"}},
+		{"has tag and branch", map[string]interface{}{"repo": src.String(), "tag": "cornballer", "branch": "thething"}, &GitItem{URL: src, Branch: "refs/heads/thething"}},
 	}
 
 	for _, test := range tests {

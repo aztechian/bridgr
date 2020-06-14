@@ -53,6 +53,20 @@ func TestFileNormalize(t *testing.T) {
 			if !cmp.Equal(expect, result) {
 				t.Error(cmp.Diff(expect, result))
 			}
+
+			second := test.item.Normalize()
+			if !cmp.Equal(expect, second) {
+				t.Error(cmp.Diff(expect, second))
+			}
 		})
+	}
+}
+
+func TestFileItemString(t *testing.T) {
+	simpleSrc, _ := url.Parse("https://bluth.com/pub/plans/saddam.pdf")
+	item := bridgr.FileItem{Source: simpleSrc}
+
+	if !cmp.Equal(item.Source.String(), item.String()) {
+		t.Error(cmp.Diff(item.Source.String(), item.String()))
 	}
 }

@@ -169,22 +169,48 @@ func TestDecode(t *testing.T) {
 	}
 }
 
-func TestExecute(t *testing.T) {
+func TestContains(t *testing.T) {
 	tests := []struct {
-		name    string
-		config  fakeConfig
-		dryrun  bool
-		isError bool
+		name   string
+		item   string
+		filter []string
+		expect bool
 	}{
-		{"basic", fakeConfig{}, false, false},
-		{"with error", fakeConfig{}, false, true},
-		{"setup", fakeConfig{}, true, false},
-		{"setup error", fakeConfig{}, true, true},
+		{"success", "gob", []string{"gob"}, true},
+		{"empty", "kitty", []string{}, true},
+		{"all", "oscar", []string{"all"}, true},
+		{"all empty", "", []string{"all"}, true},
+		{"multiple filters with all", "george-sr", []string{"oscar", "all"}, false},
+		{"multiple filter with all first", "george-sr", []string{"all", "oscar"}, true},
+		{"multiple with match", "michael", []string{"george", "michael"}, true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			c := []bridgr.Configuration{&test.config}
+			result := contains(test.item, test.filter)
+			if !cmp.Equal(test.expect, result) {
+				t.Error(cmp.Diff(test.expect, result))
+			}
+		})
+	}
+}
+
+func TestExecute(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  *fakeConfig
+		dryrun  bool
+		isError bool
+	}{
+		{"basic", &fakeConfig{}, false, false},
+		{"with error", &fakeConfig{}, false, true},
+		{"setup", &fakeConfig{}, true, false},
+		{"setup error", &fakeConfig{}, true, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			c := []bridgr.Configuration{test.config}
 			test.config.On("Name").Return("fake")
 			if test.dryrun {
 				if test.isError {

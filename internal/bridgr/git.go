@@ -61,7 +61,7 @@ func (g Git) Name() string {
 	return "git"
 }
 
-func (gi *GitItem) parseComplex(pkg map[interface{}]interface{}) error {
+func (gi *GitItem) parseComplex(pkg map[string]interface{}) error {
 	url, err := url.Parse(pkg["repo"].(string))
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func stringToGitItem(f reflect.Type, t reflect.Type, data interface{}) (interfac
 func mapToGitItem(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 	if f.Kind() == reflect.Map && t == reflect.TypeOf(GitItem{}) {
 		item := NewGitItem("")
-		_ = item.parseComplex(data.(map[interface{}]interface{}))
+		_ = item.parseComplex(data.(map[string]interface{}))
 		return item, nil
 	}
 	return data, nil

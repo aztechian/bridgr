@@ -16,26 +16,32 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+var (
+	headerTimeout = time.Second * 5 // we expect to get headers coming back in 5 seconds
+	keepAlive     = time.Second * 3 // we create a new client for each file, so no keepalive needed as we won't reuse the client
+)
+
 var httpClient = &http.Client{
 	// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
 	Transport: &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout:   time.Second * 20,
-			KeepAlive: time.Second * 3, // we don't expect more than one connection to a server before we move on
+			Timeout:   FileTimeout,
+			KeepAlive: keepAlive,
 		}).Dial,
 		// this will be _really_ bad if someday we supported 2-way SSL
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //nolint:gosec  // ignore SSL certificates
-		ResponseHeaderTimeout: time.Second * 5,
+		ResponseHeaderTimeout: headerTimeout,
 	},
 }
 
 // File is the implementation for static File repositories
-type File []FileItem
+type File []*FileItem
 
 // FileItem is a discreet file definition object
 type FileItem struct {
-	Source *url.URL
-	Target string
+	Source     *url.URL
+	Target     string
+	normalized bool
 }
 
 type fetcher interface {
@@ -51,9 +57,18 @@ func (f File) dir() string {
 	return BaseDir(f.Name())
 }
 
-// Normalize sets the FileItems' Target filed to the proper destination string
-func (fi FileItem) Normalize() string {
-	return filepath.Join(BaseDir("files"), fi.Target, filepath.Base(fi.Source.String()))
+// Normalize sets the FileItems' Target field to the proper destination string
+func (fi *FileItem) Normalize() string {
+	if fi.normalized {
+		return fi.Target
+	}
+	fi.normalized = true
+	fi.Target = filepath.Join(BaseDir("files"), fi.Target, filepath.Base(fi.Source.String()))
+	return fi.Target
+}
+
+func (fi FileItem) String() string {
+	return fi.Source.String()
 }
 
 // Fetch gets a FileItem from it's source and writes it to the destination
@@ -110,7 +125,7 @@ func (f File) Run() error {
 	for _, item := range f {
 		out, createErr := os.Create(item.Target)
 		if createErr != nil {
-			Printf("Unable to create local file %s (for %s)", item.Target, item.Source.String())
+			Printf("Unable to create local file '%s' (for %s) %s", item.Target, item.Source.String(), createErr)
 			continue
 		}
 		if err := item.fetch(&fetcher, &credentials, out); err != nil {
@@ -126,7 +141,7 @@ func (f File) Setup() error {
 	Debug("Called Files.Setup()")
 	_ = os.MkdirAll(f.dir(), os.ModePerm)
 	for _, item := range f {
-		item.Target = item.Normalize()
+		_ = item.Normalize()
 	}
 	return nil
 }
