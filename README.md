@@ -1,4 +1,4 @@
- # Bridgr
+# Bridgr
 
 > Bridging the air-gap for your artifacts
 
@@ -57,14 +57,15 @@ To only run one of the repository types, simply give that type after any configu
 
 Additional command line options include:
 
-| Option         | Meaning                                                                                                                                             |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| -v / --verbose | Verbose Output                                                                                                                                      |
-| -n / --dry-run | Dry-run. Only do setup, don't fetch artifacts                                                                                                       |
-| -c / --config  | Specify an alternate configuration file                                                                                                             |
-| --version      | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string.                           |
-| -H / --host    | Run Bridgr in "hosting" mode. This mode does no downloading of artifacts, but makes Bridgr into a simple HTTP server. See `Hosting` for more detail |
-| -l / --listen  | The listen address for Bridgr in hosting mode. This is only effective when coupled with the `-H` flag. Default is `:8080`                           |
+| Option              | Meaning                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -v / --verbose      | Verbose Output                                                                                                                                              |
+| -n / --dry-run      | Dry-run. Only do setup, don't fetch artifacts                                                                                                               |
+| -c / --config       | Specify an alternate configuration file                                                                                                                     |
+| --version           | Print the version of Bridgr and exit. The output of stderr can be redirected to /dev/null to get just the version string.                                   |
+| -H / --host         | Run Bridgr in "hosting" mode. This mode does no downloading of artifacts, but makes Bridgr into a simple HTTP server. See `Hosting` for more detail         |
+| -l / --listen       | The listen address for Bridgr in hosting mode. This is only effective when coupled with the `-H` flag. Default is `:8080`                                   |
+| -x / --file-timeout | A go "duration" specifying an overall timeout for HTTP file downloads. Examples are `15s` (15 seconds), or `2h5m` (2 hours and 5 minutes). Default is `20s` |
 
 ### Artifacts requiring authentication
 
@@ -121,7 +122,7 @@ You may also create a systemd service file and be able to control Bridgr as an O
 
 ## Development setup
 
-Requires Go version 1.11 or higher.
+Requires Go version 1.13 or higher. Current Go version is specified in `go.mod`.
 
 Bridgr uses Go modules available since GoLang 1.11 release. To do development on Bridgr, simply clone this repository to your preferred location
 and run `make`. This will download all dependencies using the controlled go modules configuration. You must have go properly installed and configured on your system first.
@@ -155,6 +156,9 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 ## Release History
 
+- 1.4.0
+  - Complete rewrite of bridgr, to organize code internally for better testability and future work
+  - Added `--file-timeout` flag to allow modifying the HTTP/s client overall timeout for downloading files
 - 1.3.0
   - Add authentication support
   - Update to Go version 1.13
