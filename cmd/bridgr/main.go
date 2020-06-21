@@ -1,24 +1,36 @@
 package main
 
 import (
-	"bridgr/internal/app/bridgr"
-	"bridgr/internal/app/bridgr/config"
-	"bridgr/internal/app/bridgr/workers"
 	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
+	"runtime"
+	"time"
+
+	"github.com/aztechian/bridgr/internal/bridgr"
+	"github.com/aztechian/bridgr/internal/bridgr/cmd"
+)
+
+const (
+	success = 0
+	execErr = 1
+	cfgErr  = 4
+	srvErr  = 255
+
+	defaultTimeout = time.Second * 20
 )
 
 var (
-	verbosePtr    = flag.Bool("verbose", false, "Verbose logging (debug)")
-	versionPtr    = flag.Bool("version", false, "Print version and exit")
-	hostPtr       = flag.Bool("host", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
-	hostListenPtr = flag.String("listen", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
-	configPtr     = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
-	dryrunPtr     = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
+	verbosePtr     = flag.Bool("verbose", false, "Verbose logging (debug)")
+	versionPtr     = flag.Bool("version", false, "Print version and exit")
+	hostPtr        = flag.Bool("host", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
+	hostListenPtr  = flag.String("listen", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
+	configPtr      = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
+	threadsPtr     = flag.Int("threads", 1, "Number of threads to use for fetching artifacts")
+	dryrunPtr      = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
+	fileTimeoutPtr = flag.Duration("file-timeout", defaultTimeout, "Timeout duration for downloading files, uses Golang duration strings")
 )
 
 func init() {
@@ -26,7 +38,9 @@ func init() {
 	flag.BoolVar(verbosePtr, "v", false, "Verbose logging (debug)")
 	flag.BoolVar(hostPtr, "H", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
 	flag.StringVar(hostListenPtr, "l", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
+	flag.IntVar(threadsPtr, "t", runtime.NumCPU(), "Number of threads to use for fetching artifacts")
 	flag.BoolVar(dryrunPtr, "n", false, "Dry-run only. Do not actually download content")
+	flag.DurationVar(fileTimeoutPtr, "x", defaultTimeout, "Timeout duration for downloading files, uses Golang duration strings")
 }
 
 func main() {
@@ -34,24 +48,30 @@ func main() {
 	bridgr.Verbose = *verbosePtr
 
 	if *versionPtr {
-		fmt.Fprintln(os.Stderr, "Bridgr - (C) 2019 Ian Martin, MIT License. See https://github.com/aztechian/bridgr")
+		fmt.Fprintln(os.Stderr, "Bridgr - (C) 2020 Ian Martin, MIT License. See https://github.com/aztechian/bridgr")
 		fmt.Printf("%s\n", bridgr.Version)
 		fmt.Fprintln(os.Stderr, "")
-		os.Exit(0)
+		os.Exit(success)
 	}
 
 	if *hostPtr {
-		dir := http.Dir(config.BaseDir())
+		dir := http.Dir(bridgr.BaseDir(""))
 		err := bridgr.Serve(*hostListenPtr, dir)
 		if err != nil {
 			fmt.Printf("Unable to start HTTP Server: %s\n", err)
-			os.Exit(255)
+			os.Exit(srvErr)
 		}
-		os.Exit(0)
+		os.Exit(success)
 	}
 
 	if *dryrunPtr {
+		bridgr.DryRun = *dryrunPtr
 		bridgr.Println("Dry-Run requested, will not download artifacts.")
+	}
+
+	if fileTimeoutPtr != nil {
+		bridgr.Debugf("setting file timeout to %s", *fileTimeoutPtr)
+		bridgr.FileTimeout = *fileTimeoutPtr
 	}
 
 	configFile, err := openConfig()
@@ -60,22 +80,19 @@ func main() {
 		if configFile != nil {
 			configFile.Close()
 		}
-		os.Exit(4)
+		os.Exit(cfgErr)
 	}
-	conf, err := config.New(configFile)
-	if err != nil {
-		panic(err)
-	}
-
-	workerList := initWorkers(conf)
-
-	bridgr.Debugf("Running workers for subcommands: %+v\n", flag.Args())
-	err = processWorkers(workerList, flag.Args())
+	config, err := cmd.New(configFile)
 	if err != nil {
 		bridgr.Print(err)
-		os.Exit(255)
+		os.Exit(execErr)
 	}
-	os.Exit(0)
+	err = cmd.Execute(*config, flag.Args())
+	if err != nil {
+		bridgr.Print(err)
+		os.Exit(execErr)
+	}
+	os.Exit(success)
 }
 
 func openConfig() (io.ReadCloser, error) {
@@ -91,60 +108,4 @@ func fileExists(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
-}
-
-// FindWorker looks through an array of Workers to find one specified by the function
-func FindWorker(items []workers.Worker, f func(workers.Worker) bool) workers.Worker {
-	for _, i := range items {
-		if f(i) {
-			return i
-		}
-	}
-	return nil
-}
-
-func initWorkers(conf *config.BridgrConf) []workers.Worker {
-	return []workers.Worker{
-		workers.NewYum(conf),
-		workers.NewFiles(conf),
-		workers.NewDocker(conf),
-		workers.NewPython(conf),
-		workers.NewRuby(conf),
-		workers.NewGit(conf),
-	}
-}
-
-func doWorker(w workers.Worker) {
-	bridgr.Printf("Processing %s...", w.Name())
-	var err error
-	if *dryrunPtr {
-		err = w.Setup()
-	} else {
-		err = w.Run()
-	}
-	if err != nil {
-		bridgr.Printf("Error processing %s: %s", w.Name(), err)
-	}
-}
-
-func processWorkers(list []workers.Worker, filter []string) error {
-	// TODO: This only works on a single subcommand right now. Allow this to work on an array of subcommands.
-	if len(filter) <= 0 {
-		filter = append(filter, "all")
-	}
-	switch f := filter[0]; f {
-	case "all", "":
-		for _, w := range list {
-			doWorker(w)
-		}
-	default:
-		w := FindWorker(list, func(w workers.Worker) bool {
-			return strings.EqualFold(w.Name(), f)
-		})
-		if w == nil {
-			return fmt.Errorf("Unable to find worker named %s", f)
-		}
-		doWorker(w)
-	}
-	return nil
 }

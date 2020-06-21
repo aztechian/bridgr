@@ -13,12 +13,15 @@
 *.out
 
 # Generated files
-**/assets/templates.go
+**/asset/templates.go
 /packages
 /main
 /bridgr
 *.sha256
+code-quality-report.json
 
 # tooling files
 # this _could_ be committed in the future, but its preferrable to not risk polluting everyones vscode settings from here
 /.vscode
+
+/bridge.yml

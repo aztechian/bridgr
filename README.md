@@ -1,6 +1,8 @@
-# Bridgr
+ # Bridgr
 
 > Bridging the air-gap for your artifacts
+
+[![Gitpod Ready-to-code][gitpod-image]][gitpod-url]
 
 [![Build Status][travis-image]][travis-url]
 [![Release Date][releasedate-image]][gh-dl-url]
@@ -203,3 +205,5 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
 [releasedate-image]: https://img.shields.io/github/release-date/aztechian/bridgr?color=blueviolet
 [releasever-image]: https://img.shields.io/github/v/release/aztechian/bridgr
+[gitpod-url]: https://gitpod.io/#https://github.com/aztechian/bridgr
+[gitpod-image]: https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod

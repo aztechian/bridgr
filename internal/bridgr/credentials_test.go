@@ -1,0 +1,86 @@
+package bridgr_test
+
+import (
+	"testing"
+
+	"github.com/aztechian/bridgr/internal/bridgr"
+	"github.com/docker/docker/api/types"
+	"github.com/google/go-cmp/cmp"
+)
+
+func TestConjoined(t *testing.T) {
+	tests := []struct {
+		name   string
+		cred   bridgr.Credential
+		expect string
+	}{
+		{"user and password", bridgr.Credential{Username: "me", Password: "myself"}, "me:myself"},
+		{"empty credential", bridgr.Credential{}, ":"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.cred.Conjoin()
+			if result != test.expect {
+				t.Errorf("Expected %s from Conjoin() but got %s", test.expect, result)
+			}
+		})
+	}
+}
+
+func TestBase64(t *testing.T) {
+	tests := []struct {
+		name   string
+		cred   bridgr.Credential
+		expect string
+	}{
+		{"user and password", bridgr.Credential{Username: "me", Password: "myself"}, "bWU6bXlzZWxm"},
+		{"empty creds", bridgr.Credential{}, ""},
+		{"only username", bridgr.Credential{Username: "michael"}, "bWljaGFlbDo="},
+		{"only password", bridgr.Credential{Password: "bluth"}, "OmJsdXRo"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.cred.Base64()
+			if result != test.expect {
+				t.Errorf("Expected %s but got %s", test.expect, result)
+			}
+		})
+	}
+}
+
+func TestDockerCredsWrite(t *testing.T) {
+	docker := bridgr.DockerCredential{AuthConfig: types.AuthConfig{}}
+	expect := bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "tobias", Password: "themaninsideme"}}
+	cred := bridgr.Credential{Username: "tobias", Password: "themaninsideme"}
+	err := docker.Write(cred)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if !cmp.Equal(expect, docker) {
+		t.Error(cmp.Diff(expect, docker))
+	}
+}
+
+func TestDockerCredsString(t *testing.T) {
+	tests := []struct {
+		name   string
+		cred   bridgr.DockerCredential
+		expect string
+	}{
+		{"just username", bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "buster"}}, "eyJ1c2VybmFtZSI6ImJ1c3RlciJ9"},
+		{"user and password", bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "buster", Password: "monster!!"}}, "eyJ1c2VybmFtZSI6ImJ1c3RlciIsInBhc3N3b3JkIjoibW9uc3RlciEhIn0="},
+		{"empty", bridgr.DockerCredential{AuthConfig: types.AuthConfig{}}, ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.cred.String()
+			if !cmp.Equal(test.expect, result) {
+				t.Error(cmp.Diff(test.expect, result))
+			}
+		})
+	}
+}

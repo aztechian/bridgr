@@ -1,0 +1,36 @@
+---
+yum:
+  - net-tools
+  - postgis-2.0.7
+  - htop
+  # any form of package protocol/URI that is valid for YUM can be used in the "packages" section
+  - https://rpmfind.net/linux/rpmfusion/free/el/updates/7/x86_64/f/ffmpeg-3.4.6-1.el7.x86_64.rpm
+ruby:
+  - thor
+  - rails
+python:
+  - django
+  - flask
+npm:
+  - express
+  - vue-cli
+docker:
+  - centos:7
+  - prometheus/node-exporter
+  - ubuntu
+jenkins:
+  - pipeline
+  - blueocean
+maven:
+  - apache-commons
+  - junit:4
+  - commons-io:commons-io
+git:
+  - https://github.com/aztechian/bridgr.git
+  - https://github.com/kubernetes-sigs/kubespray
+files:
+  - https://releases.hashicorp.com/packer/1.4.3/packer_1.4.3_linux_amd64.zip
+  - https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+vagrant:
+  - centos/7
+  - myimage.box

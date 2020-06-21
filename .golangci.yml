@@ -1,11 +1,17 @@
 ---
-# linters:
-#   enable:
-#     - golint
-#     - goimports
-#     - gosec
-#     - misspell
-#     - unconvert
-
+linters:
+  enable:
+    - golint
+    - goimports
+    - gosec
+    - misspell
+    - unconvert
+    - gocyclo
+    - gocognit
+    - godox
+    - funlen
+    - gomnd
+run:
+  tests: false
 service:
-  golangci-lint-version: 1.16.x
+  golangci-lint-version: 1.24.x
