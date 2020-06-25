@@ -30,7 +30,7 @@ jobs:
     - stage: checks
       # script: golangci-lint run # run a bunch of code checkers/linters in parallel
       script:
-        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.24.0
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
         - golangci-lint --version # test that we got it
         - make download
         - make lint
