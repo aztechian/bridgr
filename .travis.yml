@@ -16,7 +16,7 @@ go:
 cache:
   directories: [$GOPATH/pkg/mod]
 
-# Only clone the most recent commit.
+# clone the full repo
 git:
   depth: false
 
