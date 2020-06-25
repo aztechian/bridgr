@@ -14,5 +14,7 @@ linters:
 run:
   tests: false
   timeout: 3m0s
+  out-format: colored-line-number
+  skip-dirs: gopath
 service:
   golangci-lint-version: 1.27.x
