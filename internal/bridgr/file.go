@@ -58,12 +58,12 @@ func (f File) dir() string {
 }
 
 // Normalize sets the FileItems' Target field to the proper destination string
-func (fi *FileItem) Normalize() string {
+func (fi *FileItem) Normalize(basedir string) string {
 	if fi.normalized {
 		return fi.Target
 	}
 	fi.normalized = true
-	fi.Target = filepath.Join(BaseDir("files"), fi.Target, filepath.Base(fi.Source.String()))
+	fi.Target = filepath.Join(basedir, fi.Target, filepath.Base(fi.Source.String()))
 	return fi.Target
 }
 
@@ -141,7 +141,7 @@ func (f File) Setup() error {
 	Debug("Called Files.Setup()")
 	_ = os.MkdirAll(f.dir(), os.ModePerm)
 	for _, item := range f {
-		_ = item.Normalize()
+		_ = item.Normalize(f.dir())
 	}
 	return nil
 }

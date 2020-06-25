@@ -87,6 +87,12 @@ python:
   - bobloblaw
 `)
 
+	yamlHelm = []byte(`
+---
+helm:
+	- https://repo.bluth.org/illusions/trick-1.0.0.tgz
+`)
+
 	namedComparer = cmp.Comparer(func(got, want reference.Named) bool {
 		return got.String() == want.String()
 	})
@@ -245,6 +251,7 @@ func TestNewCmd(t *testing.T) {
 		{"docker", bytes.NewReader(yamlDocker)},
 		{"python", bytes.NewReader(yamlPython)},
 		{"files", bytes.NewReader(yamlFile)},
+		{"helm", bytes.NewReader(yamlHelm)},
 		{"blah", bytes.NewReader(yamlBlah)},
 	}
 

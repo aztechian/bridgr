@@ -47,6 +47,8 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 			section = &bridgr.Python{}
 		case "git":
 			section = &bridgr.Git{}
+		case "helm":
+			section = &bridgr.Helm{}
 		default:
 			bridgr.Printf("Unable to create repository \"%s\", skipping.", key)
 			continue

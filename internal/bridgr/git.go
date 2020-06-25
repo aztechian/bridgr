@@ -107,8 +107,7 @@ func (g *Git) Hook() mapstructure.DecodeHookFunc {
 
 // Setup does any initial setup for the Git worker
 func (g *Git) Setup() error {
-	_ = os.MkdirAll(g.dir(), os.ModePerm)
-	return nil
+	return os.MkdirAll(g.dir(), os.ModePerm)
 }
 
 // Run executes the Git worker to fetch artifacts

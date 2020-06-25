@@ -34,3 +34,5 @@ files:
 vagrant:
   - centos/7
   - myimage.box
+helm:
+  - http://storage.googleapis.com/kubernetes-charts-incubator/aws-alb-ingress-controller-1.0.0.tgz
