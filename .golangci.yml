@@ -13,5 +13,6 @@ linters:
     - gomnd
 run:
   tests: false
+  timeout: 3m0s
 service:
-  golangci-lint-version: 1.24.x
+  golangci-lint-version: 1.27.x
