@@ -3,16 +3,18 @@ PKG := "$(PROJECT_NAME)"
 CMD := cmd/bridgr/main.go
 VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
+OS := $(shell go env GOOS)
+ARCH := $(shell go env GOARCH)
 
 .SUFFIXES:
 .PHONY: all coverage lint test race x2unit xunit clean generate download locallint cilint
 
-ifeq ($(GOOS), linux)
-PROJECT_NAME := $(PROJECT_NAME)-Linux
-else ifeq ($(GOOS), windows)
-PROJECT_NAME := $(PROJECT_NAME)-Windows
-else ifeq ($(GOOS), darwin)
-PROJECT_NAME := $(PROJECT_NAME)-MacOS
+ifeq ($(OS), linux)
+PROJECT_NAME := $(PROJECT_NAME)-Linux-$(ARCH)
+else ifeq ($(OS), windows)
+PROJECT_NAME := $(PROJECT_NAME)-Windows-$(ARCH)
+else ifeq ($(OS), darwin)
+PROJECT_NAME := $(PROJECT_NAME)-MacOS-$(ARCH)
 endif
 
 all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
@@ -29,7 +31,7 @@ locallint:
 	@golangci-lint run
 
 cilint:
-	@golangci-lint run --out-format=code-climate  --issues-exit-code=0 --new-from-rev=HEAD~1 > code-quality-report.json
+	@golangci-lint run -v --out-format=code-climate --new-from-rev=master --issues-exit-code=0 > code-quality-report.json
 
 test:
 	@go test -short ./...

@@ -2,11 +2,6 @@ language: go
 dist: xenial
 os:
   - linux
-env:
-  global:
-    # Force-enable Go modules. This will be unnecessary when Go 1.13 lands.
-    - GO111MODULE=on
-    - GOARCH=amd64
 stages:
   - checks
   - test
@@ -16,11 +11,16 @@ go:
 cache:
   directories: [$GOPATH/pkg/mod]
 
-# Only clone the most recent commit.
+# clone the full repo
 git:
-  depth: 1
+  depth: false
 
 install: true
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
 
 # script always runs to completion (set +e). If we have linter issues AND a
 # failing test, we want to see both. Configure golangci-lint with a
@@ -29,33 +29,64 @@ jobs:
   include:
     - stage: checks
       # script: golangci-lint run # run a bunch of code checkers/linters in parallel
-      script:
-        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.24.0
+      before_script:
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
+<<<<<<< HEAD
         - golangci-lint --version # test that we got it
+        - pwd; ls -altr; ls -alR
+=======
+      script:
+>>>>>>> de22ee4... Travis testing (#85)
         - make download
         - make lint
     - stage: test
       script:
-        - make coverage && bash <(curl -s https://codecov.io/bash)
+        - make coverage
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
         # trigger goreportcard scan
         - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
-      script: GOOS=linux make #need this here because gvm resets the GOOS var from the "env:" line
+      script:
+        - GOOS=linux make # gimmie and gvm don't pass through GOOS variables :(
+        - ls -altr
+      arch: amd64
       env: GOOS=linux
     - stage: build
-      script: GOOS=windows make
+      script:
+        - GOOS=linux make
+        - ls -altr
+      arch: arm64
+      env: GOOS=linux
+    - stage: build
+      script:
+        - GOOS=windows make
+        - ls -altr
+      arch: amd64
       env: GOOS=windows
     - stage: build
-      script: GOOS=darwin make
+      script:
+        - GOOS=darwin make
+        - ls -altr
+      arch: amd64
       env: GOOS=darwin
+    # fails to build darwin/arm64 combo
+    # - stage: build
+    #   script:
+    #     - GOOS=darwin make
+    #     - ls -altr
+    #   arch: arm64
+    #   env: GOOS=darwin
 
 deploy:
-  on:
-    tags: true
-    condition: $TRAVIS_BUILD_STAGE_NAME = Build
-  provider: releases
-  api_key:
-    secure: BsjDpZkQEG+gH87ZZC4qWb4xRQhAO22Yg08H/2eZXVzO5eSuXDL96peCBy+3jozlJ5mMDbwXnnAs9EnWBWyIMeNkLev2MoKXm3xTVI6yNxc4pflBmBg4mu3YFQQmZTqtzFr3NBy5+tcL6h/3S0KEShOb9J7csUsimHzZfA19wbOZjdyqNXo9poDekeHnT++3k/NRDfjrsDTUgUUzBYs5yNh2vVKNjcgihiv61eHlbWjgwLjJYR08po+6PCJ6hLwg3/TXqe0r7PUeNJaTk2NdY69LPxXh3sRfbmXibA8a7IudI8uLfSOKrrw6+tWDUWMz4vHfb4ETZx71wwhcBgIs5NPQJw4vlknm89kv+7aJBwjVRI9zoz9tX/TGqXSVo7C1yM3Ic788na74L2m8U6rGYUeGEAai1wbYVUqRi9hpMAhWImtKqHDFYGYI/EYoE3Rco5bpM4xx1LT/tqdu44CpPNbkzWcJF+2yxroyY/ze/mL63YwJxOCtQwXSICkawbHtmS+m9EOGjskWQ0nKIb/mpFBEhIxYJl6wTUrYvzmK/nIvO9O27b+GGk6NgFXzkY+OKoMMIL721KkKMQTH2fDPh9/GB69NVkE2olbtqL0lfxEJQ5uzdQX1LsfjM/P2qRHdrGh9oQ2PYiRDoG04R9TC4rlLNlmNUb365A+5q62WH5A=
-  file_glob: true
-  file: bridgr-*
-  skip_cleanup: true
+  - provider: releases
+    edge: true
+    on:
+      tags: true
+      condition: $TRAVIS_BUILD_STAGE_NAME = build
+    token:
+      secure: BsjDpZkQEG+gH87ZZC4qWb4xRQhAO22Yg08H/2eZXVzO5eSuXDL96peCBy+3jozlJ5mMDbwXnnAs9EnWBWyIMeNkLev2MoKXm3xTVI6yNxc4pflBmBg4mu3YFQQmZTqtzFr3NBy5+tcL6h/3S0KEShOb9J7csUsimHzZfA19wbOZjdyqNXo9poDekeHnT++3k/NRDfjrsDTUgUUzBYs5yNh2vVKNjcgihiv61eHlbWjgwLjJYR08po+6PCJ6hLwg3/TXqe0r7PUeNJaTk2NdY69LPxXh3sRfbmXibA8a7IudI8uLfSOKrrw6+tWDUWMz4vHfb4ETZx71wwhcBgIs5NPQJw4vlknm89kv+7aJBwjVRI9zoz9tX/TGqXSVo7C1yM3Ic788na74L2m8U6rGYUeGEAai1wbYVUqRi9hpMAhWImtKqHDFYGYI/EYoE3Rco5bpM4xx1LT/tqdu44CpPNbkzWcJF+2yxroyY/ze/mL63YwJxOCtQwXSICkawbHtmS+m9EOGjskWQ0nKIb/mpFBEhIxYJl6wTUrYvzmK/nIvO9O27b+GGk6NgFXzkY+OKoMMIL721KkKMQTH2fDPh9/GB69NVkE2olbtqL0lfxEJQ5uzdQX1LsfjM/P2qRHdrGh9oQ2PYiRDoG04R9TC4rlLNlmNUb365A+5q62WH5A=
+    file_glob: true
+    file: bridgr-*
+    cleanup: false
+    overwrite: true
