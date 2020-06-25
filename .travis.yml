@@ -18,7 +18,7 @@ cache:
 
 # Only clone the most recent commit.
 git:
-  depth: 1
+  depth: false
 
 install: true
 
