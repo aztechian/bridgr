@@ -6,9 +6,6 @@ os:
 #   global:
 #     # Force-enable Go modules. This will be unnecessary when Go 1.13 lands.
 #     - GO111MODULE=on
-arch:
-  - amd64
-  - arm64
 stages:
   - checks
   - test
@@ -39,26 +36,50 @@ jobs:
       script:
         - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
         - golangci-lint --version # test that we got it
-        - pwd; ls -altr; ls -alR
-        - make download
+        # - make download
         - make lint
+        - make download
     - stage: test
       script:
         - make coverage && bash <(curl -s https://codecov.io/bash)
         # trigger goreportcard scan
         - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
-      script: make #need this here because gvm resets the GOOS var from the "env:" line
-      env:
-        - GIMMIE_GOOS=linux
+      script:
+        - make
+        - ls -altr
+      arch: amd64
+      env: GIMMIE_GOOS=linux
     - stage: build
-      script: make
-      env:
-        - GIMMIE_GOOS=windows
+      script:
+        - make
+        - ls -altr
+      arch: arm64
+      env: GIMMIE_GOOS=linux
     - stage: build
-      script: make
-      env:
-        - GIMMIE_GOOS=darwin
+      script:
+        - make
+        - ls -altr
+      arch: amd64
+      env: GIMMIE_GOOS=windows
+    - stage: build
+      script:
+        - make
+        - ls -altr
+      arch: arm64
+      env: GIMMIE_GOOS=windows
+    - stage: build
+      script:
+        - make
+        - ls -altr
+      arch: amd64
+      env: GIMMIE_GOOS=darwin
+    - stage: build
+      script:
+        - make
+        - ls -altr
+      arch: arm64
+      env: GIMMIE_GOOS=darwin
 
 deploy:
   on:
