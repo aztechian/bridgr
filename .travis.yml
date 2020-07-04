@@ -74,13 +74,14 @@ jobs:
     #   env: GOOS=darwin
 
 deploy:
-  on:
-    tags: true
-    condition: $TRAVIS_BUILD_STAGE_NAME = build
-  provider: releases
-  token:
-    secure: BsjDpZkQEG+gH87ZZC4qWb4xRQhAO22Yg08H/2eZXVzO5eSuXDL96peCBy+3jozlJ5mMDbwXnnAs9EnWBWyIMeNkLev2MoKXm3xTVI6yNxc4pflBmBg4mu3YFQQmZTqtzFr3NBy5+tcL6h/3S0KEShOb9J7csUsimHzZfA19wbOZjdyqNXo9poDekeHnT++3k/NRDfjrsDTUgUUzBYs5yNh2vVKNjcgihiv61eHlbWjgwLjJYR08po+6PCJ6hLwg3/TXqe0r7PUeNJaTk2NdY69LPxXh3sRfbmXibA8a7IudI8uLfSOKrrw6+tWDUWMz4vHfb4ETZx71wwhcBgIs5NPQJw4vlknm89kv+7aJBwjVRI9zoz9tX/TGqXSVo7C1yM3Ic788na74L2m8U6rGYUeGEAai1wbYVUqRi9hpMAhWImtKqHDFYGYI/EYoE3Rco5bpM4xx1LT/tqdu44CpPNbkzWcJF+2yxroyY/ze/mL63YwJxOCtQwXSICkawbHtmS+m9EOGjskWQ0nKIb/mpFBEhIxYJl6wTUrYvzmK/nIvO9O27b+GGk6NgFXzkY+OKoMMIL721KkKMQTH2fDPh9/GB69NVkE2olbtqL0lfxEJQ5uzdQX1LsfjM/P2qRHdrGh9oQ2PYiRDoG04R9TC4rlLNlmNUb365A+5q62WH5A=
-  file_glob: true
-  file: bridgr-*
-  cleanup: false
-  overwrite: true
+  - provider: releases
+    edge: true
+    on:
+      tags: true
+      condition: $TRAVIS_BUILD_STAGE_NAME = build
+    token:
+      secure: BsjDpZkQEG+gH87ZZC4qWb4xRQhAO22Yg08H/2eZXVzO5eSuXDL96peCBy+3jozlJ5mMDbwXnnAs9EnWBWyIMeNkLev2MoKXm3xTVI6yNxc4pflBmBg4mu3YFQQmZTqtzFr3NBy5+tcL6h/3S0KEShOb9J7csUsimHzZfA19wbOZjdyqNXo9poDekeHnT++3k/NRDfjrsDTUgUUzBYs5yNh2vVKNjcgihiv61eHlbWjgwLjJYR08po+6PCJ6hLwg3/TXqe0r7PUeNJaTk2NdY69LPxXh3sRfbmXibA8a7IudI8uLfSOKrrw6+tWDUWMz4vHfb4ETZx71wwhcBgIs5NPQJw4vlknm89kv+7aJBwjVRI9zoz9tX/TGqXSVo7C1yM3Ic788na74L2m8U6rGYUeGEAai1wbYVUqRi9hpMAhWImtKqHDFYGYI/EYoE3Rco5bpM4xx1LT/tqdu44CpPNbkzWcJF+2yxroyY/ze/mL63YwJxOCtQwXSICkawbHtmS+m9EOGjskWQ0nKIb/mpFBEhIxYJl6wTUrYvzmK/nIvO9O27b+GGk6NgFXzkY+OKoMMIL721KkKMQTH2fDPh9/GB69NVkE2olbtqL0lfxEJQ5uzdQX1LsfjM/P2qRHdrGh9oQ2PYiRDoG04R9TC4rlLNlmNUb365A+5q62WH5A=
+    file_glob: true
+    file: bridgr-*
+    cleanup: false
+    overwrite: true
