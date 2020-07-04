@@ -33,53 +33,54 @@ jobs:
   include:
     - stage: checks
       # script: golangci-lint run # run a bunch of code checkers/linters in parallel
-      script:
+      before_script:
         - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
-        - golangci-lint --version # test that we got it
-        # - make download
-        - make lint
+      script:
         - make download
+        - make lint
     - stage: test
       script:
-        - make coverage && bash <(curl -s https://codecov.io/bash)
+        - make coverage
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
         # trigger goreportcard scan
         - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
       script:
-        - make
+        - GOOS=linux make # gimmie and gvm don't pass through GOOS variables :(
         - ls -altr
       arch: amd64
-      env: GIMMIE_OS=linux
+      env: GOOS=linux
     - stage: build
       script:
-        - make
+        - GOOS=linux make
         - ls -altr
       arch: arm64
-      env: GIMMIE_OS=linux
+      env: GOOS=linux
     - stage: build
       script:
-        - make
+        - GOOS=windows make
         - ls -altr
       arch: amd64
-      env: GIMMIE_OS=windows
+      env: GOOS=windows
     - stage: build
       script:
-        - make
+        - GOOS=windows make
         - ls -altr
       arch: arm64
-      env: GIMMIE_OS=windows
+      env: GOOS=windows
     - stage: build
       script:
-        - make
+        - GOOS=darwin make
         - ls -altr
       arch: amd64
-      env: GIMMIE_OS=darwin
+      env: GOOS=darwin
     - stage: build
       script:
-        - make
+        - GOOS=darwin make
         - ls -altr
       arch: arm64
-      env: GIMMIE_OS=darwin
+      env: GOOS=darwin
 
 deploy:
   on:

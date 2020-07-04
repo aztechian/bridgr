@@ -30,7 +30,7 @@ locallint:
 	@golangci-lint run
 
 cilint:
-	@golangci-lint run -v --out-format=code-climate --new-from-rev=master --issues-exit-code=0
+	@golangci-lint run -v --out-format=code-climate --new-from-rev=master --issues-exit-code=0 > code-quality-report.json
 
 test:
 	@go test -short ./...
