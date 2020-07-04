@@ -3,15 +3,16 @@ PKG := "$(PROJECT_NAME)"
 CMD := cmd/bridgr/main.go
 VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
+OS := $(shell go env GOOS)
 
 .SUFFIXES:
 .PHONY: all coverage lint test race x2unit xunit clean generate download locallint cilint
 
-ifeq ($(GOOS), linux)
+ifeq ($(OS), linux)
 PROJECT_NAME := $(PROJECT_NAME)-Linux
-else ifeq ($(GOOS), windows)
+else ifeq ($(OS), windows)
 PROJECT_NAME := $(PROJECT_NAME)-Windows
-else ifeq ($(GOOS), darwin)
+else ifeq ($(OS), darwin)
 PROJECT_NAME := $(PROJECT_NAME)-MacOS
 endif
 

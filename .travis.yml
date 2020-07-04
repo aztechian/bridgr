@@ -49,37 +49,37 @@ jobs:
         - make
         - ls -altr
       arch: amd64
-      env: GIMMIE_GOOS=linux
+      env: GIMMIE_OS=linux
     - stage: build
       script:
         - make
         - ls -altr
       arch: arm64
-      env: GIMMIE_GOOS=linux
+      env: GIMMIE_OS=linux
     - stage: build
       script:
         - make
         - ls -altr
       arch: amd64
-      env: GIMMIE_GOOS=windows
+      env: GIMMIE_OS=windows
     - stage: build
       script:
         - make
         - ls -altr
       arch: arm64
-      env: GIMMIE_GOOS=windows
+      env: GIMMIE_OS=windows
     - stage: build
       script:
         - make
         - ls -altr
       arch: amd64
-      env: GIMMIE_GOOS=darwin
+      env: GIMMIE_OS=darwin
     - stage: build
       script:
         - make
         - ls -altr
       arch: arm64
-      env: GIMMIE_GOOS=darwin
+      env: GIMMIE_OS=darwin
 
 deploy:
   on:

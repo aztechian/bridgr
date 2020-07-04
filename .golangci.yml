@@ -15,7 +15,7 @@ run:
   tests: false
   timeout: 3m0s
   out-format: colored-line-number
-  skip-dirs: gopath
+  skip-dirs: /home/travis/gopath/pkg/mod
   modules-download-mode: readonly
 service:
   golangci-lint-version: 1.27.x
