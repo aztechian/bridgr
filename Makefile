@@ -4,16 +4,17 @@ CMD := cmd/bridgr/main.go
 VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 OS := $(shell go env GOOS)
+ARCH := $(shell go env GOARCH)
 
 .SUFFIXES:
 .PHONY: all coverage lint test race x2unit xunit clean generate download locallint cilint
 
 ifeq ($(OS), linux)
-PROJECT_NAME := $(PROJECT_NAME)-Linux
+PROJECT_NAME := $(PROJECT_NAME)-Linux-$(ARCH)
 else ifeq ($(OS), windows)
-PROJECT_NAME := $(PROJECT_NAME)-Windows
+PROJECT_NAME := $(PROJECT_NAME)-Windows-$(ARCH)
 else ifeq ($(OS), darwin)
-PROJECT_NAME := $(PROJECT_NAME)-MacOS
+PROJECT_NAME := $(PROJECT_NAME)-MacOS-$(ARCH)
 endif
 
 all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
