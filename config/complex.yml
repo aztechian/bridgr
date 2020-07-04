@@ -87,3 +87,7 @@ files:
 vagrant:
   - centos/7
   - myimage.box
+
+# helm currently doesn't support anything besides an array of URLs
+helm:
+  - http://storage.googleapis.com/kubernetes-charts-incubator/aws-alb-ingress-controller-1.0.0.tgz

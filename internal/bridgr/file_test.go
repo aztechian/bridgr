@@ -49,12 +49,12 @@ func TestFileNormalize(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			expect := path.Join(bridgr.BaseDir("files"), test.expect)
-			result := test.item.Normalize()
+			result := test.item.Normalize(bridgr.BaseDir("files"))
 			if !cmp.Equal(expect, result) {
 				t.Error(cmp.Diff(expect, result))
 			}
 
-			second := test.item.Normalize()
+			second := test.item.Normalize(bridgr.BaseDir("files"))
 			if !cmp.Equal(expect, second) {
 				t.Error(cmp.Diff(expect, second))
 			}
