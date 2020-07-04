@@ -2,11 +2,13 @@ language: go
 dist: xenial
 os:
   - linux
-env:
-  global:
-    # Force-enable Go modules. This will be unnecessary when Go 1.13 lands.
-    - GO111MODULE=on
-    - GOARCH=amd64
+# env:
+#   global:
+#     # Force-enable Go modules. This will be unnecessary when Go 1.13 lands.
+#     - GO111MODULE=on
+arch:
+  - amd64
+  - arm64
 stages:
   - checks
   - test
@@ -46,23 +48,17 @@ jobs:
         # trigger goreportcard scan
         - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
-      script: GOOS=linux make #need this here because gvm resets the GOOS var from the "env:" line
-      env: GOOS=linux
-    - stage: build
-      script: GOOS=windows make
-      env: GOOS=windows
-    - stage: build
-      script: GOOS=darwin make
-      env: GOOS=darwin
+      script: make #need this here because gvm resets the GOOS var from the "env:" line
+      env:
+        - GIMMIE_GOOS=linux
     - stage: build
       script: make
-      env: GOOS=linux GOARCH=arm
+      env:
+        - GIMMIE_GOOS=windows
     - stage: build
       script: make
-      env: GOOS=windows GOARCH=arm
-    - stage: build
-      script: make
-      env: GOOS=darwin GOARCH=arm
+      env:
+        - GIMMIE_GOOS=darwin
 
 deploy:
   on:
