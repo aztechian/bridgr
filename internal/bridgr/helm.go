@@ -9,24 +9,29 @@ import (
 	"helm.sh/helm/v3/pkg/repo"
 )
 
+// Helm is a list of files that represent Helm charts, and have both a source and target
 type Helm []*FileItem
 
 func (h Helm) dir() string {
 	return BaseDir(h.Name())
 }
 
+// Name returns the name string of this Helm worker
 func (h Helm) Name() string {
 	return "helm"
 }
 
+// Image returns the docker image used for collecting Helm charts in this worker. It is always nil, as the Helm worker doesn't use docker.
 func (h Helm) Image() reference.Named {
 	return nil
 }
 
+// Hook returns a list of DecodeHookFunc objects that are needed to decode a generic object into a Helm struct. It is used with mapstructure library.
 func (h *Helm) Hook() mapstructure.DecodeHookFunc {
 	return mapstructure.ComposeDecodeHookFunc(stringToFileItem)
 }
 
+// Setup prepares the Helm charts for fetching and indexing.
 func (h Helm) Setup() error {
 	Print("Called Helm.Setup()")
 	for _, chart := range h {
@@ -35,6 +40,7 @@ func (h Helm) Setup() error {
 	return os.MkdirAll(h.dir(), os.ModePerm)
 }
 
+// Run downloads the requested Helm charts, and creates an index for statically hosting them
 func (h Helm) Run() error {
 	err := h.Setup()
 	if err != nil {
