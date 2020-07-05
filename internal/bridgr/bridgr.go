@@ -7,20 +7,26 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"time"
 
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/mitchellh/mapstructure"
 )
 
-// Verbose determines whether debug logging is printed
-var Verbose = false
+var (
+	// Verbose determines whether debug logging is printed
+	Verbose = false
 
-// Version is the built version of Bridgr
-var Version = "development"
+	// Version is the built version of Bridgr
+	Version = "development"
 
-// DryRun holds whether workers should actually retrieve artifacts, or just do setup
-var DryRun = false
+	// DryRun holds whether workers should actually retrieve artifacts, or just do setup
+	DryRun = false
+
+	// FileTimeout is the duration used for HTTP/s file download overall timeout. Used in the transport object
+	FileTimeout = time.Second * 20
+)
 
 // BaseDir gives the runtime absolute directory of the base "packages" directory
 // See the individual repo type struct for the type-specific path

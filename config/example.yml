@@ -93,3 +93,8 @@ files:
 vagrant:
   - centos/7
   - myimage.box
+
+# creates a helm repository from the list of URLs containing tgz packaged helm charts. This should be the usual format
+#  of packaged helm releases, but it may take some looking to find the direct URL of the chart you want.
+helm:
+  - http://storage.googleapis.com/kubernetes-charts-incubator/aws-alb-ingress-controller-1.0.0.tgz

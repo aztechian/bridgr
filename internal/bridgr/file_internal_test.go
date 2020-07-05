@@ -12,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -52,6 +53,7 @@ func (mfi *fakeFetcher) s3Fetch(client *s3.S3, source *url.URL, out io.WriteClos
 }
 
 func TestStringToFileItem(t *testing.T) {
+	cmpOpts := cmpopts.IgnoreUnexported(FileItem{})
 	fileItemType := reflect.TypeOf(FileItem{})
 	src, _ := url.Parse("ksanchez.mov")
 	tests := []struct {
@@ -70,8 +72,8 @@ func TestStringToFileItem(t *testing.T) {
 			if err == nil && test.expect == nil {
 				t.Errorf("Expected an error, but got %+v", err)
 			}
-			if test.expect != nil && !cmp.Equal(test.expect, result) {
-				t.Error(cmp.Diff(test.expect, result))
+			if test.expect != nil && !cmp.Equal(test.expect, result, cmpOpts) {
+				t.Error(cmp.Diff(test.expect, result, cmpOpts))
 			}
 		})
 	}

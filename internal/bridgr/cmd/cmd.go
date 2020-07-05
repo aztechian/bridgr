@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"reflect"
+	"strings"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
 	"github.com/davecgh/go-spew/spew"
@@ -46,6 +47,8 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 			section = &bridgr.Python{}
 		case "git":
 			section = &bridgr.Git{}
+		case "helm":
+			section = &bridgr.Helm{}
 		default:
 			bridgr.Printf("Unable to create repository \"%s\", skipping.", key)
 			continue
@@ -63,6 +66,10 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 // Execute runs the specified workers from the configuration
 func Execute(config Bridgr, filter []string) error {
 	for _, w := range config {
+		if len(filter) > 0 && !contains(w.Name(), filter) {
+			bridgr.Debugf("skipping worker %s, not in %s", w.Name(), filter)
+			continue
+		}
 		bridgr.Printf("Processing %s...", w.Name())
 		var err error
 		if bridgr.DryRun {
@@ -76,6 +83,18 @@ func Execute(config Bridgr, filter []string) error {
 	}
 
 	return nil
+}
+
+func contains(item string, list []string) bool {
+	if len(list) <= 0 || strings.ToLower(list[0]) == "all" {
+		return true
+	}
+	for _, x := range list {
+		if item == x {
+			return true
+		}
+	}
+	return false
 }
 
 func decode(p bridgr.Configuration, configSection interface{}) error {
