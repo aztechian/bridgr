@@ -12,11 +12,15 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 )
 
 var (
+	s3client      = s3.New(session.New())
 	headerTimeout = time.Second * 5 // we expect to get headers coming back in 5 seconds
 	keepAlive     = time.Second * 3 // we create a new client for each file, so no keepalive needed as we won't reuse the client
 )
