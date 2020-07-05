@@ -12,11 +12,15 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 )
 
 var (
+	s3client      = s3.New(session.New())
 	headerTimeout = time.Second * 5 // we expect to get headers coming back in 5 seconds
 	keepAlive     = time.Second * 3 // we create a new client for each file, so no keepalive needed as we won't reuse the client
 )
@@ -48,6 +52,7 @@ type fetcher interface {
 	httpFetch(*http.Client, string, io.WriteCloser, Credential) error
 	ftpFetch(string, io.WriteCloser, Credential) error
 	fileFetch(string, io.WriteCloser) error
+	s3Fetch(*s3.S3, *url.URL, io.WriteCloser, Credential) error
 }
 
 type fileFetcher struct{}
@@ -84,6 +89,8 @@ func (fi *FileItem) fetch(fetcher fetcher, cr CredentialReader, output io.WriteC
 		return fetcher.ftpFetch(fi.Source.String(), output, creds)
 	case "file", "":
 		return fetcher.fileFetch(fi.Source.String(), output)
+	case "s3":
+		return fetcher.s3Fetch(s3client, fi.Source, output, creds)
 	default:
 		Printf("unsupported FileItem schema: %s, from %s", fi.Source.Scheme, fi.Source)
 	}
@@ -184,6 +191,20 @@ func (ff *fileFetcher) httpFetch(httpClient *http.Client, source string, out io.
 	defer resp.Body.Close()
 
 	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+func (ff *fileFetcher) s3Fetch(client *s3.S3, source *url.URL, out io.WriteCloser, creds Credential) error {
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(source.Host),
+		Key:    aws.String(source.Path),
+	}
+	resp, err := client.GetObject(input)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 	_, err = io.Copy(out, resp.Body)
 	return err
 }
