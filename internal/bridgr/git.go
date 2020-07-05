@@ -44,7 +44,7 @@ func (g Git) Image() reference.Named {
 
 // NewGitItem creates a new, default GitItem struct
 func NewGitItem(repo string) GitItem {
-	var u *url.URL = nil
+	var u *url.URL
 	if len(repo) > 0 {
 		u, _ = url.Parse(repo)
 	}

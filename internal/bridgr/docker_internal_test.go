@@ -21,9 +21,9 @@ var (
 		return got.String() == want.String()
 	})
 
-	defaultImg, _   = reference.ParseNormalizedNamed("jade:dragon-triad")
-	defaultResponse = []byte("Stan Sitwell")
-	defaultError    = fmt.Errorf("Gene Parmesean")
+	imageDefault, _ = reference.ParseNormalizedNamed("jade:dragon-triad")
+	responseDefault = []byte("Stan Sitwell")
+	errDefault      = fmt.Errorf("Gene Parmesean")
 )
 
 func dockerMust(ref reference.Named, err error) reference.Named {
@@ -165,11 +165,11 @@ func TestDockerWriteRemote(t *testing.T) {
 			docker := Docker{}
 			cli := dockMock{}
 			if strings.Contains(test.name, "error") {
-				cli.On("ImagePush", context.Background(), defaultImg.String(), mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte{})), defaultError)
+				cli.On("ImagePush", context.Background(), imageDefault.String(), mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte{})), errDefault)
 			} else {
-				cli.On("ImagePush", context.Background(), defaultImg.String(), mock.Anything).Return(ioutil.NopCloser(bytes.NewReader(defaultResponse)), nil)
+				cli.On("ImagePush", context.Background(), imageDefault.String(), mock.Anything).Return(ioutil.NopCloser(bytes.NewReader(responseDefault)), nil)
 			}
-			err := docker.writeRemote(&cli, defaultImg.String(), defaultImg)
+			err := docker.writeRemote(&cli, imageDefault.String(), imageDefault)
 			if err == nil && strings.Contains(test.name, "error") {
 				t.Error(err)
 			}
@@ -192,12 +192,12 @@ func TestDockerWriteLocal(t *testing.T) {
 			docker := Docker{}
 			cli := dockMock{}
 			if strings.Contains(test.name, "error") {
-				cli.On("ImageSave", mock.Anything, []string{defaultImg.String()}).Return(ioutil.NopCloser(bytes.NewReader([]byte{})), defaultError)
+				cli.On("ImageSave", mock.Anything, []string{imageDefault.String()}).Return(ioutil.NopCloser(bytes.NewReader([]byte{})), errDefault)
 			} else {
-				cli.On("ImageSave", mock.Anything, []string{defaultImg.String()}).Return(ioutil.NopCloser(bytes.NewReader(defaultResponse)), nil)
+				cli.On("ImageSave", mock.Anything, []string{imageDefault.String()}).Return(ioutil.NopCloser(bytes.NewReader(responseDefault)), nil)
 			}
 
-			err := docker.writeLocal(&cli, test.writer, defaultImg)
+			err := docker.writeLocal(&cli, test.writer, imageDefault)
 			if err == nil && strings.Contains(test.name, "error") {
 				t.Error("Expected an error condition from writeLocal() but got none")
 			}
@@ -212,9 +212,9 @@ func TestDockerTagForRemote(t *testing.T) {
 		image reference.Named
 		want  string
 	}{
-		{"succcess", defaultImg, "repo.lite/library/jade:dragon-triad"},
+		{"succcess", imageDefault, "repo.lite/library/jade:dragon-triad"},
 		{"full path", customImg, "repo.lite/myproj/myimage:1.0"},
-		{"error", defaultImg, "repo.lite/library/jade:dragon-triad"},
+		{"error", imageDefault, "repo.lite/library/jade:dragon-triad"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
