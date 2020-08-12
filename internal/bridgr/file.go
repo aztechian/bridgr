@@ -2,6 +2,7 @@ package bridgr
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -12,27 +13,33 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 )
 
 var (
-	headerTimeout = time.Second * 5 // we expect to get headers coming back in 5 seconds
-	keepAlive     = time.Second * 3 // we create a new client for each file, so no keepalive needed as we won't reuse the client
+	s3session                   = session.Must(session.NewSessionWithOptions(session.Options{SharedConfigState: session.SharedConfigEnable}))
+	defaultS3     s3iface.S3API = s3.New(s3session) // used for getting the desired files bucket location. A new client is created when the files region is known
+	headerTimeout               = time.Second * 5   // we expect to get headers coming back in 5 seconds
+	keepAlive                   = time.Second * 3   // we create a new client for each file, so no keepalive needed as we won't reuse the client
+	httpClient                  = &http.Client{
+		// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
+		Transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   FileTimeout,
+				KeepAlive: keepAlive,
+			}).Dial,
+			// this will be _really_ bad if someday we supported 2-way SSL
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //nolint:gosec  // ignore SSL certificates
+			ResponseHeaderTimeout: headerTimeout,
+		},
+	}
 )
-
-var httpClient = &http.Client{
-	// TODO: this would be much better to do as a fallback - if regular (InsecureSkipVerify: false) fails first
-	Transport: &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout:   FileTimeout,
-			KeepAlive: keepAlive,
-		}).Dial,
-		// this will be _really_ bad if someday we supported 2-way SSL
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //nolint:gosec  // ignore SSL certificates
-		ResponseHeaderTimeout: headerTimeout,
-	},
-}
 
 // File is the implementation for static File repositories
 type File []*FileItem
@@ -48,6 +55,8 @@ type fetcher interface {
 	httpFetch(*http.Client, string, io.WriteCloser, Credential) error
 	ftpFetch(string, io.WriteCloser, Credential) error
 	fileFetch(string, io.WriteCloser) error
+	s3Fetch(s3iface.S3API, *url.URL, io.WriteCloser) error
+	regionalClient(*url.URL, Credential) *s3.S3
 }
 
 type fileFetcher struct{}
@@ -84,6 +93,9 @@ func (fi *FileItem) fetch(fetcher fetcher, cr CredentialReader, output io.WriteC
 		return fetcher.ftpFetch(fi.Source.String(), output, creds)
 	case "file", "":
 		return fetcher.fileFetch(fi.Source.String(), output)
+	case "s3":
+		client := fetcher.regionalClient(fi.Source, creds)
+		return fetcher.s3Fetch(client, fi.Source, output)
 	default:
 		Printf("unsupported FileItem schema: %s, from %s", fi.Source.Scheme, fi.Source)
 	}
@@ -186,4 +198,38 @@ func (ff *fileFetcher) httpFetch(httpClient *http.Client, source string, out io.
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
 	return err
+}
+
+func (ff *fileFetcher) s3Fetch(client s3iface.S3API, source *url.URL, out io.WriteCloser) error {
+	defer out.Close()
+	if client == (*s3.S3)(nil) {
+		return errors.New("Invalid S3 client, unable to copy file")
+	}
+	Debugf("Downloading S3 file: %s", source.String())
+	resp, err := client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(source.Host),
+		Key:    aws.String(source.Path),
+	})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+func (ff *fileFetcher) regionalClient(source *url.URL, creds Credential) *s3.S3 {
+	loc, err := defaultS3.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: &source.Host})
+	if err != nil {
+		Printf("unable to find bucket '%s': %s. Validate bucket is correct and credentials are valid.", source.Host, err)
+		return nil
+	}
+	region := s3.NormalizeBucketLocation(aws.StringValue(loc.LocationConstraint))
+
+	cfg := aws.NewConfig().WithRegion(aws.StringValue(&region))
+	if len(creds.Username) > 0 {
+		cfg.WithCredentials(credentials.NewStaticCredentials(creds.Username, creds.Password, ""))
+		Debugf("Using static AWS credentials from bridgr environment")
+	}
+	return s3.New(s3session.Copy(cfg))
 }

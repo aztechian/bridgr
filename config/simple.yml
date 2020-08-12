@@ -31,6 +31,10 @@ git:
 files:
   - https://releases.hashicorp.com/packer/1.4.3/packer_1.4.3_linux_amd64.zip
   - https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+  # unfortunately, there aren't really any legitimate "open" s3 buckets to use as a global example
+  #  you must use the "s3://" protocol, and the bucket name must be the "host" segment of the URL
+  # - s3://your.bucket.com/myfile.png
+  # - s3://bucket/object_key.file
 vagrant:
   - centos/7
   - myimage.box

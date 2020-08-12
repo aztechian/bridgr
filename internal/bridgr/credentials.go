@@ -37,6 +37,11 @@ type Credential struct {
 	Password string
 }
 
+// IsValid returns a boolean to indicate that the Credential has at least a Username or a Password
+func (c *Credential) IsValid() bool {
+	return len(c.Username) > 0 || len(c.Password) > 0
+}
+
 // Conjoin returns a string with the Credential content joined by a ':' (colon character)
 func (c *Credential) Conjoin() string {
 	return c.Username + ":" + c.Password
