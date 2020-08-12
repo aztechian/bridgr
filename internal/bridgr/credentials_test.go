@@ -1,6 +1,8 @@
 package bridgr_test
 
 import (
+	"net/url"
+	"os"
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
@@ -50,6 +52,36 @@ func TestBase64(t *testing.T) {
 	}
 }
 
+func TestCredentialRead(t *testing.T) {
+	tests := []struct {
+		name   string
+		envs   map[string]string
+		expect bridgr.Credential
+	}{
+		{"user and password", map[string]string{"BRIDGR_BLUTH_COM_USER": "michael", "BRIDGR_BLUTH_COM_PASS": "boss"}, bridgr.Credential{Username: "michael", Password: "boss"}},
+		{"empty creds", map[string]string{}, bridgr.Credential{}},
+		{"only username", map[string]string{"BRIDGR_BLUTH_COM_USER": "michael"}, bridgr.Credential{Username: "michael"}},
+		{"only password", map[string]string{"BRIDGR_BLUTH_COM_TOKEN": "bossman"}, bridgr.Credential{Password: "bossman"}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			reader := bridgr.WorkerCredentialReader{}
+			src, _ := url.Parse("https://bluth.com/")
+			for env, val := range test.envs {
+				os.Setenv(env, val)
+			}
+			result, _ := reader.Read(src)
+			if !cmp.Equal(test.expect, result) {
+				t.Error(cmp.Diff(test.expect, result))
+			}
+			for env := range test.envs {
+				os.Unsetenv(env)
+			}
+		})
+	}
+}
+
 func TestDockerCredsWrite(t *testing.T) {
 	docker := bridgr.DockerCredential{AuthConfig: types.AuthConfig{}}
 	expect := bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "tobias", Password: "themaninsideme"}}
@@ -80,6 +112,28 @@ func TestDockerCredsString(t *testing.T) {
 			result := test.cred.String()
 			if !cmp.Equal(test.expect, result) {
 				t.Error(cmp.Diff(test.expect, result))
+			}
+		})
+	}
+}
+
+func TestIsValid(t *testing.T) {
+	tests := []struct {
+		name   string
+		cred   bridgr.Credential
+		expect bool
+	}{
+		{"user and password", bridgr.Credential{Username: "me", Password: "myself"}, true},
+		{"empty creds", bridgr.Credential{}, false},
+		{"only username", bridgr.Credential{Username: "michael"}, true},
+		{"only password", bridgr.Credential{Password: "bluth"}, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			result := test.cred.IsValid()
+			if result != test.expect {
+				t.Errorf("Expected %t but got %t", test.expect, result)
 			}
 		})
 	}
