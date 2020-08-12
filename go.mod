@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.5.1
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/mitchellh/mapstructure v1.3.2
+	github.com/mitchellh/mapstructure v1.3.3
 	github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749 // indirect
 	github.com/shurcooL/vfsgen v0.0.0-20200627165143-92b8a710ab6c // indirect
 	github.com/stretchr/testify v1.6.1
