@@ -152,6 +152,7 @@ Significant Go modules used by `Bridgr`:
 - docker.io/go-docker
 - yaml.v3
 - vfsgen
+- helm/v3
 
 Potential for schema definition/validation of the YAML config file: [https://github.com/rjbs/rx](https://github.com/rjbs/rx)
 Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski/iso9660](https://github.com/kdomanski/iso9660)
