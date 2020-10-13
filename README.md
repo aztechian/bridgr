@@ -5,6 +5,7 @@
 [![Gitpod Ready-to-code][gitpod-image]][gitpod-url]
 
 [![Build Status][travis-image]][travis-url]
+[![Go Version][goversion-image]][gh-gomod]
 [![Release Date][releasedate-image]][gh-dl-url]
 [![Release Version][releasever-image]][gh-dl-url]
 [![Downloads Stats][gh-downloads]][gh-dl-url]
@@ -193,20 +194,20 @@ Distributed under the MIT license. See `LICENSE` for more information.
 4. Push to the branch (`git push -u origin HEAD`)
 5. Create a new Pull Request
 
-<!-- Markdown link & img dfn's -->
+<!-- Markdown link & img definitions -->
 
 [gh-downloads]: https://img.shields.io/github/downloads/aztechian/bridgr/total.svg
 [gh-dl-url]: releases/
+[gh-gomod]: go.mod
 [license]: https://img.shields.io/github/license/aztechian/bridgr
 [license-url]: LICENSE
-[travis-image]: https://img.shields.io/travis/aztechian/bridgr
-[travis-url]: https://travis-ci.org/aztechian/bridgr
-[wiki]: https://github.com/aztechian/bridgr/wiki
+[travis-image]: https://img.shields.io/travis/com/aztechian/bridgr/master
+[travis-url]: https://travis-ci.com/aztechian/bridgr
 [reportcard-image]: https://goreportcard.com/badge/github.com/aztechian/bridgr
 [reportcard-url]: https://goreportcard.com/report/github.com/aztechian/bridgr
-[maintainability-image]: https://api.codeclimate.com/v1/badges/a0ca442626ad6e8cfa8f/maintainability
+[maintainability-image]: https://img.shields.io/codeclimate/maintainability/aztechian/bridgr?logo=code-climate
 [maintainability-url]: https://codeclimate.com/github/aztechian/bridgr/maintainability
-[coverage-image]: https://api.codeclimate.com/v1/badges/a0ca442626ad6e8cfa8f/test_coverage
+[coverage-image]: https://img.shields.io/codeclimate/coverage/aztechian/bridgr?logo=code-climate
 [coverage-url]: https://codeclimate.com/github/aztechian/bridgr/test_coverage
 [codescene-image]: https://codescene.io/projects/4859/status.svg
 [codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
@@ -214,3 +215,4 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [releasever-image]: https://img.shields.io/github/v/release/aztechian/bridgr
 [gitpod-url]: https://gitpod.io/#https://github.com/aztechian/bridgr
 [gitpod-image]: https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod
+[goversion-image]: https://img.shields.io/github/go-mod/go-version/aztechian/bridgr

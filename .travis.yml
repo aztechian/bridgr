@@ -2,6 +2,10 @@ language: go
 dist: xenial
 os:
   - linux
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+\.\d+(-\S*)?$/
 stages:
   - checks
   - test
