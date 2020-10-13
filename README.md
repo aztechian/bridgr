@@ -10,7 +10,8 @@
 [![Downloads Stats][gh-downloads]][gh-dl-url]
 [![GitHub][license]][license-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
-[![codecov][codecov-image]][codecov-url]
+[![maintainability][maintainability-image]][maintainability-url]
+[![coverage][coverage-image]][coverage-url]
 [![Get more details at **codescene.io**.][codescene-image]][codescene-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
@@ -203,8 +204,10 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [wiki]: https://github.com/aztechian/bridgr/wiki
 [reportcard-image]: https://goreportcard.com/badge/github.com/aztechian/bridgr
 [reportcard-url]: https://goreportcard.com/report/github.com/aztechian/bridgr
-[codecov-image]: https://codecov.io/gh/aztechian/bridgr/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/aztechian/bridgr
+[maintainability-image]: https://api.codeclimate.com/v1/badges/a0ca442626ad6e8cfa8f/maintainability
+[maintainability-url]: https://codeclimate.com/github/aztechian/bridgr/maintainability
+[coverage-image]: https://api.codeclimate.com/v1/badges/a0ca442626ad6e8cfa8f/test_coverage
+[coverage-url]: https://codeclimate.com/github/aztechian/bridgr/test_coverage
 [codescene-image]: https://codescene.io/projects/4859/status.svg
 [codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
 [releasedate-image]: https://img.shields.io/github/release-date/aztechian/bridgr?color=blueviolet
