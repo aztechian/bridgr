@@ -39,9 +39,11 @@ jobs:
       before_script:
         - glci_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')
         - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v${glci_ver}
+        - curl -sfL https://install.goreleaser.com/github.com/reviewdog/reviewdog.sh | sh -s -- -b $(go env GOPATH)/bin v0.10.2
       script:
         - make download
         - make lint
+        - cat cilint.txt | reviewdog -reporter=github-pr-check -f=golangci-lint -fail-on-error=false
     - stage: test
       before_script:
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter

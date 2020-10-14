@@ -7,7 +7,7 @@ OS := $(shell go env GOOS)
 ARCH := $(shell go env GOARCH)
 
 .SUFFIXES:
-.PHONY: all coverage lint test race x2unit xunit clean generate download locallint cilint
+.PHONY: all coverage lint test race x2unit xunit clean generate download locallint
 
 ifeq ($(OS), linux)
 PROJECT_NAME := $(PROJECT_NAME)-Linux-$(ARCH)
@@ -24,14 +24,14 @@ coverage: html
 lint: locallint
 else
 coverage: coverage.out
-lint: cilint
+lint: cilint.txt
 endif
 
 locallint:
 	@golangci-lint run
 
-cilint:
-	@golangci-lint run -v --out-format=code-climate --new-from-rev=master --issues-exit-code=0 > code-quality-report.json
+cilint.txt: $(GO_FILES)
+	@golangci-lint run --out-format=line-number --new-from-rev=master --issues-exit-code=0 > $@
 
 test:
 	@go test -short ./...
@@ -59,7 +59,7 @@ run:
 	@go run $(CMD) -c config/example.yml
 
 clean:
-	@rm -rf internal/bridgr/asset/templates.go coverage.out packages tests.xml tests.out coverage.out *.sha256 main code-quality-report.json $(PKG)-*
+	@rm -rf internal/bridgr/asset/templates.go coverage.out packages tests.xml tests.out coverage.out *.sha256 main cilint.txt $(PKG)-*
 	@docker rm --force bridgr_yum bridgr_python bridgr_ruby &> /dev/null || true
 
 generate: $(GO_FILES)
