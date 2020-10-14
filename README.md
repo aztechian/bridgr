@@ -190,10 +190,10 @@ Distributed under the MIT license. See `LICENSE` for more information.
 ## Contributing
 
 1. [Fork it](https://github.com/aztechian/bridgr/fork)
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push -u origin HEAD`)
-5. Create a new Pull Request
+1. Create your feature branch (`git checkout -b feature/fooBar`)
+1. Commit your changes (`git commit -am 'Add some fooBar'`)
+1. Push to the branch (`git push -u origin HEAD`)
+1. Create a new Pull Request
 
 <!-- Markdown link & img definitions -->
 
