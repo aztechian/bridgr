@@ -37,7 +37,8 @@ jobs:
     - stage: checks
       # script: golangci-lint run # run a bunch of code checkers/linters in parallel
       before_script:
-        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
+        - glci_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v${glci_ver}
       script:
         - make download
         - make lint
@@ -49,7 +50,8 @@ jobs:
       script:
         - make coverage
       after_success:
-        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+        - ./cc-test-reporter format-coverage -t gocov -p $(go list -m) coverage.out
+        - ./cc-test-reporter upload-coverage
         # trigger goreportcard scan
         - curl -s -X POST -F "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build

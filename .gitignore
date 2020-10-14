@@ -16,6 +16,7 @@
 **/asset/templates.go
 /packages
 /main
+/coverage
 /bridgr-*
 *.sha256
 code-quality-report.json
