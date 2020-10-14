@@ -2,6 +2,10 @@ language: go
 dist: xenial
 os:
   - linux
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+\.\d+(-\S*)?$/
 stages:
   - checks
   - test
@@ -22,6 +26,9 @@ notifications:
     on_success: change
     on_failure: always
 
+env:
+  global: CC_TEST_REPORTER_ID=7c1eabd638b12563c95fc1e17e4abc2440612eddd97b25273c986b24faddb6ae
+
 # script always runs to completion (set +e). If we have linter issues AND a
 # failing test, we want to see both. Configure golangci-lint with a
 # .golangci.yml file at the top level of your repo.
@@ -35,12 +42,16 @@ jobs:
         - make download
         - make lint
     - stage: test
+      before_script:
+        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        - chmod +x ./cc-test-reporter
+        - ./cc-test-reporter before-build
       script:
         - make coverage
       after_success:
-        - bash <(curl -s https://codecov.io/bash)
+        - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
         # trigger goreportcard scan
-        - curl -s -d "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
+        - curl -s -X POST -F "repo=github.com/$TRAVIS_REPO_SLUG" https://goreportcard.com/checks
     - stage: build
       script:
         - GOOS=linux make # gimmie and gvm don't pass through GOOS variables :(

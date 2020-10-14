@@ -5,12 +5,14 @@
 [![Gitpod Ready-to-code][gitpod-image]][gitpod-url]
 
 [![Build Status][travis-image]][travis-url]
+[![Go Version][goversion-image]][gh-gomod]
 [![Release Date][releasedate-image]][gh-dl-url]
 [![Release Version][releasever-image]][gh-dl-url]
 [![Downloads Stats][gh-downloads]][gh-dl-url]
 [![GitHub][license]][license-url]
 [![Go Report Card][reportcard-image]][reportcard-url]
-[![codecov][codecov-image]][codecov-url]
+[![maintainability][maintainability-image]][maintainability-url]
+[![coverage][coverage-image]][coverage-url]
 [![Get more details at **codescene.io**.][codescene-image]][codescene-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
@@ -150,6 +152,7 @@ Significant Go modules used by `Bridgr`:
 - docker.io/go-docker
 - yaml.v3
 - vfsgen
+- helm/v3
 
 Potential for schema definition/validation of the YAML config file: [https://github.com/rjbs/rx](https://github.com/rjbs/rx)
 Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski/iso9660](https://github.com/kdomanski/iso9660)
@@ -192,22 +195,25 @@ Distributed under the MIT license. See `LICENSE` for more information.
 4. Push to the branch (`git push -u origin HEAD`)
 5. Create a new Pull Request
 
-<!-- Markdown link & img dfn's -->
+<!-- Markdown link & img definitions -->
 
 [gh-downloads]: https://img.shields.io/github/downloads/aztechian/bridgr/total.svg
 [gh-dl-url]: releases/
+[gh-gomod]: go.mod
 [license]: https://img.shields.io/github/license/aztechian/bridgr
 [license-url]: LICENSE
-[travis-image]: https://img.shields.io/travis/aztechian/bridgr
-[travis-url]: https://travis-ci.org/aztechian/bridgr
-[wiki]: https://github.com/aztechian/bridgr/wiki
+[travis-image]: https://img.shields.io/travis/com/aztechian/bridgr/master
+[travis-url]: https://travis-ci.com/aztechian/bridgr
 [reportcard-image]: https://goreportcard.com/badge/github.com/aztechian/bridgr
 [reportcard-url]: https://goreportcard.com/report/github.com/aztechian/bridgr
-[codecov-image]: https://codecov.io/gh/aztechian/bridgr/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/aztechian/bridgr
+[maintainability-image]: https://img.shields.io/codeclimate/maintainability/aztechian/bridgr?logo=code-climate
+[maintainability-url]: https://codeclimate.com/github/aztechian/bridgr/maintainability
+[coverage-image]: https://img.shields.io/codeclimate/coverage/aztechian/bridgr?logo=code-climate
+[coverage-url]: https://codeclimate.com/github/aztechian/bridgr/test_coverage
 [codescene-image]: https://codescene.io/projects/4859/status.svg
 [codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
 [releasedate-image]: https://img.shields.io/github/release-date/aztechian/bridgr?color=blueviolet
 [releasever-image]: https://img.shields.io/github/v/release/aztechian/bridgr
 [gitpod-url]: https://gitpod.io/#https://github.com/aztechian/bridgr
 [gitpod-image]: https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod
+[goversion-image]: https://img.shields.io/github/go-mod/go-version/aztechian/bridgr
