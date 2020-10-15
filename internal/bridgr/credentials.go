@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
+	log "unknwon.dev/clog/v2"
 )
 
 // CredentialReader is the interface that wraps a Credential Read method
@@ -61,7 +62,7 @@ type WorkerCredentialReader struct{}
 
 func (w *WorkerCredentialReader) Read(url *url.URL) (Credential, bool) {
 	basename := "BRIDGR_" + strings.ToUpper(strings.ReplaceAll(url.Hostname(), ".", "_"))
-	Debugf("Looking up credentials for: %s", basename)
+	log.Trace("Looking up credentials for: %s", basename)
 	found := false
 	userVal, ok := os.LookupEnv(basename + "_USER")
 	found = found || ok

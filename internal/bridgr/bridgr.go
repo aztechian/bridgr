@@ -2,6 +2,7 @@
 package bridgr
 
 import (
+	"bufio"
 	"context"
 	"io"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
 	"github.com/mitchellh/mapstructure"
+	log "unknwon.dev/clog/v2"
 )
 
 var (
@@ -64,7 +66,11 @@ func PullImage(cli ImagePuller, image reference.Named) error {
 		return err
 	}
 
-	_, err = io.Copy(writer(), output) // must wait for output before returning
+	// must wait for output before returning
+	scanner := bufio.NewScanner(output)
+	for scanner.Scan() {
+		log.Trace(scanner.Text())
+	}
 	return err
 }
 
@@ -73,7 +79,7 @@ func dockerAuth(image reference.Named, rw CredentialReaderWriter) {
 	url, _ := url.Parse(imgDomain)
 
 	if creds, ok := rw.Read(url); ok {
-		Debugf("Docker: Found credentials for %s", url.Hostname())
+		log.Trace("Docker: Found credentials for %s", url.Hostname())
 		_ = rw.Write(creds)
 	}
 }

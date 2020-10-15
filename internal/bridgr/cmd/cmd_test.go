@@ -232,7 +232,7 @@ func TestExecute(t *testing.T) {
 				}
 			}
 			bridgr.DryRun = test.dryrun
-			err := Execute(c, []string{"fake"})
+			err := Bridgr(c).Execute([]string{"fake"})
 			if err != nil {
 				t.Error(err)
 			}

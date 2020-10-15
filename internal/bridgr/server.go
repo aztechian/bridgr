@@ -85,6 +85,10 @@ func logMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(loggingRW, r) //continue with the response
 
-		Log("%s - - [%s] %q %d %d %q %s\n", r.RemoteAddr, timestamp, r.Method+" "+r.URL.Path+" "+r.Proto, loggingRW.status, len(loggingRW.body), r.Referer(), r.UserAgent())
+		// clog (used by the rest of bridgr) doesn't support changing the "prefix" of logging output
+		// so, we use direct Printf here instead so the logs aren't "double formatted" - first by clog and then in CLF form
+		if Verbose {
+			fmt.Printf("%s - - [%s] %q %d %d %q %s\n", r.RemoteAddr, timestamp, r.Method+" "+r.URL.Path+" "+r.Proto, loggingRW.status, len(loggingRW.body), r.Referer(), r.UserAgent())
+		}
 	})
 }

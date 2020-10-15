@@ -16,6 +16,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/mitchellh/mapstructure"
+	log "unknwon.dev/clog/v2"
 )
 
 var cli, _ = client.NewClientWithOpts(client.FromEnv)
@@ -115,23 +116,23 @@ func (d *Docker) Run() error {
 			dest := d.tagForRemote(cli, img)
 			err := d.writeRemote(cli, dest, img)
 			if err != nil {
-				Print(err)
+				log.Info(err.Error())
 			}
 		} else {
 			re := regexp.MustCompile(`[:/]`)
 			outFile := re.ReplaceAllString(reference.Path(img), "_") + ".tar"
 			out, err := os.Create(path.Join(d.dir(), outFile))
 			if err != nil {
-				Printf("error creating %s for saving Docker image %s - %s", outFile, img.String(), err)
+				log.Info("error creating %s for saving Docker image %s - %s", outFile, img.String(), err)
 				continue
 			}
 			err = d.writeLocal(cli, out, img)
 			if err != nil {
-				Printf("error saving %s - %s", img.String(), err)
+				log.Info("error saving %s - %s", img.String(), err)
 				os.Remove(out.Name())
 				continue
 			}
-			Debugf("saved Docker image %s to %s", img.String(), out.Name())
+			log.Trace("saved Docker image %s to %s", img.String(), out.Name())
 		}
 	}
 	return nil
@@ -139,13 +140,13 @@ func (d *Docker) Run() error {
 
 // Setup gets the environment ready to run the Docker worker
 func (d *Docker) Setup() error {
-	Print("Called Docker.Setup()")
+	log.Trace("Called Docker.Setup()")
 	_ = os.MkdirAll(d.dir(), os.ModePerm)
 
 	for _, img := range d.Images {
-		Debugf("pulling image %s", img.String())
+		log.Trace("pulling image %s", img.String())
 		if err := PullImage(cli, img); err != nil {
-			Printf("Error pulling Docker image `%s`: %s", img.String(), err)
+			log.Error("Error pulling Docker image `%s`: %s", img.String(), err)
 		}
 	}
 	return nil

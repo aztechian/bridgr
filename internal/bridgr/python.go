@@ -10,6 +10,7 @@ import (
 	"github.com/aztechian/bridgr/internal/bridgr/asset"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
+	log "unknwon.dev/clog/v2"
 )
 
 var (
@@ -96,7 +97,7 @@ func (p *Python) Hook() mapstructure.DecodeHookFunc {
 
 // Setup creates the items that are needed to fetch artifacts for the Python worker. It does not actually fetch artifacts.
 func (p Python) Setup() error {
-	Debug("Called Python Setup()")
+	log.Trace("Called Python Setup()")
 	_ = os.MkdirAll(p.dir(), os.ModePerm)
 	reqt, err := os.Create(path.Join(p.dir(), "requirements.txt"))
 	if err != nil {

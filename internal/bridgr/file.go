@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
+	log "unknwon.dev/clog/v2"
 )
 
 var (
@@ -84,7 +85,7 @@ func (fi FileItem) String() string {
 func (fi *FileItem) fetch(fetcher fetcher, cr CredentialReader, output io.WriteCloser) error {
 	creds, ok := cr.Read(fi.Source)
 	if ok {
-		Debugf("Found credentials for File %s", fi.Source.String())
+		log.Trace("Found credentials for File %s", fi.Source.String())
 	}
 	switch fi.Source.Scheme {
 	case "http", "https":
@@ -97,7 +98,7 @@ func (fi *FileItem) fetch(fetcher fetcher, cr CredentialReader, output io.WriteC
 		client := fetcher.regionalClient(fi.Source, creds)
 		return fetcher.s3Fetch(client, fi.Source, output)
 	default:
-		Printf("unsupported FileItem schema: %s, from %s", fi.Source.Scheme, fi.Source)
+		log.Info("unsupported FileItem schema: %s, from %s", fi.Source.Scheme, fi.Source)
 	}
 	return nil
 }
@@ -137,11 +138,11 @@ func (f File) Run() error {
 	for _, item := range f {
 		out, createErr := os.Create(item.Target)
 		if createErr != nil {
-			Printf("Unable to create local file '%s' (for %s) %s", item.Target, item.Source.String(), createErr)
+			log.Info("Unable to create local file '%s' (for %s) %s", item.Target, item.Source.String(), createErr)
 			continue
 		}
 		if err := item.fetch(&fetcher, &credentials, out); err != nil {
-			Printf("Files '%s' - %+s", item.Source.String(), err)
+			log.Info("Files '%s' - %+s", item.Source.String(), err)
 			_ = os.Remove(item.Target)
 		}
 	}
@@ -150,7 +151,7 @@ func (f File) Run() error {
 
 // Setup only does the setup step of the Files worker
 func (f File) Setup() error {
-	Debug("Called Files.Setup()")
+	log.Trace("Called Files.Setup()")
 	_ = os.MkdirAll(f.dir(), os.ModePerm)
 	for _, item := range f {
 		_ = item.Normalize(f.dir())
@@ -164,7 +165,7 @@ func (ff *fileFetcher) fileFetch(source string, out io.WriteCloser) error {
 		return openErr
 	}
 
-	Debugf("Copying local file: %s", source)
+	log.Trace("Copying local file: %s", source)
 	defer out.Close()
 	defer in.Close()
 	_, err := io.Copy(out, in)
@@ -173,7 +174,7 @@ func (ff *fileFetcher) fileFetch(source string, out io.WriteCloser) error {
 
 func (ff *fileFetcher) ftpFetch(source string, out io.WriteCloser, creds Credential) error {
 	defer out.Close()
-	Debugf("Downloading FTP file: %s", source)
+	log.Trace("Downloading FTP file: %s", source)
 	return fmt.Errorf("FTP support is not yet implemented, skipping %+s", source)
 }
 
@@ -181,7 +182,7 @@ func (ff *fileFetcher) httpFetch(httpClient *http.Client, source string, out io.
 	// Get the data
 	defer out.Close()
 
-	Debugf("Downloading HTTP/S file: %s", source)
+	log.Trace("Downloading HTTP/S file: %s", source)
 	req, err := http.NewRequest(http.MethodGet, source, nil)
 	if err != nil {
 		return err
@@ -205,7 +206,7 @@ func (ff *fileFetcher) s3Fetch(client s3iface.S3API, source *url.URL, out io.Wri
 	if client == (*s3.S3)(nil) {
 		return errors.New("Invalid S3 client, unable to copy file")
 	}
-	Debugf("Downloading S3 file: %s", source.String())
+	log.Trace("Downloading S3 file: %s", source.String())
 	resp, err := client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(source.Host),
 		Key:    aws.String(source.Path),
@@ -221,7 +222,7 @@ func (ff *fileFetcher) s3Fetch(client s3iface.S3API, source *url.URL, out io.Wri
 func (ff *fileFetcher) regionalClient(source *url.URL, creds Credential) *s3.S3 {
 	loc, err := defaultS3.GetBucketLocation(&s3.GetBucketLocationInput{Bucket: &source.Host})
 	if err != nil {
-		Printf("unable to find bucket '%s': %s. Validate bucket is correct and credentials are valid.", source.Host, err)
+		log.Info("unable to find bucket '%s': %s. Validate bucket is correct and credentials are valid.", source.Host, err)
 		return nil
 	}
 	region := s3.NormalizeBucketLocation(aws.StringValue(loc.LocationConstraint))
@@ -229,7 +230,7 @@ func (ff *fileFetcher) regionalClient(source *url.URL, creds Credential) *s3.S3 
 	cfg := aws.NewConfig().WithRegion(aws.StringValue(&region))
 	if len(creds.Username) > 0 {
 		cfg.WithCredentials(credentials.NewStaticCredentials(creds.Username, creds.Password, ""))
-		Debugf("Using static AWS credentials from bridgr environment")
+		log.Trace("Using static AWS credentials from bridgr environment")
 	}
 	return s3.New(s3session.Copy(cfg))
 }

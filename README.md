@@ -13,7 +13,7 @@
 [![Go Report Card][reportcard-image]][reportcard-url]
 [![maintainability][maintainability-image]][maintainability-url]
 [![coverage][coverage-image]][coverage-url]
-[![Get more details at **codescene.io**.][codescene-image]][codescene-url]
+[![codescene][codescene-image]][codescene-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
 your software (or deploy it) isn't available! The common solution to this problem has been to have each developer bring in the
@@ -210,8 +210,8 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [maintainability-url]: https://codeclimate.com/github/aztechian/bridgr/maintainability
 [coverage-image]: https://img.shields.io/codeclimate/coverage/aztechian/bridgr?logo=code-climate
 [coverage-url]: https://codeclimate.com/github/aztechian/bridgr/test_coverage
-[codescene-image]: https://codescene.io/projects/4859/status.svg
-[codescene-url]: https://codescene.io/projects/4859/jobs/latest-successful/results
+[codescene-image]: https://codescene.io/projects/4859/status-badges/code-health
+[codescene-url]: https://codescene.io/projects/4859/
 [releasedate-image]: https://img.shields.io/github/release-date/aztechian/bridgr?color=blueviolet
 [releasever-image]: https://img.shields.io/github/v/release/aztechian/bridgr
 [gitpod-url]: https://gitpod.io/#https://github.com/aztechian/bridgr

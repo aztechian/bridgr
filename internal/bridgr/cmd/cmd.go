@@ -1,18 +1,27 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
+	"github.com/briandowns/spinner"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/crypto/ssh/terminal"
 	"gopkg.in/yaml.v3"
+	log "unknwon.dev/clog/v2"
 )
+
+const SpinnerSpeed = 400 * time.Millisecond
 
 // Bridgr needs documentation
 type Bridgr []bridgr.Configuration
@@ -23,7 +32,7 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 	confData, err := ioutil.ReadAll(f)
 	defer f.Close()
 	if err != nil {
-		bridgr.Printf("Unable to read config file: %s", err)
+		log.Error("Unable to read config file: %s", err)
 		return &c, err
 	}
 
@@ -50,27 +59,35 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 		case "helm":
 			section = &bridgr.Helm{}
 		default:
-			bridgr.Printf("Unable to create repository \"%s\", skipping.", key)
+			log.Warn("Unable to create repository \"%s\", skipping.", key)
 			continue
 		}
 		err = decode(section, cfg)
 		if err != nil {
-			bridgr.Printf("error decoding section \"%s\": %s", key, err)
+			log.Warn("error decoding section \"%s\": %s", key, err)
 		}
 		c = append(c, section)
 	}
-	bridgr.Debug(spew.Sdump(c))
+	log.Trace(spew.Sdump(c))
 	return &c, nil
 }
 
 // Execute runs the specified workers from the configuration
-func Execute(config Bridgr, filter []string) error {
-	for _, w := range config {
+func (b Bridgr) Execute(filter []string) error {
+	spin := spinner.New(spinner.CharSets[11], SpinnerSpeed, spinner.WithWriter(os.Stderr))
+	spin.Suffix = "  | Starting Bridgr"
+	spin.FinalMSG = "Bridgr Completed!\n"
+	_ = spin.Color("fgHiGreen")
+	if isTty() && !bridgr.Verbose {
+		spin.Start()
+	}
+	for _, w := range b {
 		if len(filter) > 0 && !contains(w.Name(), filter) {
-			bridgr.Debugf("skipping worker %s, not in %s", w.Name(), filter)
+			log.Trace("skipping worker %s, not in %s", w.Name(), filter)
 			continue
 		}
-		bridgr.Printf("Processing %s...", w.Name())
+		spin.Suffix = fmt.Sprintf("  | Processing %s...", w.Name())
+		log.Info("Processing %s...", w.Name())
 		var err error
 		if bridgr.DryRun {
 			err = w.Setup()
@@ -78,10 +95,10 @@ func Execute(config Bridgr, filter []string) error {
 			err = w.Run()
 		}
 		if err != nil {
-			bridgr.Printf("Error processing %s: %s", w.Name(), err)
+			log.Warn("Error processing %s: %s", w.Name(), err)
 		}
 	}
-
+	spin.Stop()
 	return nil
 }
 
@@ -122,6 +139,10 @@ func stringToURL(f reflect.Type, t reflect.Type, data interface{}) (interface{},
 }
 
 func debugHook(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
-	bridgr.Debugf("%s -> %s\n%s\n\n", f, t, data)
+	log.Trace("%s -> %s\n%s\n\n", f, t, data)
 	return data, nil
+}
+
+func isTty() bool {
+	return terminal.IsTerminal(syscall.Stdout)
 }
