@@ -21,7 +21,7 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
-const SpinnerSpeed = 400 * time.Millisecond
+const spinnerSpeed = 400 * time.Millisecond
 
 // Bridgr needs documentation
 type Bridgr []bridgr.Configuration
@@ -74,7 +74,7 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 
 // Execute runs the specified workers from the configuration
 func (b Bridgr) Execute(filter []string) error {
-	spin := spinner.New(spinner.CharSets[11], SpinnerSpeed, spinner.WithWriter(os.Stderr))
+	spin := spinner.New(spinner.CharSets[11], spinnerSpeed, spinner.WithWriter(os.Stderr))
 	spin.Suffix = "  | Starting Bridgr"
 	spin.FinalMSG = "Bridgr Completed!\n"
 	_ = spin.Color("fgHiGreen")
@@ -86,7 +86,9 @@ func (b Bridgr) Execute(filter []string) error {
 			log.Trace("skipping worker %s, not in %s", w.Name(), filter)
 			continue
 		}
+		spin.Lock()
 		spin.Suffix = fmt.Sprintf("  | Processing %s...", w.Name())
+		spin.Unlock()
 		log.Info("Processing %s...", w.Name())
 		var err error
 		if bridgr.DryRun {
