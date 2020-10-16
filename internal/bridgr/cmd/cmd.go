@@ -8,7 +8,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
@@ -146,5 +145,5 @@ func debugHook(f reflect.Type, t reflect.Type, data interface{}) (interface{}, e
 }
 
 func isTty() bool {
-	return terminal.IsTerminal(syscall.Stdout)
+	return terminal.IsTerminal(int(os.Stdout.Fd()))
 }
