@@ -61,17 +61,17 @@ func PullImage(cli ImagePuller, image reference.Named) error {
 	creds := &DockerCredential{}
 	dockerAuth(image, creds)
 	output, err := cli.ImagePull(context.Background(), image.String(), types.ImagePullOptions{RegistryAuth: creds.String()})
-	defer output.Close() // nolint
 	if err != nil {
 		return err
 	}
+	defer output.Close()
 
 	// must wait for output before returning
 	scanner := bufio.NewScanner(output)
 	for scanner.Scan() {
 		log.Trace(scanner.Text())
 	}
-	return err
+	return nil
 }
 
 func dockerAuth(image reference.Named, rw CredentialReaderWriter) {
