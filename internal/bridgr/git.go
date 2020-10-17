@@ -15,6 +15,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	log "unknwon.dev/clog/v2"
 )
 
 // Git is the struct for holding a Git configuration in Bridgr
@@ -120,7 +121,7 @@ func (g *Git) Run() error {
 		dir := g.prepDir(item.URL)
 		repo, err := item.clone(dir)
 		if err != nil {
-			Printf("Error cloning Git repository '%s': %s", item.URL.String(), err)
+			log.Info("Error cloning Git repository '%s': %s", item.URL.String(), err)
 		}
 		if item.Bare {
 			_ = os.MkdirAll(path.Join(dir, "info"), os.ModePerm)
@@ -144,24 +145,24 @@ func (g *Git) prepDir(url *url.URL) string {
 	dir = path.Join(g.dir(), dir)
 
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
-		Debugf("%s exists, removing to allow new clone", dir)
+		log.Trace("%s exists, removing to allow new clone", dir)
 		os.RemoveAll(dir)
 	}
 	return dir
 }
 
 func (gi GitItem) clone(dir string) (*git.Repository, error) {
-	Debugf("About to clone %s into %s", gi.URL.String(), dir)
+	log.Trace("About to clone %s into %s", gi.URL.String(), dir)
 	creds := gitCredentials{}
 	gitAuth(gi.URL, &creds)
 	opts := git.CloneOptions{URL: gi.URL.String(), SingleBranch: false, Auth: &creds.BasicAuth}
 	if gi.Tag != "" {
-		Debugf("Getting specific tag %s", gi.Tag.String())
+		log.Trace("Getting specific tag %s", gi.Tag.String())
 		opts.ReferenceName = gi.Tag
 		opts.SingleBranch = true
 	}
 	if gi.Branch != "" {
-		Debugf("Getting specific branch %s", gi.Branch.String())
+		log.Trace("Getting specific branch %s", gi.Branch.String())
 		opts.ReferenceName = gi.Branch
 		opts.SingleBranch = true
 	}
@@ -171,7 +172,7 @@ func (gi GitItem) clone(dir string) (*git.Repository, error) {
 
 func gitAuth(url *url.URL, rw CredentialReaderWriter) {
 	if creds, ok := rw.Read(url); ok {
-		Debugf("Git: Found credentials for %s", url.String())
+		log.Trace("Git: Found credentials for %s", url.String())
 		_ = rw.Write(creds)
 	}
 }

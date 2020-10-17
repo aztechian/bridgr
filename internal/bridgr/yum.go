@@ -12,6 +12,7 @@ import (
 	"github.com/aztechian/bridgr/internal/bridgr/asset"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
+	log "unknwon.dev/clog/v2"
 )
 
 var (
@@ -106,7 +107,7 @@ func (y Yum) Run() error {
 
 // Setup only does the setup step of the YUM worker
 func (y Yum) Setup() error {
-	Debug("Called Yum Setup()")
+	log.Trace("Called Yum Setup()")
 	_ = os.MkdirAll(y.dir(), os.ModePerm)
 
 	repoFile, err := os.Create(path.Join(y.dir(), "bridgr.repo"))

@@ -7,9 +7,10 @@ package asset
 import (
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"text/template"
+
+	log "unknwon.dev/clog/v2"
 )
 
 // Load reads a given asset name from the VFS, and returns it as a string
@@ -30,7 +31,7 @@ func Load(name string) (string, error) {
 func Template(name string) *template.Template {
 	tmpl, err := Load(name)
 	if err != nil {
-		log.Printf("Error loading %s template: %s", name, err)
+		log.Warn("Error loading %s template: %s", name, err)
 	}
 	return template.Must(template.New(name).Funcs(template.FuncMap{"Join": strings.Join}).Parse(tmpl))
 }

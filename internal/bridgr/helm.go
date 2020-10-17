@@ -7,6 +7,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 	"helm.sh/helm/v3/pkg/repo"
+	log "unknwon.dev/clog/v2"
 )
 
 // Helm is a list of files that represent Helm charts, and have both a source and target
@@ -33,7 +34,7 @@ func (h *Helm) Hook() mapstructure.DecodeHookFunc {
 
 // Setup prepares the Helm charts for fetching and indexing.
 func (h Helm) Setup() error {
-	Print("Called Helm.Setup()")
+	log.Trace("Called Helm.Setup()")
 	for _, chart := range h {
 		chart.Normalize(h.dir())
 	}
@@ -50,11 +51,11 @@ func (h Helm) Run() error {
 	for _, chart := range h {
 		writer, createErr := os.Create(chart.Target)
 		if createErr != nil {
-			Printf("Unable to create local file '%s' (for %s) %s", chart.Target, chart.Source.String(), createErr)
+			log.Warn("Unable to create local file '%s' (for %s) %s", chart.Target, chart.Source.String(), createErr)
 			continue
 		}
 		if err := chart.fetch(&fileFetcher{}, &WorkerCredentialReader{}, writer); err != nil {
-			Printf("Files '%s' - %+s", chart.Source.String(), err)
+			log.Info("Files '%s' - %+s", chart.Source.String(), err)
 			_ = os.Remove(chart.Target)
 		}
 	}

@@ -3,6 +3,7 @@ package bridgr_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -42,9 +43,17 @@ func TestBaseDir(t *testing.T) {
 func TestPullImage(t *testing.T) {
 	cli := fakeCLI{}
 	img, _ := reference.ParseNormalizedNamed("nginx:2")
-	cli.On("ImagePull", context.Background(), img.String(), types.ImagePullOptions{}).Return(ioutil.NopCloser(bytes.NewReader([]byte("hello world"))), nil)
-	err := bridgr.PullImage(&cli, img)
-	if err != nil {
+	cli.On("ImagePull", context.Background(), img.String(), types.ImagePullOptions{}).Return(ioutil.NopCloser(bytes.NewReader([]byte("hello world"))), nil).Once()
+	cli.On("ImagePull", context.Background(), img.String(), types.ImagePullOptions{}).Return(ioutil.NopCloser(bytes.NewReader([]byte(""))), errors.New("failed image pull")).Once()
+	if err := bridgr.PullImage(&cli, img); err != nil {
 		t.Error(err)
+	}
+
+	if err := bridgr.PullImage(&cli, img); err == nil {
+		t.Errorf("Expected error from PullImage(), but got none")
+	}
+
+	if !cli.AssertNumberOfCalls(t, "ImagePull", 2) {
+		t.Error("Docker cli was not called 2 times")
 	}
 }

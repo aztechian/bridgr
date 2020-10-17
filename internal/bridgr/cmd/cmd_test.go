@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"reflect"
@@ -44,53 +46,51 @@ func (c *fakeConfig) Setup() error {
 	return args.Error(0)
 }
 
+type errReader int
+
+func (r *errReader) Read(p []byte) (int, error) {
+	return 0, errors.New("Fake read error")
+}
+
 var (
-	yamlGit = []byte(`
----
+	yamlGit = []byte(`---
 git:
   - https://repo.org/something.git
 `)
 
-	yamlYum = []byte(`
----
+	yamlYum = []byte(`---
 yum:
   - forgetmenow
 `)
 
-	yamlRuby = []byte(`
----
+	yamlRuby = []byte(`---
 ruby:
   - wall
 `)
 
-	yamlBlah = []byte(`
----
+	yamlBlah = []byte(`---
 blah:
   - bobloblaw
 `)
 
-	yamlDocker = []byte(`
----
+	yamlDocker = []byte(`---
 docker:
   - hub.bluth.org/gob:latest
 `)
 
-	yamlFile = []byte(`
----
+	yamlFile = []byte(`---
 files:
   - /buster.gif
 `)
 
-	yamlPython = []byte(`
----
+	yamlPython = []byte(`---
 python:
   - bobloblaw
 `)
 
-	yamlHelm = []byte(`
----
+	yamlHelm = []byte(`---
 helm:
-	- https://repo.bluth.org/illusions/trick-1.0.0.tgz
+  - https://repo.bluth.org/illusions/trick-1.0.0.tgz
 `)
 
 	namedComparer = cmp.Comparer(func(got, want reference.Named) bool {
@@ -232,7 +232,7 @@ func TestExecute(t *testing.T) {
 				}
 			}
 			bridgr.DryRun = test.dryrun
-			err := Execute(c, []string{"fake"})
+			err := Bridgr(c).Execute([]string{"fake"})
 			if err != nil {
 				t.Error(err)
 			}
@@ -242,24 +242,34 @@ func TestExecute(t *testing.T) {
 
 func TestNewCmd(t *testing.T) {
 	tests := []struct {
-		name string
-		yaml *bytes.Reader
+		name     string
+		yaml     *bytes.Reader
+		negative bool
 	}{
-		{"git", bytes.NewReader(yamlGit)},
-		{"yum", bytes.NewReader(yamlYum)},
-		{"ruby", bytes.NewReader(yamlRuby)},
-		{"docker", bytes.NewReader(yamlDocker)},
-		{"python", bytes.NewReader(yamlPython)},
-		{"files", bytes.NewReader(yamlFile)},
-		{"helm", bytes.NewReader(yamlHelm)},
-		{"blah", bytes.NewReader(yamlBlah)},
+		{"git", bytes.NewReader(yamlGit), false},
+		{"yum", bytes.NewReader(yamlYum), false},
+		{"ruby", bytes.NewReader(yamlRuby), false},
+		{"docker", bytes.NewReader(yamlDocker), false},
+		{"python", bytes.NewReader(yamlPython), false},
+		{"files", bytes.NewReader(yamlFile), false},
+		{"helm", bytes.NewReader(yamlHelm), false},
+		{"blah", bytes.NewReader(yamlBlah), false},
+		{"failed read", bytes.NewReader(yamlBlah), true},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cfg, _ := New(ioutil.NopCloser(test.yaml))
+			var reader io.Reader = test.yaml
+			if test.negative {
+				reader = new(errReader)
+			}
+
+			cfg, err := New(ioutil.NopCloser(reader))
 			if cfg == nil {
 				t.Error(cfg)
+			}
+			if err != nil && !test.negative {
+				t.Error(err)
 			}
 		})
 	}

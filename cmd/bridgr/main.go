@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"time"
 
+	log "unknwon.dev/clog/v2"
+
 	"github.com/aztechian/bridgr/internal/bridgr"
 	"github.com/aztechian/bridgr/internal/bridgr/cmd"
 )
@@ -45,54 +47,66 @@ func init() {
 
 func main() {
 	flag.Parse()
-	bridgr.Verbose = *verbosePtr
+	logConfig := log.ConsoleConfig{Level: log.LevelWarn}
+	if *verbosePtr {
+		logConfig.Level = log.LevelTrace
+	}
+	// initialize clog logger
+	if err := log.NewConsole(1, logConfig); err != nil {
+		panic("unable to create console logger: " + err.Error())
+	}
 
 	if *versionPtr {
 		fmt.Fprintln(os.Stderr, "Bridgr - (C) 2020 Ian Martin, MIT License. See https://github.com/aztechian/bridgr")
 		fmt.Printf("%s\n", bridgr.Version)
 		fmt.Fprintln(os.Stderr, "")
-		os.Exit(success)
+		exit(success)
 	}
 
 	if *hostPtr {
 		dir := http.Dir(bridgr.BaseDir(""))
 		err := bridgr.Serve(*hostListenPtr, dir)
 		if err != nil {
-			fmt.Printf("Unable to start HTTP Server: %s\n", err)
-			os.Exit(srvErr)
+			log.Error("Unable to start HTTP Server: %s\n", err)
+			exit(srvErr)
 		}
-		os.Exit(success)
+		exit(success)
 	}
 
 	if *dryrunPtr {
 		bridgr.DryRun = *dryrunPtr
-		bridgr.Println("Dry-Run requested, will not download artifacts.")
+		log.Info("Dry-Run requested, will not download artifacts.")
 	}
 
 	if fileTimeoutPtr != nil {
-		bridgr.Debugf("setting file timeout to %s", *fileTimeoutPtr)
 		bridgr.FileTimeout = *fileTimeoutPtr
+		log.Trace("setting file timeout to %s", *fileTimeoutPtr)
 	}
 
 	configFile, err := openConfig()
 	if err != nil {
-		bridgr.Printf("Unable to open bridgr config \"%s\": %s", *configPtr, err)
+		log.Error("Unable to open bridgr config \"%s\": %s", *configPtr, err)
 		if configFile != nil {
 			configFile.Close()
 		}
-		os.Exit(cfgErr)
+		exit(cfgErr)
 	}
 	config, err := cmd.New(configFile)
 	if err != nil {
-		bridgr.Print(err)
-		os.Exit(execErr)
+		log.Info(err.Error())
+		exit(execErr)
 	}
-	err = cmd.Execute(*config, flag.Args())
-	if err != nil {
-		bridgr.Print(err)
-		os.Exit(execErr)
+
+	if err := config.Execute(flag.Args()); err != nil {
+		log.Info(err.Error())
+		exit(execErr)
 	}
-	os.Exit(success)
+	exit(success)
+}
+
+func exit(code int) {
+	log.Stop()
+	os.Exit(code)
 }
 
 func openConfig() (io.ReadCloser, error) {

@@ -10,6 +10,7 @@ import (
 	"github.com/aztechian/bridgr/internal/bridgr/asset"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
+	log "unknwon.dev/clog/v2"
 )
 
 var (
@@ -109,7 +110,7 @@ func (r Ruby) Hook() mapstructure.DecodeHookFunc {
 
 // Setup creates the items that are needed to fetch artifacts for the Python worker. It does not actually fetch artifacts.
 func (r *Ruby) Setup() error {
-	Debug("Called Ruby.Setup()")
+	log.Trace("Called Ruby.Setup()")
 	_ = os.MkdirAll(r.dir(), os.ModePerm)
 
 	gemfile, err := os.Create(path.Join(r.dir(), "Gemfile"))
@@ -122,7 +123,7 @@ func (r *Ruby) Setup() error {
 
 // Run fetches all artifacts for the Python configuration
 func (r *Ruby) Run() error {
-	Debug("Called Ruby.Setup()")
+	log.Trace("Called Ruby.Run()")
 	if err := r.Setup(); err != nil {
 		return err
 	}

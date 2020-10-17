@@ -1,6 +1,7 @@
 package bridgr
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	networktypes "github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	log "unknwon.dev/clog/v2"
 )
 
 var baseImage = map[string]string{
@@ -63,7 +65,7 @@ func newBatch(image, pkgSource, repoSource, repoTarget string) batch {
 
 func (b *batch) cleanContainer(name string) {
 	if err := b.Client.ContainerRemove(context.Background(), name, types.ContainerRemoveOptions{Force: true}); err != nil {
-		Printf("Error while cleaning batch container %s: %s", name, err)
+		log.Warn("Error while cleaning batch container %s: %s", name, err)
 	}
 }
 
@@ -99,6 +101,14 @@ func (b *batch) runContainer(name, script string) error {
 		return err
 	}
 	defer out.Close()
-	_, err = stdcopy.StdCopy(os.Stdout, os.Stderr, out)
+	writer := bytes.Buffer{}
+	// create an in-memory buffer for container output (both stdout and stderr)
+	// use StdCopy to de-multiplex the stream from docker
+	// send it to our logger
+	_, err = stdcopy.StdCopy(&writer, &writer, out)
+	scanner := bufio.NewScanner(&writer)
+	for scanner.Scan() {
+		log.Trace(scanner.Text())
+	}
 	return err
 }
