@@ -1,7 +1,6 @@
 ---
 # creates a YUM repository populated from Base or alternate sources
 yum:
-  version: 7
   repos:
     - https://dl.fedoraproject.org/pub/epel/7/x86_64/
   packages:
@@ -18,14 +17,16 @@ ruby:
   sources:
     - https://rubygems.org
   gems:
-    - package: thor
+    - thor
     - package: rails
       version: ~>5.1.0
 
 # creates a PyPi compatible static repository, both packages and wheels
 python:
+  # simplest case is a plain string array
+  #- awscli
   # The version of python to use may be specified
-  version: 2.7.16
+  #version: 2.7.16
   packages:
     - django
     - package: flask
@@ -42,14 +43,19 @@ npm:
 
 # downloads docker images from provided image specs, and exports to file (or optionally, pushes to an alternate repository)
 docker:
+  # a simple array can be used...
+  #- docker.io/openshift/oauth-proxy:v1.1.0
+  #- docker.io/openshift/origin-console:v3.11
+
   # Specifying repository key pushes images to the specified repository. If repository is _not_ specifed,
   # images are written to local filesystem as .tar files.
-  repository: repository.internal.corp.com
+  #repository: repository.internal.corp.com
   images:
+    - centos:7
     - image: ubuntu
       version: "18.04"
     - host: quay.io
-      image: prometheus/node-exporter
+      image: prom/node-exporter
       version: latest
     - quay.io/prometheus/prometheus:v2.11.2
 
@@ -88,6 +94,7 @@ vagrant:
   - centos/7
   - myimage.box
 
-# helm currently doesn't support anything besides an array of URLs
+# creates a helm repository from the list of URLs containing tgz packaged helm charts. This should be the usual format
+#  of packaged helm releases, but it may take some looking to find the direct URL of the chart you want.
 helm:
   - http://storage.googleapis.com/kubernetes-charts-incubator/aws-alb-ingress-controller-1.0.0.tgz

@@ -16,7 +16,7 @@ npm:
   - vue-cli
 docker:
   - centos:7
-  - prometheus/node-exporter
+  - prom/node-exporter
   - ubuntu
 jenkins:
   - pipeline
