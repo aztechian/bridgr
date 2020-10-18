@@ -57,7 +57,25 @@ To only run one of the repository types, simply give that type after any configu
 ./bridgr -v files
 ```
 
-Additional command line options include:
+### Output
+
+Bridgr, by default will output a "spinner" display on the terminal to `stderr`. Warning-level logs will be output to `stdout`. It is possible to redirect stdout to file, an only see the spinner
+
+```shell
+bridgr > bridgr.log
+```
+
+or
+
+```shell
+bridgr > /dev/null
+```
+
+When in verbose mode, bridgr will not emit the spinner status and will only log to stdout.
+
+Finally, when the target terminal is not a TTY (ie, when in an automated CI build) the spinner will not be shown.
+
+### command line options
 
 | Option              | Meaning                                                                                                                                                     |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -104,6 +122,20 @@ BRIDGR_GITHUB_COM_TOKEN=abcdefg123456789 bridgr git
 ```
 
 In this case, we don't need to specify the `_USER` part of the credential, because the git worker assumes a username of `git`, and Github or Gitlab just need it to _not_ be blank. The worker does this for you.
+
+#### S3 Authentication
+
+For files that are specified in the bridgr configuration file that begin with `s3://`, Bridgr will use the AWS SDK to download the file from an S3 bucket source. The format of the source file must be `s3://<bucket-name>/<path>/<file>`. In other words, the bucket name must not be a DNS alias, or an HTTP location that is ultimately served by an S3 bucket - it must be the "raw" bucket name as seen in your account.
+
+If all of the S3 file sources you wish to use are from the same account, then the usual methods of giving credentials to the S3 SDK or AWS cli [can be used](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html). We recommend also setting the environment variable `AWS_SDK_LOAD_CONFIG=1` so that all profiles in your AWS configuration may be utilized.
+
+If you want to provide specific credentials per S3 bucket, you can use the environment variable schema as described above. In the case of S3 locations, the hostname will be the bucket name. So, for example with a bucket name of `example-bucket` you would use
+
+`BRIDGR_EXAMPLE-BUCKET_USER` and `BRIDGR_EXAMPLE-BUCKET_PASS`
+
+The values should be the same AWS credentials used by `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, respectively. Bridgr will look up the environment variables for the credentials for any files in that bucket, and create a new session with those credentials to fetch the files from S3.
+
+It is possible to download "public" files from S3 that do not require authentication. In this case, you do not need to specify credentials (if you prefer not to), as Bridgr will use anonymous credentials to access the file. This case is rare, and you would have to know the file bucket and path specifically.
 
 ## Hosting mode
 
@@ -153,12 +185,21 @@ Significant Go modules used by `Bridgr`:
 - yaml.v3
 - vfsgen
 - helm/v3
+- unknwon.dev/clog/v2
 
 Potential for schema definition/validation of the YAML config file: [https://github.com/rjbs/rx](https://github.com/rjbs/rx)
 Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski/iso9660](https://github.com/kdomanski/iso9660)
 
 ## Release History
 
+- 1.5.0
+  - Support for Helm repository creation
+  - Support downloading files from S3
+  - Default verbosity now creates a "spinner" on terminal stderr. Verbose mode outputs all logging messages.
+  - Migrated to [clog](https://github.com/go-clog/clog) logging library
+  - Migrated to CodeClimate for coverage info and CI integration
+  - Code lint issues fixed
+  - Added [reviewdog](https://github.com/apps/reviewdog) to integrate PR checks with golangci-lint results
 - 1.4.0
   - Complete rewrite of bridgr, to organize code internally for better testability and future work
   - Added `--file-timeout` flag to allow modifying the HTTP/s client overall timeout for downloading files
