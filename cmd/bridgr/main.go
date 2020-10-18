@@ -29,14 +29,14 @@ var (
 	versionPtr     = flag.Bool("version", false, "Print version and exit")
 	hostPtr        = flag.Bool("host", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
 	hostListenPtr  = flag.String("listen", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
-	configPtr      = flag.String("config", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
+	configPtr      = flag.String("config", "bridge.yaml", "The config file for Bridgr (default is bridge.yaml)")
 	threadsPtr     = flag.Int("threads", 1, "Number of threads to use for fetching artifacts")
 	dryrunPtr      = flag.Bool("dry-run", false, "Dry-run only. Do not actually download content")
 	fileTimeoutPtr = flag.Duration("file-timeout", defaultTimeout, "Timeout duration for downloading files, uses Golang duration strings")
 )
 
 func init() {
-	flag.StringVar(configPtr, "c", "bridge.yml", "The config file for Bridgr (default is bridge.yml)")
+	flag.StringVar(configPtr, "c", "bridge.yaml", "The config file for Bridgr (default is bridge.yaml)")
 	flag.BoolVar(verbosePtr, "v", false, "Verbose logging (debug)")
 	flag.BoolVar(hostPtr, "H", false, "Run Bridgr in hosting mode. This only runs a web server for \"packages\" directory")
 	flag.StringVar(hostListenPtr, "l", ":8080", "Listen address for Bridger. Only applicable in hosting mode.")
