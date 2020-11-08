@@ -16,7 +16,7 @@
 [![codescene][codescene-image]][codescene-url]
 
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
-your software (or deploy it) isn't available! The common solution to this problem has been to have each developer bring in the
+your software (or deploy it) aren't available! The common solution to this problem has been to have each developer bring in the
 pieces they need. Governance of the artifacts becomes nearly non-existant - at best you have a "dumping ground" of files that no one
 person knows much about.
 
@@ -89,7 +89,7 @@ Finally, when the target terminal is not a TTY (ie, when in an automated CI buil
 
 ### Artifacts requiring authentication
 
-Bridgr support getting authenticated artifacts for `Files`, `Docker` and `Git`. Sensitive credential information is passed to Bridgr with environment variables. It does not support putting credentials in the configuration file because it risks users comitting these credentials into version control. Bridgr intends to promote good credential hygene.
+Bridgr supports getting authenticated artifacts for `Files`, `Docker` and `Git`. Sensitive credential information is passed to Bridgr with environment variables. It does not support putting credentials in the configuration file because it risks users comitting these credentials into version control. Bridgr intends to promote good credential hygene.
 
 Providing credentials follows a pattern of environment variable naming
 
@@ -139,7 +139,7 @@ It is possible to download "public" files from S3 that do not require authentica
 
 ## Hosting mode
 
-Once artifacts have been gathered by Bridgr and moved across the air-gap, it is required that there be an HTTP server available to the network for serving out these artifacts. In the absense of having an existing server available, Bridgr can itself act as a simple HTTP server. When run in "hosting" mode (`-H` command line option) Bridgr will not fetch
+Once artifacts have been gathered by Bridgr and moved across the air-gap, it is required that there be an HTTP server available on the network for serving out these artifacts. In the absense of having an existing server available, Bridgr can itself act as a simple HTTP server. When run in "hosting" mode (`-H` command line option) Bridgr will not fetch
 any artifacts or look for a manifest file, but will only serve out static files from the `packages` directory where it is executed. When hosting mode is combined with the `--verbose` option, Bridgr will write HTTP logs to stdout in [Combined Log Format](http://httpd.apache.org/docs/current/logs.html#accesslog). If you desire logs be written to a file, then you are responsible for redirecting stdout to the appropriate file in your shell.
 
 Note, that there is no complex configuration available to Bridgr in hosting mode. If you require SSL/TLS for your artifacts, then you must use another product. A containerized Nginx server would be one option, for example. Likewise, there is no authentication for artifacts in hosting mode.
