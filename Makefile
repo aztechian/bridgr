@@ -1,7 +1,6 @@
 PROJECT_NAME := bridgr
 PKG := "$(PROJECT_NAME)"
 CMD := cmd/bridgr/main.go
-VERSION := $(shell  git describe --always --dirty | sed 's/^v//')
 GO_FILES := $(shell find . -name '*.go' | grep -v _test.go)
 OS := $(shell go env GOOS)
 ARCH := $(shell go env GOARCH)
@@ -25,6 +24,10 @@ lint: locallint
 else
 coverage: coverage.out
 lint: cilint.txt
+endif
+
+ifdef TRAVIS_BRANCH
+LDFLAGS := -ldflags="-X github.com/aztechian/bridgr/internal/bridgr.Version=$(TRAVIS_BRANCH)"
 endif
 
 locallint:
@@ -66,7 +69,7 @@ generate: $(GO_FILES)
 	@GOOS="" go generate ./...
 
 $(PROJECT_NAME): generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ -ldflags="-X bridgr.Version=${VERSION}" $(CMD)
+	@go build -tags dist -i -v -o $@ $(LDFLAGS) $(CMD)
 
 %.sha256:
 	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@
