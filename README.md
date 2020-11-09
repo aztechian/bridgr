@@ -208,7 +208,12 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 ## Release History
 
-- 1.5.0
+- 1.5.2
+  - Add support for installing Bridgr via asdf (see Installation section)
+  - Update AWS and Helm libraries
+  - Fix for setting version in published binaries
+  - Added Code of Conduct and Vulnerability Disclosure Policy
+- 1.5.1
   - Support for Helm repository creation
   - Support downloading files from S3
   - Default verbosity now creates a "spinner" on terminal stderr. Verbose mode outputs all logging messages.

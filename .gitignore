@@ -25,4 +25,5 @@
 # this _could_ be committed in the future, but its preferrable to not risk polluting everyones vscode settings from here
 /.vscode
 
-/bridge.y?ml
+/bridge.yaml
+/bridge.yml
