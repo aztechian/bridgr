@@ -43,6 +43,20 @@ The file listings at the end show the artifacts created, including YUM metadata.
 
 Simply download the appropriate architecture binary from the [releases](releases) page, and execute it from wherever you want.
 
+Additionally, bridgr is supported through the [asdf](https://asdf-vm.com/#/core-manage-asdf) tool. `asdf` is a version manager for many tools, languages and libraries and is highly recommended (especially if you are a software developer!).
+
+To install with `asdf`, run
+
+```shell
+asdf plugin-add bridgr https://github.com/aztechian/asdf-bridgr.git
+```
+
+Add bridgr to your `.tool-versions` file. Then, to install bridgr to your system, run
+
+```shell
+asdf install bridgr
+```
+
 ## Usage example
 
 By default, Bridgr will create a `packages` directory with all artifacts gathered in the "current working directory" where you execute Bridgr.
