@@ -32,6 +32,8 @@ in place Bridgr can allow:
 
 For more background and explanation of the use case for Bridgr, please see the [narrative](NARRATIVE.md).
 
+For our security policy and Vulnerability Reporting Policy, please see [SECURITY](SECURITY.md).
+
 Below is an example of Bridgr running and creating a YUM repository, downloading some files, and exporting docker images.
 The file listings at the end show the artifacts created, including YUM metadata.
 
@@ -236,7 +238,7 @@ Potential library for creating iso9660 (ISO) files [https://github.com/kdomanski
 
 ## Meta
 
-Ian Martin – ian@imartin.net
+Ian Martin – bridgr@imartin.io
 
 Distributed under the MIT license. See `LICENSE` for more information.
 
