@@ -18,7 +18,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
-	helm.sh/helm/v3 v3.4.0
+	helm.sh/helm/v3 v3.4.1
 	unknwon.dev/clog/v2 v2.1.2
 )
 
