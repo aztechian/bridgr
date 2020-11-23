@@ -19,7 +19,7 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	helm.sh/helm/v3 v3.4.0
-	unknwon.dev/clog/v2 v2.1.2
+	unknwon.dev/clog/v2 v2.2.0
 )
 
 // docker 18.06.1-ce
