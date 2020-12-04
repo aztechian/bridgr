@@ -61,7 +61,7 @@ asdf install bridgr
 
 By default, Bridgr will create a `packages` directory with all artifacts gathered in the "current working directory" where you execute Bridgr.
 
-Also by default, Bridgr will look for a `bridge.yml` manifest file in the directory where it is being run. This can be overridden with the `-c` option to bridgr to specify a configuration file elsewhere.
+Also by default, Bridgr will look for a `bridge.yaml` manifest file in the directory where it is being run. This can be overridden with the `-c` option to bridgr to specify a configuration file elsewhere.
 
 ```shell
 ./bridgr -c path/to/another/bridge.yml
