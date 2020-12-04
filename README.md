@@ -21,13 +21,13 @@ pieces they need. Governance of the artifacts becomes nearly non-existant - at b
 person knows much about.
 
 Bridgr helps bring order to the chaos by allowing a single, YAML manifest file to define all input artifacts to your system. With this
-in place Bridgr can allow:
+in place Bridgr allows:
 
-- CM control of artifacts - without necessarily needing the space to physically store them
-- DevOps and pipeline friendly-ness
+- Version Control of artifacts - without needing the space to physically store them
+- DevOps and CI Pipeline friendliness
 - Software supply chain protection (reduces chance of picking up [typosquatting](https://en.wikipedia.org/wiki/Typosquatting) packages)
 - Review of changes to artifacts by security teams or CM _before_ the artifact makes it to the target network
-- Static website hosting of artifacts on the target network (with metadata, so repositories like YUM and Rubygems work)
+- Static website hosting of artifacts on the target network (with metadata, so repositories like YUM and Rubygems "just work")
 - Support for multiple output formats - local filesystem, object storage, DVD image(?)
 
 For more background and explanation of the use case for Bridgr, please see the [narrative](NARRATIVE.md).
