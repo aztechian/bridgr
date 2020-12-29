@@ -15,6 +15,16 @@
 [![coverage][coverage-image]][coverage-url]
 [![codescene][codescene-image]][codescene-url]
 
+## Use Cases
+
+Bridr has supported the following use cases (if you have others, please let us know!):
+
+- Simple and automated method to gather dependencies to transfer to air-gapped network
+- Configuration control of build libraries and company/project dependencies
+- Host a repository of custom libraries
+
+## Introduction
+
 Projects that need to build and/or deploy to air-gapped networks frequently run into a problem: All of the artifacts needed to build
 your software (or deploy it) aren't available! The common solution to this problem has been to have each developer bring in the
 pieces they need. Governance of the artifacts becomes nearly non-existant - at best you have a "dumping ground" of files that no one
