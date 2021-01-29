@@ -2,7 +2,7 @@ module github.com/aztechian/bridgr
 
 require (
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
-	github.com/aws/aws-sdk-go v1.35.23
+	github.com/aws/aws-sdk-go v1.37.0
 	github.com/briandowns/spinner v1.11.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/distribution v2.7.1+incompatible
