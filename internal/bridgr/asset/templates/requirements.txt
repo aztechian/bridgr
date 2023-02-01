@@ -1,2 +1,2 @@
-{{range .}}{{.}}
+{{range .}}{{.Package}}
 {{end}}
