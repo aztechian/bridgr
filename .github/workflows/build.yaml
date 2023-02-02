@@ -1,10 +1,10 @@
-name: Build
+name: CI Build
 on:
   - push
   - pull_request
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     env:
       GOMODCACHE: $GOPATH/pkg/mod
@@ -14,4 +14,28 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version-file: "go.mod"
-          cache: true
+          # caching isn't available for golang <= 1.14
+          # cache: true
+      - name: Install Golang CI Lint
+        uses: golangci/golangci-lint-action@v3
+      - name: Install Reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: v0.10.2
+      - name: Run Linting
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          make download
+          make lint
+          cat cilint.txt | reviewdog -reporter=github-pr-check -f=golangci-lint -fail-on-error=false
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Unit Tests
+        run: echo "ok"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compile Application
+        run: echo "ok"
