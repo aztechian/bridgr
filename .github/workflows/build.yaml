@@ -17,7 +17,7 @@ jobs:
       - name: Install Golang CI Lint
         run: |
           glci_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')
-          curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -x -s -- -b $(go env GOPATH)/bin v${glci_ver}
+          curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -x -s -- -b $(go env GOPATH)/bin v${glci_ver}
       # - name: Golang CI Lint
       #   uses: golangci/golangci-lint-action@v3
       - name: Install Reviewdog
