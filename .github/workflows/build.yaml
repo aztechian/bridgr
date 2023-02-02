@@ -33,7 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Unit Tests
-        run: echo "ok"
+        run: make coverage
+      - name: Trigger goreportcard scan
+        run: |
+          curl -s -X POST -F "repo=github.com/$GITHUB_REPOSITORY" https://goreportcard.com/checks
   build:
     runs-on: ubuntu-latest
     steps:
