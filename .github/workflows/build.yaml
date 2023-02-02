@@ -16,8 +16,6 @@ jobs:
           go-version-file: "go.mod"
           # caching isn't available for golang <= 1.14
           # cache: true
-      - name: Install Golang CI Lint
-        uses: golangci/golangci-lint-action@v3
       - name: Install Reviewdog
         uses: reviewdog/action-setup@v1
         with:
@@ -29,6 +27,8 @@ jobs:
           make download
           make lint
           cat cilint.txt | reviewdog -reporter=github-pr-check -f=golangci-lint -fail-on-error=false
+      - name: Golang CI Lint
+        uses: golangci/golangci-lint-action@v3
   test:
     runs-on: ubuntu-latest
     steps:
