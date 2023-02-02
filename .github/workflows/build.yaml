@@ -35,6 +35,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
       - name: Run Unit Tests
         run: make coverage
       - name: Trigger goreportcard scan
@@ -43,5 +48,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
       - name: Compile Application
-        run: echo "ok"
+        run: make
