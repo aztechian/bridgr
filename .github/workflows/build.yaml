@@ -2,10 +2,29 @@ name: CI Build
 on:
   - push
   - pull_request
-
+defaults:
+  run:
+    shell: bash
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
+      - name: Cache
+        uses: actions/cache@v3.2.4
+        with:
+          path: $GOPATH/pkg/mod
+          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomodules
+            ${{ runner.os }}-
   check:
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
@@ -14,10 +33,18 @@ jobs:
           go-version-file: "go.mod"
           # caching isn't available for golang <= 1.14
           # cache: true
+      - name: Cache
+        uses: actions/cache@v3.2.4
+        with:
+          path: $GOPATH/pkg/mod
+          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomodules
+            ${{ runner.os }}-
       - name: Install Golang CI Lint
         run: |
           glci_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')
-          curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -x -s -- -b $(go env GOPATH)/bin v${glci_ver}
+          curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${glci_ver}
       # - name: Golang CI Lint
       #   uses: golangci/golangci-lint-action@v3
       - name: Install Reviewdog
@@ -34,12 +61,21 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version-file: "go.mod"
+      - name: Cache
+        uses: actions/cache@v3.2.4
+        with:
+          path: $GOPATH/pkg/mod
+          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomodules
+            ${{ runner.os }}-
       - name: Run Unit Tests
         run: make coverage
       - name: Trigger goreportcard scan
@@ -47,11 +83,20 @@ jobs:
           curl -s -X POST -F "repo=github.com/$GITHUB_REPOSITORY" https://goreportcard.com/checks
   build:
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version-file: "go.mod"
+      - name: Cache
+        uses: actions/cache@v3.2.4
+        with:
+          path: $GOPATH/pkg/mod
+          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomodules
+            ${{ runner.os }}-
       - name: Compile Application
         run: make
