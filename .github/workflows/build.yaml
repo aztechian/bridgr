@@ -10,27 +10,8 @@ defaults:
   run:
     shell: bash
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version-file: "go.mod"
-      - name: Cache
-        uses: actions/cache@v3.2.4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
-      - name: Download modules
-        run: make download
   check:
     runs-on: ubuntu-latest
-    needs: setup
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
@@ -67,7 +48,6 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: setup
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
@@ -82,14 +62,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gomodules
             ${{ runner.os }}-
-      - name: Run Unit Tests
-        run: make coverage
+      - name: Unit Test and Coverage
+        uses: paambaati/codeclimate-action@v3.2.0
+        env:
+          CC_TEST_REPORTER_ID: 7c1eabd638b12563c95fc1e17e4abc2440612eddd97b25273c986b24faddb6ae
+        with:
+          coverageCommand: make coverage
+          prefix: github.com/aztechian/bridgr
+          coverageLocations: |
+            ${{github.workspace}}/coverage.out:gocov
+
       - name: Trigger goreportcard scan
         run: |
           curl -s -X POST -F "repo=github.com/$GITHUB_REPOSITORY" https://goreportcard.com/checks
   build:
     runs-on: ubuntu-latest
-    needs: setup
     strategy:
       fail-fast: true
       matrix:
