@@ -1,7 +1,13 @@
 name: CI Build
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
 defaults:
   run:
     shell: bash
