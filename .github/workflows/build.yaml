@@ -6,11 +6,6 @@ on:
   pull_request:
     branches:
       - master
-    types:
-      - opened
-      - reopened
-      - ready_for_review
-
 defaults:
   run:
     shell: bash
