@@ -28,24 +28,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gomodules
             ${{ runner.os }}-
-      - name: Install Golang CI Lint
+      - name: Setup bridger
+        id: setup
         run: |
-          glci_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')
-          curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${glci_ver}
-      # - name: Golang CI Lint
-      #   uses: golangci/golangci-lint-action@v3
-      - name: Install Reviewdog
-        uses: reviewdog/action-setup@v1
-        with:
-          reviewdog_version: v0.10.2
-      - name: Run Linting
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+          echo "gcli_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')" >> $GITHUB_OUTPUT
+          echo "::group::godownload"
           make download
-          make lint
-          cat cilint.txt | reviewdog -reporter=github-pr-check -f=golangci-lint -fail-on-error=false
-
+          echo "::endgroup::"
+      - name: Run Linter and Review
+        uses: reviewdog/action-golangci-lint@v2
+        with:
+          go_version_file: "go.mod"
+          reviewdog_version: v0.10.2
+          reporter: github-pr-review
+          golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
   test:
     runs-on: ubuntu-latest
     steps:
@@ -80,10 +76,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # os: [darwin, linux, windows]
-        os: [linux]
-        # arch: [arm64, amd64, 386, arm]
-        arch: [amd64, arm64]
+        os: [darwin, linux, windows]
+        arch: [arm64, amd64, 386, arm]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
@@ -99,6 +93,9 @@ jobs:
             ${{ runner.os }}-gomodules
             ${{ runner.os }}-
       - name: Compile Application
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
         run: |
           make download
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} make
+          make
