@@ -78,6 +78,13 @@ jobs:
       matrix:
         os: [darwin, linux, windows]
         arch: [arm64, amd64, 386, arm]
+        exclude:
+          - os: windows
+            arch: arm64
+          - os: darwin
+            arch: 386
+          - os: darwin
+            arch: arm
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
