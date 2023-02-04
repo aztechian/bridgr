@@ -99,9 +99,6 @@ jobs:
             ${{ runner.os }}-gomodules
             ${{ runner.os }}-
       - name: Compile Application
-        env:
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
         run: |
           make download
-          make
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} make
