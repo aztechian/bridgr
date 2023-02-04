@@ -66,7 +66,7 @@ clean:
 	@docker rm --force bridgr_yum bridgr_python bridgr_ruby &> /dev/null || true
 
 generate: $(GO_FILES)
-	@GOOS="" go generate ./...
+	@GOOS="" GOARCH="" go generate ./...
 
 $(PROJECT_NAME): generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ $(LDFLAGS) $(CMD)
