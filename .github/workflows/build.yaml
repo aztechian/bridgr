@@ -42,6 +42,7 @@ jobs:
           reviewdog_version: v0.10.2
           reporter: github-pr-review
           golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
+          cache: false
   test:
     runs-on: ubuntu-latest
     steps:
@@ -81,6 +82,8 @@ jobs:
             arch: "386"
           - os: darwin
             arch: arm
+          - os: darwin
+            arch: arm64 # :(
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
@@ -101,8 +104,4 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           make download
-          if [[ $GOOS == darwin && $GOARCH == arm64 ]]; then
-            CGO_ENABLED=1 make
-          else
-            make
-          fi
+          make
