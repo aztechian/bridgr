@@ -101,4 +101,8 @@ jobs:
           GOARCH: ${{ matrix.arch }}
         run: |
           make download
-          make
+          if [[ $GOOS == darwin && $GOARCH == arm64 ]]; then
+            CGO_ENABLED=1 make
+          else
+            make
+          fi
