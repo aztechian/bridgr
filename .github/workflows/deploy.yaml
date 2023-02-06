@@ -1,0 +1,81 @@
+name: Deploy and Release
+on:
+  push:
+    tags:
+      - "^v\\d+\\.\\d+\\.\\d+(-\\S*)?$"
+jobs:
+  release-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        # os: [darwin, linux, windows]
+        os: [linux]
+        arch: [amd64, arm64]
+        # arch: [arm64, amd64, "386", arm]
+        exclude:
+          - os: windows
+            arch: arm64
+          - os: darwin
+            arch: "386"
+          - os: darwin
+            arch: arm
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
+      - name: Cache
+        uses: actions/cache@v3.2.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomodules
+            ${{ runner.os }}-
+      - name: Compile Application
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          make download
+          make
+      - name: Store Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: bridgr-${{ matrix.os }}-${{ matrix.arch }}
+          path: bridgr-*
+          retention-days: 1
+
+  reportcard:
+    runs-on: ubuntu-latest
+    needs: release-build
+    steps:
+      - name: Trigger goreportcard scan
+        if: ${{ !env.ACT }}
+        run: |
+          curl -s -X POST -F "repo=github.com/$GITHUB_REPOSITORY" https://goreportcard.com/checks
+
+  release:
+    runs-on: ubuntu-latest
+    needs: release-build
+    steps:
+      - name: Download Build Files
+        uses: actions/download-artifact@v3
+      - name: Move files to root directory
+        run: |
+          mkdir -p release
+          find . -type f | xargs -I {} cp {} release/
+      - name: GitHub Release from Tag
+        id: release
+        uses: eloquent/github-release-action@v3
+        with:
+          generateReleaseNotes: true
+          reactions: champagne,rocket
+          assets: |
+            - path: release/bridgr-*.sha256
+              label: checksum
+            - path: release/bridgr-\\S+-\\S+
+              label: executable
+          summaryEnabled: true

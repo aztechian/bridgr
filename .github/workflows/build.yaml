@@ -67,22 +67,18 @@ jobs:
           prefix: github.com/aztechian/bridgr
           coverageLocations: |
             ${{github.workspace}}/coverage.out:gocov
-
-      - name: Trigger goreportcard scan
-        run: |
-          curl -s -X POST -F "repo=github.com/$GITHUB_REPOSITORY" https://goreportcard.com/checks
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [darwin, linux, windows]
-        arch: [arm64, amd64, 386, arm]
+        arch: [arm64, amd64, "386", arm]
         exclude:
           - os: windows
             arch: arm64
           - os: darwin
-            arch: 386
+            arch: "386"
           - os: darwin
             arch: arm
     steps:
