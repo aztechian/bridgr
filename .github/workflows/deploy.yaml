@@ -5,48 +5,9 @@ on:
       - "v[0-9].[0-9].[0-9]*"
 jobs:
   release-build:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        # os: [darwin, linux, windows]
-        os: [linux]
-        arch: [amd64, arm64]
-        # arch: [arm64, amd64, "386", arm]
-        exclude:
-          - os: windows
-            arch: arm64
-          - os: darwin
-            arch: "386"
-          - os: darwin
-            arch: arm
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version-file: "go.mod"
-      - name: Cache
-        uses: actions/cache@v3.2.4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
-      - name: Compile Application
-        env:
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
-        run: |
-          make download
-          make
-      - name: Store Build
-        uses: actions/upload-artifact@v3
-        with:
-          name: bridgr-${{ matrix.os }}-${{ matrix.arch }}
-          path: bridgr-*
-          retention-days: 1
+    uses: ./.github/workflows/build.yaml
+    with:
+      store_artifacts: true
 
   reportcard:
     runs-on: ubuntu-latest

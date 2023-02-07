@@ -1,73 +1,14 @@
-name: CI Build
+name: Compile Application
+
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-defaults:
-  run:
-    shell: bash
+  workflow_call:
+    inputs:
+      store_artifacts:
+        default: false
+        required: false
+        type: boolean
+
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version-file: "go.mod"
-          # caching isn't available for golang <= 1.14
-          # cache: true
-      - name: Cache
-        uses: actions/cache@v3.2.4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
-      - name: Setup bridger
-        id: setup
-        run: |
-          echo "gcli_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')" >> $GITHUB_OUTPUT
-          echo "::group::godownload"
-          make download
-          echo "::endgroup::"
-      - name: Run Linter and Review
-        uses: reviewdog/action-golangci-lint@v2
-        with:
-          go_version_file: "go.mod"
-          reviewdog_version: v0.10.2
-          reporter: github-pr-review
-          golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
-          cache: false
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version-file: "go.mod"
-      - name: Cache
-        uses: actions/cache@v3.2.4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
-      - name: Unit Test and Coverage
-        uses: paambaati/codeclimate-action@v3.2.0
-        env:
-          CC_TEST_REPORTER_ID: 7c1eabd638b12563c95fc1e17e4abc2440612eddd97b25273c986b24faddb6ae
-        with:
-          coverageCommand: make coverage
-          prefix: github.com/aztechian/bridgr
-          coverageLocations: |
-            ${{github.workspace}}/coverage.out:gocov
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -83,7 +24,7 @@ jobs:
           - os: darwin
             arch: arm
           - os: darwin
-            arch: arm64 # :(
+            arch: arm64 # :( <-- this combo won't build right on an amd64 HOSTARCH because of the C compiler
     steps:
       - uses: actions/checkout@v3
       - name: Setup Go
@@ -105,3 +46,10 @@ jobs:
         run: |
           make download
           make
+      - name: Store Build
+        if: ${{ inputs.store_artifacts }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: bridgr-${{ matrix.os }}-${{ matrix.arch }}
+          path: bridgr-*
+          retention-days: 1
