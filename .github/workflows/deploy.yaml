@@ -41,11 +41,14 @@ jobs:
       - name: Release Changelog Builder
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v3.6.0
+        with:
+          ignorePreReleases: true
+          includeOpen: true
       - name: print
-        run: cat ${{ steps.changelog.outputs.changelog }}
+        run: echo "${{ steps.changelog.outputs.changelog }}"
       - name: Create Release
         uses: softprops/action-gh-release@v0.1.15
         with:
           files: release/*
           prerelease: ${{ contains(github.ref, '-rc') }}
-          body_path: ${{ steps.changelog.outputs.changelog }}
+          body: ${{ steps.changelog.outputs.changelog }}

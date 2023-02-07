@@ -9,7 +9,7 @@ on:
         type: boolean
 
 jobs:
-  build:
+  compile:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
