@@ -66,16 +66,19 @@ jobs:
       - name: Move files to root directory
         run: |
           mkdir -p release
-          find . -type f | xargs -I {} cp {} release/
-      - name: GitHub Release from Tag
-        id: release
-        uses: eloquent/github-release-action@v3
+          find . -type f | xargs -I {} cp -v {} release/
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          generateReleaseNotes: true
-          reactions: champagne,rocket
-          assets: |
-            - path: release/bridgr-*.sha256
-              label: checksum
-            - path: release/bridgr-\\S+-\\S+
-              label: executable
-          summaryEnabled: true
+          depth: 0
+      - name: Git Semantic Version
+        uses: PaulHatch/semantic-version@v5.0.3
+        with:
+          major_pattern: "[MAJOR]"
+          minor_pattern: "[MINOR]"
+          version_format: "${major}.${minor}.${patch}-rc${increment}"
+      - name: Create Release
+        uses: softprops/action-gh-release@v0.1.15
+        with:
+          files: release/*
+          prerelease: ${{ contains(github.ref, '-rc') }}
