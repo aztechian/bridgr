@@ -4,7 +4,7 @@
 
 [![Gitpod Ready-to-code][gitpod-image]][gitpod-url]
 
-[![Build Status][travis-image]][travis-url]
+[![Build Status][actions-image]][actions-url]
 [![Go Version][goversion-image]][gh-gomod]
 [![Release Date][releasedate-image]][gh-dl-url]
 [![Release Version][releasever-image]][gh-dl-url]
@@ -274,8 +274,8 @@ Distributed under the MIT license. See `LICENSE` for more information.
 [gh-gomod]: go.mod
 [license]: https://img.shields.io/github/license/aztechian/bridgr
 [license-url]: LICENSE
-[travis-image]: https://img.shields.io/travis/com/aztechian/bridgr/master
-[travis-url]: https://travis-ci.com/aztechian/bridgr
+[actions-image]: https://img.shields.io/github/actions/workflow/status/aztechian/bridgr/ci.yaml
+[actions-url]: https://github.com/aztechian/bridgr/actions/workflows/ci.yaml?query=branch%3Amaster
 [reportcard-image]: https://goreportcard.com/badge/github.com/aztechian/bridgr
 [reportcard-url]: https://goreportcard.com/report/github.com/aztechian/bridgr
 [maintainability-image]: https://img.shields.io/codeclimate/maintainability/aztechian/bridgr?logo=code-climate
