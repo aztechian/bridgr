@@ -13,9 +13,10 @@ linters:
     - gomnd
 run:
   tests: false
-  timeout: 3m0s
+  timeout: 3m
   out-format: colored-line-number
-  skip-dirs: /home/travis/gopath/pkg/mod
+  skip-dirs:
+    - /home/travis/gopath/pkg/mod
   modules-download-mode: readonly
 service:
-  golangci-lint-version: 1.27.x
+  golangci-lint-version: 1.31.x
