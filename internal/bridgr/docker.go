@@ -43,7 +43,7 @@ func (d Docker) Name() string {
 
 func mapToImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 	if f.Kind() == reflect.Map && t == reflect.TypeOf((*reference.Named)(nil)).Elem() {
-		imageStr, err := dockerParse(data.(map[interface{}]interface{}))
+		imageStr, err := dockerParse(data.(map[string]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func (d *Docker) Hook() mapstructure.DecodeHookFunc {
 	)
 }
 
-func dockerParse(imageObj map[interface{}]interface{}) (string, error) {
+func dockerParse(imageObj map[string]interface{}) (string, error) {
 	i := ""
 	if image, ok := imageObj["image"]; ok {
 		i = i + image.(string)
@@ -143,12 +143,19 @@ func (d *Docker) Setup() error {
 	log.Trace("Called Docker.Setup()")
 	_ = os.MkdirAll(d.dir(), os.ModePerm)
 
+	// filter nil images from parse errors
+	filtered := d.Images[:0]
 	for _, img := range d.Images {
+		if img == nil {
+			continue
+		}
+		filtered = append(filtered, img)
 		log.Trace("pulling image %s", img.String())
 		if err := PullImage(cli, img); err != nil {
 			log.Error("Error pulling Docker image `%s`: %s", img.String(), err)
 		}
 	}
+	d.Images = filtered
 	return nil
 }
 

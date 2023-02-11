@@ -93,8 +93,8 @@ func TestDockerMapToImage(t *testing.T) {
 		expect  interface{}
 	}{
 		{"invalid type", reflect.TypeOf(""), "", false, ""},
-		{"valid", reflect.TypeOf(&img).Elem(), map[interface{}]interface{}{"image": "cinco", "version": "cuatro"}, false, img},
-		{"parse error", reflect.TypeOf(&img).Elem(), map[interface{}]interface{}{"version": "fakeblock"}, true, img},
+		{"valid", reflect.TypeOf(&img).Elem(), map[string]interface{}{"image": "cinco", "version": "cuatro"}, false, img},
+		{"parse error", reflect.TypeOf(&img).Elem(), map[string]interface{}{"version": "fakeblock"}, true, img},
 	}
 
 	for _, test := range tests {
@@ -116,16 +116,16 @@ func TestDockerMapToImage(t *testing.T) {
 func TestDockerParse(t *testing.T) {
 	tests := []struct {
 		name   string
-		input  map[interface{}]interface{}
+		input  map[string]interface{}
 		expect string
 	}{
-		{"happy path", map[interface{}]interface{}{"image": "jade"}, "jade"},
-		{"error missing image", map[interface{}]interface{}{"version": "triad"}, ""},
-		{"host", map[interface{}]interface{}{"image": "dragon/jade", "host": "repo.lite"}, "repo.lite/dragon/jade"},
-		{"host image and version", map[interface{}]interface{}{"image": "dragon/jade", "host": "repo.lite", "version": "triad"}, "repo.lite/dragon/jade:triad"},
-		{"error float version", map[interface{}]interface{}{"image": "jade", "version": 1.4}, ""},
-		{"int version", map[interface{}]interface{}{"image": "jade", "version": 12}, "jade:12"},
-		{"stringified version", map[interface{}]interface{}{"image": "jade", "version": "1.4"}, "jade:1.4"},
+		{"happy path", map[string]interface{}{"image": "jade"}, "jade"},
+		{"error missing image", map[string]interface{}{"version": "triad"}, ""},
+		{"host", map[string]interface{}{"image": "dragon/jade", "host": "repo.lite"}, "repo.lite/dragon/jade"},
+		{"host image and version", map[string]interface{}{"image": "dragon/jade", "host": "repo.lite", "version": "triad"}, "repo.lite/dragon/jade:triad"},
+		{"error float version", map[string]interface{}{"image": "jade", "version": 1.4}, ""},
+		{"int version", map[string]interface{}{"image": "jade", "version": 12}, "jade:12"},
+		{"stringified version", map[string]interface{}{"image": "jade", "version": "1.4"}, "jade:1.4"},
 	}
 
 	for _, test := range tests {
