@@ -1,0 +1,55 @@
+name: Compile Application
+
+on:
+  workflow_call:
+    inputs:
+      store_artifacts:
+        default: false
+        required: false
+        type: boolean
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [darwin, linux, windows]
+        arch: [arm64, amd64, "386", arm]
+        exclude:
+          - os: windows
+            arch: arm64
+          - os: darwin
+            arch: "386"
+          - os: darwin
+            arch: arm
+          - os: darwin
+            arch: arm64 # :( <-- this combo won't build right on an amd64 HOSTARCH because of the C compiler
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
+      - name: Cache
+        uses: actions/cache@v3.2.4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomodules
+            ${{ runner.os }}-
+      - name: Compile Application
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          make download
+          make
+      - name: Store Build
+        if: ${{ inputs.store_artifacts }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: bridgr-${{ matrix.os }}-${{ matrix.arch }}
+          path: bridgr-*
+          retention-days: 1

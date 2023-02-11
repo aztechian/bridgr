@@ -18,7 +18,7 @@ endif
 
 all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
 
-ifeq ($(TRAVIS),)
+ifeq ($(CI),)
 coverage: html
 lint: locallint
 else
@@ -26,8 +26,8 @@ coverage: coverage.out
 lint: cilint.txt
 endif
 
-ifdef TRAVIS_BRANCH
-LDFLAGS := -ldflags="-X github.com/aztechian/bridgr/internal/bridgr.Version=$(TRAVIS_BRANCH)"
+ifdef GITHUB_REF_NAME
+LDFLAGS := -ldflags="-X github.com/aztechian/bridgr/internal/bridgr.Version=$(GITHUB_REF_NAME)"
 endif
 
 locallint:
@@ -66,7 +66,7 @@ clean:
 	@docker rm --force bridgr_yum bridgr_python bridgr_ruby &> /dev/null || true
 
 generate: $(GO_FILES)
-	@GOOS="" go generate ./...
+	@GOOS="" GOARCH="" go generate ./...
 
 $(PROJECT_NAME): generate $(GO_FILES)
 	@go build -tags dist -i -v -o $@ $(LDFLAGS) $(CMD)
