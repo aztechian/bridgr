@@ -7,7 +7,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v1.13.1
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.3
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3
 	github.com/stretchr/testify v1.8.1
