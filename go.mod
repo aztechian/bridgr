@@ -5,7 +5,7 @@ require (
 	github.com/aws/aws-sdk-go v1.35.23
 	github.com/briandowns/spinner v1.16.0
 	github.com/davecgh/go-spew v1.1.1
-	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/distribution v2.8.2+incompatible
 	github.com/docker/docker v1.13.1
 	github.com/google/go-cmp v0.5.3
 	github.com/gorilla/mux v1.7.4 // indirect
