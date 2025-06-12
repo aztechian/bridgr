@@ -10,6 +10,8 @@ require (
 	github.com/google/go-cmp v0.5.3
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/shurcooL/httpfs v0.0.0-00010101000000-000000000000 // indirect
+	github.com/shurcooL/vfsgen v0.0.0-00010101000000-000000000000 // indirect
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	gopkg.in/src-d/go-git.v4 v4.13.1
@@ -22,4 +24,9 @@ require (
 // docker 18.06.1-ce
 replace github.com/docker/docker v1.13.1 => github.com/docker/engine v0.0.0-20180816081446-320063a2ad06
 
-go 1.13
+// Pin the httpfs and vfsgen packages to versions compatible with Go 1.17
+replace github.com/shurcooL/httpfs => github.com/shurcooL/httpfs v0.0.0-20190707220628-8d4bc4ba7749
+
+replace github.com/shurcooL/vfsgen => github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
+
+go 1.17
