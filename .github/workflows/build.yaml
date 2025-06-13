@@ -31,14 +31,6 @@ jobs:
         uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
-      - name: Cache
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
       - name: Compile Application
         env:
           GOOS: ${{ matrix.os }}

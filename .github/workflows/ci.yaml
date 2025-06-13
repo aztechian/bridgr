@@ -18,16 +18,7 @@ jobs:
         uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
-          # caching isn't available for golang <= 1.14
-          # cache: true
-      - name: Cache
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
+          cache: true
       - name: Setup bridger
         id: setup
         run: |
@@ -39,7 +30,6 @@ jobs:
         uses: reviewdog/action-golangci-lint@v2.8.0
         with:
           go_version_file: "go.mod"
-          reviewdog_version: v0.10.2
           reporter: github-pr-review
           golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
           cache: false
