@@ -2,11 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
 	"name": "Bridgr",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	// "build": {
-	// 	"dockerfile": "Dockerfile"
-	// },
-	"image": "mcr.microsoft.com/devcontainers/go:1.17-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/base:bookworm",
 	"features": {
         "ghcr.io/devcontainers/features/go:1": {
             "version": "1.17",
