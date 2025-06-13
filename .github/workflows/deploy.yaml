@@ -23,31 +23,31 @@ jobs:
     needs: release-build
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
       - name: Download Build Files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.3.0
       - name: Move files to root directory
         run: |
           mkdir -p release
           find ./bridgr-* -type f | xargs -I {} cp -v {} release/
       - name: Git Semantic Version
-        uses: PaulHatch/semantic-version@v5.0.3
+        uses: PaulHatch/semantic-version@v5.4.0
         with:
           major_pattern: "[MAJOR]"
           minor_pattern: "[MINOR]"
           version_format: "${major}.${minor}.${patch}-rc${increment}"
       - name: Release Changelog Builder
         id: changelog
-        uses: mikepenz/release-changelog-builder-action@v3.6.0
+        uses: mikepenz/release-changelog-builder-action@v5
         with:
           ignorePreReleases: true
           includeOpen: true
       - name: print
         run: echo "${{ steps.changelog.outputs.changelog }}"
       - name: Create Release
-        uses: softprops/action-gh-release@v0.1.15
+        uses: softprops/action-gh-release@v2.3.2
         with:
           files: release/*
           prerelease: ${{ contains(github.ref, '-rc') }}

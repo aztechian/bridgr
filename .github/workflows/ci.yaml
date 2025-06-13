@@ -13,15 +13,15 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.2
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
           # caching isn't available for golang <= 1.14
           # cache: true
       - name: Cache
-        uses: actions/cache@v3.2.4
+        uses: actions/cache@v4.2.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
@@ -36,7 +36,7 @@ jobs:
           make download
           echo "::endgroup::"
       - name: Run Linter and Review
-        uses: reviewdog/action-golangci-lint@v2
+        uses: reviewdog/action-golangci-lint@v2.8.0
         with:
           go_version_file: "go.mod"
           reviewdog_version: v0.10.2
@@ -46,13 +46,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.2
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
       - name: Cache
-        uses: actions/cache@v3.2.4
+        uses: actions/cache@v4.2.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
@@ -60,7 +60,7 @@ jobs:
             ${{ runner.os }}-gomodules
             ${{ runner.os }}-
       - name: Unit Test and Coverage
-        uses: paambaati/codeclimate-action@v3.2.0
+        uses: paambaati/codeclimate-action@v9.0.0
         env:
           CC_TEST_REPORTER_ID: 7c1eabd638b12563c95fc1e17e4abc2440612eddd97b25273c986b24faddb6ae
         with:

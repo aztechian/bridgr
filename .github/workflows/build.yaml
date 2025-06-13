@@ -26,13 +26,13 @@ jobs:
           - os: darwin
             arch: arm64 # :( <-- this combo won't build right on an amd64 HOSTARCH because of the C compiler
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.2
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
       - name: Cache
-        uses: actions/cache@v3.2.4
+        uses: actions/cache@v4.2.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
@@ -48,7 +48,7 @@ jobs:
           make
       - name: Store Build
         if: ${{ inputs.store_artifacts }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: bridgr-${{ matrix.os }}-${{ matrix.arch }}
           path: bridgr-*
