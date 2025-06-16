@@ -44,6 +44,37 @@ jobs:
         with:
           ignorePreReleases: true
           includeOpen: true
+          configuration: |
+            {
+              "pr_template": "#{{TITLE}} - #{{MERGED_AT}} by #{{AUTHOR}} (#{{NUMBER}})"
+              "categories": [
+                {
+                  "title": "## 🚀 Features",
+                  "labels": [
+                    "feature"
+                  ]
+                },
+                {
+                  "title": "## 🐛 Fixes",
+                  "labels": [
+                    "fix"
+                  ]
+                },
+                {
+                  "title": "## 🚧 Dependency Updates",
+                  "labels": [
+                    "dependency",
+                    "dependencies"
+                  ]
+                },
+                {
+                  "title": "## 🧪 Tests",
+                  "labels": [
+                    "test"
+                  ]
+                }
+              ]
+            }
       - name: print
         run: echo "${{ steps.changelog.outputs.changelog }}"
       - name: Create Release
