@@ -41,7 +41,7 @@ jobs:
       - name: Setup bridger
         id: setup
         run: |
-          echo "gcli_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')" >> $GITHUB_OUTPUT
+          echo "gcli_ver=$(grep 'golangci-lint-version' .golangci.yml | awk '{print $2}')" >> $GITHUB_OUTPUT
           echo "::group::godownload"
           make download
           echo "::endgroup::"
@@ -89,3 +89,16 @@ jobs:
   build:
     uses: ./.github/workflows/build.yaml
     needs: [setup]
+  buildresult:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Build Result Status
+    needs: [build]
+    steps:
+      - run: exit 1
+        if: >-
+          ${{
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+            || contains(needs.*.result, 'skipped')
+          }}
