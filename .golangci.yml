@@ -17,4 +17,4 @@ run:
   out-format: colored-line-number
   modules-download-mode: readonly
 service:
-  golangci-lint-version: 1.31.x
+  golangci-lint-version: 1.49.0
