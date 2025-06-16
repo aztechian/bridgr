@@ -74,7 +74,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: set test status
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action
+        uses: EnricoMi/publish-unit-test-result-action@v2.20.0
         with:
           files: |
             report.xml
