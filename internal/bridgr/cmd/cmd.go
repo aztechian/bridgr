@@ -58,7 +58,7 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 		case "helm":
 			section = &bridgr.Helm{}
 		default:
-			log.Warn("Unable to create repository \"%s\", skipping.", key)
+			log.Warn("Repository of type \"%s\" is invalid or not implemented, skipping.", key)
 			continue
 		}
 		err = decode(section, cfg)

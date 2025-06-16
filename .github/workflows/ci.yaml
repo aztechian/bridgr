@@ -3,70 +3,89 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
     branches:
       - master
+      - main
+
+# This ensures that previous jobs for the PR are canceled when the PR is updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
 jobs:
-  check:
+  setup:
+    name: Setup Go and Dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.2
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
-          # caching isn't available for golang <= 1.14
-          # cache: true
-      - name: Cache
-        uses: actions/cache@v3.2.4
+          cache: true
+  check:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Setup Go
+        uses: actions/setup-go@v5.5.0
         with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
+          go-version-file: "go.mod"
+          cache: true
       - name: Setup bridger
         id: setup
         run: |
-          echo "gcli_ver=$(grep golangci-lint .tool-versions | awk '{print $2}')" >> $GITHUB_OUTPUT
+          echo "gcli_ver=$(grep 'golangci-lint-version' .golangci.yml | awk '{print $2}')" >> $GITHUB_OUTPUT
           echo "::group::godownload"
           make download
           echo "::endgroup::"
       - name: Run Linter and Review
-        uses: reviewdog/action-golangci-lint@v2
+        uses: reviewdog/action-golangci-lint@v2.8.0
         with:
           go_version_file: "go.mod"
-          reviewdog_version: v0.10.2
           reporter: github-pr-review
           golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
           cache: false
   test:
     runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.2.2
       - name: Setup Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
-      - name: Cache
-        uses: actions/cache@v3.2.4
+          cache: true
+      - name: test
+        run: |
+          make report.xml
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
-      - name: Unit Test and Coverage
-        uses: paambaati/codeclimate-action@v3.2.0
-        env:
-          CC_TEST_REPORTER_ID: 7c1eabd638b12563c95fc1e17e4abc2440612eddd97b25273c986b24faddb6ae
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: set test status
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2.20.0
         with:
-          coverageCommand: make coverage
-          prefix: github.com/aztechian/bridgr
-          coverageLocations: |
-            ${{github.workspace}}/coverage.out:gocov
+          files: |
+            report.xml
+      - name: save test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-status
+          path: |
+            coverage.html
+            report.xml
   build:
     uses: ./.github/workflows/build.yaml
+    needs: [setup]
