@@ -23,8 +23,6 @@ jobs:
             arch: "386"
           - os: darwin
             arch: arm
-          - os: darwin
-            arch: arm64 # :( <-- this combo won't build right on an amd64 HOSTARCH because of the C compiler
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Setup Go
