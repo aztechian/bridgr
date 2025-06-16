@@ -44,3 +44,16 @@ jobs:
           name: bridgr-${{ matrix.os }}-${{ matrix.arch }}
           path: bridgr-*
           retention-days: 1
+  buildresult:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Build Result Status
+    needs: [compile]
+    steps:
+      - run: exit 1
+        if: >-
+          ${{
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+            || contains(needs.*.result, 'skipped')
+          }}
