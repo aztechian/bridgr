@@ -6,7 +6,7 @@ OS := $(shell go env GOOS)
 ARCH := $(shell go env GOARCH)
 
 .SUFFIXES:
-.PHONY: all coverage lint test race x2unit xunit clean generate download locallint
+.PHONY: all coverage lint test junit race clean generate download locallint
 
 ifeq ($(OS), linux)
 PROJECT_NAME := $(PROJECT_NAME)-Linux-$(ARCH)
@@ -19,11 +19,16 @@ endif
 all: $(PROJECT_NAME) $(PROJECT_NAME).sha256
 
 ifeq ($(CI),)
-coverage: html
 lint: locallint
 else
-coverage: coverage.out
 lint: cilint.txt
+endif
+
+coverage: coverage.out
+ifeq ($(GITHUB_ACTIONS),)
+	@go tool cover --html=$<
+else
+	@go tool cover --html=$< -o coverage.html
 endif
 
 ifdef GITHUB_REF_NAME
@@ -43,20 +48,13 @@ race:
 	@go test -v -count=1 -race ./...
 
 coverage.out: $(GO_FILES)
-	@go test -v -race -covermode=atomic -coverprofile=$@ ./...
+	@go test -v -race -covermode=atomic -coverprofile=$@ ./... 2>&1 | tee tests.out
 
-html: coverage.out
-	@go tool cover --html=$<
+junit:
+	@go install github.com/jstemmer/go-junit-report@latest
 
-x2unit:
-	go get github.com/tebeka/go2xunit
-
-tests.out:
-	@go test -v -race ./... > $@
-
-xunit: x2unit tests.out
-	go2xunit -fail -input tests.out -output tests.xml
-	@rm -f tests.out
+report.xml: coverage.out junit
+	@go-junit-report -set-exit-code < tests.out > $@
 
 run:
 	@go run $(CMD) -c config/example.yml

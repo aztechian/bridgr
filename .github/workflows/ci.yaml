@@ -3,9 +3,17 @@ on:
   push:
     branches:
       - master
+      - main
   pull_request:
     branches:
       - master
+      - main
+
+# This ensures that previous jobs for the PR are canceled when the PR is updated.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
@@ -47,6 +55,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: setup
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Setup Go
@@ -54,15 +65,27 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: Unit Test and Coverage
-        uses: paambaati/codeclimate-action@v9.0.0
-        env:
-          CC_TEST_REPORTER_ID: 7c1eabd638b12563c95fc1e17e4abc2440612eddd97b25273c986b24faddb6ae
+      - name: test
+        run: |
+          make report.xml
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
         with:
-          coverageCommand: make coverage
-          prefix: github.com/aztechian/bridgr
-          coverageLocations: |
-            ${{github.workspace}}/coverage.out:gocov
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: set test status
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action
+        with:
+          files: |
+            report.xml
+      - name: save test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-status
+          path: |
+            coverage.html
+            report.xml
   build:
     uses: ./.github/workflows/build.yaml
     needs: [setup]
