@@ -10,8 +10,19 @@ defaults:
   run:
     shell: bash
 jobs:
+  setup:
+    name: Setup Go and Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Setup Go
+        uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
   check:
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Setup Go
@@ -35,20 +46,14 @@ jobs:
           cache: false
   test:
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Setup Go
         uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
-      - name: Cache
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomodules-${{ hashFiles('go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomodules
-            ${{ runner.os }}-
+          cache: true
       - name: Unit Test and Coverage
         uses: paambaati/codeclimate-action@v9.0.0
         env:
@@ -60,3 +65,4 @@ jobs:
             ${{github.workspace}}/coverage.out:gocov
   build:
     uses: ./.github/workflows/build.yaml
+    needs: [setup]

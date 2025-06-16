@@ -29,6 +29,7 @@ jobs:
         uses: actions/setup-go@v5.5.0
         with:
           go-version-file: "go.mod"
+          cache: true
       - name: Compile Application
         env:
           GOOS: ${{ matrix.os }}
