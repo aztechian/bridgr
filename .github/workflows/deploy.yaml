@@ -46,7 +46,7 @@ jobs:
           includeOpen: true
           configurationJson: |
             {
-              "pr_template": "#{{TITLE}} - #{{MERGED_AT}} by #{{AUTHOR}} (PR #{{NUMBER}})",
+              "pr_template": "#{{TITLE}} - by @#{{AUTHOR}} (PR ##{{NUMBER}})",
               "categories": [
                 {
                   "title": "## 🚀 Features",
@@ -61,7 +61,7 @@ jobs:
                   ]
                 },
                 {
-                  "title": "## 🚧 Dependency Updates",
+                  "title": "## 📦 Dependency Updates",
                   "labels": [
                     "dependency",
                     "dependencies"
@@ -72,6 +72,10 @@ jobs:
                   "labels": [
                     "test"
                   ]
+                },
+                {
+                  "title": "## 💬 Uncategorized",
+                  "labels": []
                 }
               ]
             }
