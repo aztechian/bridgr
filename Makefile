@@ -60,7 +60,7 @@ run:
 	@go run $(CMD) -c config/example.yml
 
 clean:
-	@rm -rf internal/bridgr/asset/templates.go coverage.out packages tests.xml tests.out coverage.out *.sha256 main cilint.txt $(PKG)-*
+	@rm -rf internal/bridgr/asset/templates.go coverage.out packages tests.out report.xml *.sha256 main cilint.txt $(PKG)-*
 	@docker rm --force bridgr_yum bridgr_python bridgr_ruby &> /dev/null || true
 
 generate: $(GO_FILES)
