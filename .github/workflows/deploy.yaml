@@ -44,9 +44,9 @@ jobs:
         with:
           ignorePreReleases: true
           includeOpen: true
-          configuration: |
+          configurationJson: |
             {
-              "pr_template": "#{{TITLE}} - #{{MERGED_AT}} by #{{AUTHOR}} (#{{NUMBER}})"
+              "pr_template": "#{{TITLE}} - #{{MERGED_AT}} by #{{AUTHOR}} (PR #{{NUMBER}})",
               "categories": [
                 {
                   "title": "## 🚀 Features",
