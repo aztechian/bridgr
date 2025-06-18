@@ -8,6 +8,7 @@ require (
 	github.com/docker/docker v1.13.1
 	github.com/google/go-cmp v0.5.3
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	gopkg.in/src-d/go-git.v4 v4.13.1
@@ -84,7 +85,6 @@ require (
 	github.com/prometheus/procfs v0.2.0 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/shurcooL/httpfs v0.0.0-20230704072500-f1e31cf0ba5c // indirect
-	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.1.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
