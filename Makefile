@@ -67,7 +67,7 @@ generate: $(GO_FILES)
 	@GOOS="" GOARCH="" go generate ./...
 
 $(PROJECT_NAME): generate $(GO_FILES)
-	@go build -tags dist -i -v -o $@ $(LDFLAGS) $(CMD)
+	@go build -tags dist -v -o $@ $(LDFLAGS) $(CMD)
 
 %.sha256:
 	@openssl dgst -sha256 -hex $* | cut -f2 -d' ' > $@

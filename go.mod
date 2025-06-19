@@ -132,4 +132,4 @@ replace github.com/shurcooL/httpfs => github.com/shurcooL/httpfs v0.0.0-20190707
 
 replace github.com/shurcooL/vfsgen => github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 
-go 1.17
+go 1.20
