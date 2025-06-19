@@ -52,6 +52,8 @@ jobs:
           reporter: github-pr-review
           golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
           cache: false
+          fail_level: warning
+          filter_mode: added
   test:
     runs-on: ubuntu-latest
     needs: setup
