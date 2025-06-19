@@ -1,7 +1,7 @@
 ---
 linters:
   enable:
-    - golint
+    - revive
     - goimports
     - gosec
     - misspell
@@ -11,10 +11,21 @@ linters:
     - godox
     - funlen
     - gomnd
+    # enable for future
+    # - bodyclose
+    # - depguard
+    # - durationcheck
+    # - gocritic
+    # - gofmt
+    # - goheader
+    # - nakedret
+    # 
 run:
+  relative-path-mode: gomod
   tests: false
   timeout: 3m
   out-format: colored-line-number
   modules-download-mode: readonly
+  allow-parallel-runners: true
 service:
   golangci-lint-version: 1.49.0
