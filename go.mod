@@ -4,7 +4,7 @@ require (
 	github.com/aws/aws-sdk-go v1.35.23
 	github.com/briandowns/spinner v1.16.0
 	github.com/davecgh/go-spew v1.1.1
-	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/distribution v2.8.3+incompatible
 	github.com/docker/docker v1.13.1
 	github.com/google/go-cmp v0.5.3
 	github.com/mitchellh/mapstructure v1.5.0
@@ -32,6 +32,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20200107194136-26c1120b8d41 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/deislabs/oras v0.8.1 // indirect
+	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/cli v0.0.0-20200130152716-5d0cf8839492 // indirect
 	github.com/docker/docker-credential-helpers v0.6.3 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
