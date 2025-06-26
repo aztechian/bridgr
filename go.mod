@@ -11,7 +11,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/term v0.15.0
+	golang.org/x/term v0.32.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.8.2
@@ -87,12 +87,12 @@ require (
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	github.com/xlab/treeprint v0.0.0-20181112141820-a009c3971eca // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220107163113-42d7afdf6368 // indirect
@@ -122,4 +122,4 @@ replace github.com/docker/docker v1.13.1 => github.com/docker/engine v0.0.0-2018
 
 replace github.com/shurcooL/vfsgen => github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 
-go 1.20
+go 1.23.0
