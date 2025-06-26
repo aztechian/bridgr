@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 
 	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/api/types"
@@ -17,12 +18,19 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	log "unknwon.dev/clog/v2"
+	imagespecs "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 var baseImage = map[string]string{
 	"yum":    "centos",
 	"ruby":   "ruby",
 	"python": "python",
+}
+
+// DefaultContainerPlatform is the default platform used for container creation.
+var DefaultContainerPlatform = &imagespecs.Platform{
+	Architecture: runtime.GOARCH,
+	OS:           "linux",
 }
 
 // Batch is a struct that implements basic features common to all workers that are "batch" style.
@@ -37,7 +45,7 @@ type batch struct {
 type containerImagerClient interface {
 	ImagePuller
 	ContainerAttach(ctx context.Context, container string, options types.ContainerAttachOptions) (types.HijackedResponse, error)
-	ContainerCreate(ctx context.Context, config *containertypes.Config, hostConfig *containertypes.HostConfig, networkingConfig *networktypes.NetworkingConfig, containerName string) (containertypes.ContainerCreateCreatedBody, error)
+	ContainerCreate(ctx context.Context, config *containertypes.Config, hostConfig *containertypes.HostConfig, networkingConfig *networktypes.NetworkingConfig, platform *imagespecs.Platform, containerName string) (containertypes.ContainerCreateCreatedBody, error)
 	ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error)
 	ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error
 	ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error
@@ -77,7 +85,7 @@ func (b *batch) runContainer(name, script string) error {
 	defer b.cleanContainer(name)
 	_ = PullImage(b.Client, img)
 
-	resp, err := b.Client.ContainerCreate(ctx, b.ContainerConfig, &container.HostConfig{Mounts: b.Mounts}, nil, name)
+	resp, err := b.Client.ContainerCreate(ctx, b.ContainerConfig, &container.HostConfig{Mounts: b.Mounts}, nil, DefaultContainerPlatform, name)
 	if err != nil {
 		return err
 	}
