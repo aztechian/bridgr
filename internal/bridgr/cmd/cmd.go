@@ -15,7 +15,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/mapstructure"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
 	log "unknwon.dev/clog/v2"
 )
@@ -145,5 +145,5 @@ func debugHook(f reflect.Type, t reflect.Type, data interface{}) (interface{}, e
 }
 
 func isTty() bool {
-	return terminal.IsTerminal(int(os.Stdout.Fd()))
+	return term.IsTerminal(int(os.Stdout.Fd()))
 }

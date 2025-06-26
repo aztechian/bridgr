@@ -20,6 +20,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/mock"
+	imagespecs "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
 type mockClient struct {
@@ -30,8 +31,8 @@ func (m *mockClient) ContainerAttach(ctx context.Context, container string, opti
 	args := m.Called(ctx, container, options)
 	return args.Get(0).(types.HijackedResponse), args.Error(1)
 }
-func (m *mockClient) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *networktypes.NetworkingConfig, containerName string) (container.ContainerCreateCreatedBody, error) {
-	args := m.Called(ctx, config, hostConfig, networkingConfig, containerName)
+func (m *mockClient) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *networktypes.NetworkingConfig, platform *imagespecs.Platform, containerName string) (container.ContainerCreateCreatedBody, error) {
+	args := m.Called(ctx, config, hostConfig, networkingConfig, platform, containerName)
 	return args.Get(0).(container.ContainerCreateCreatedBody), args.Error(1)
 }
 func (m *mockClient) ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
@@ -109,7 +110,7 @@ func TestRunContainer(t *testing.T) {
 	connWriter, _ := net.Pipe()
 	connWriter = mockConn{Conn: connWriter}
 	cli := mockClient{}
-	cli.On("ContainerCreate", context.Background(), b.ContainerConfig, mock.Anything, mock.Anything, namePid).Return(container.ContainerCreateCreatedBody{ID: "something"}, nil)
+	cli.On("ContainerCreate", context.Background(), b.ContainerConfig, mock.Anything, mock.Anything, mock.Anything, namePid).Return(container.ContainerCreateCreatedBody{ID: "something"}, nil)
 	cli.On("ImagePull", context.Background(), "docker.io/library/rebel", mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)
 	cli.On("ContainerRemove", context.Background(), namePid, types.ContainerRemoveOptions{Force: true}).Return(nil)
 	cli.On("ContainerAttach", context.Background(), "something", mock.Anything).Return(types.HijackedResponse{Conn: connWriter, Reader: bufio.NewReader(strings.NewReader("annyong"))}, nil)
