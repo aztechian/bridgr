@@ -8,7 +8,7 @@ require (
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/google/go-cmp v0.7.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/opencontainers/image-spec v1.0.2
+	github.com/opencontainers/image-spec v1.1.1
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/term v0.15.0
@@ -122,4 +122,4 @@ replace github.com/docker/docker v1.13.1 => github.com/docker/engine v0.0.0-2018
 
 replace github.com/shurcooL/vfsgen => github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
 
-go 1.20
+go 1.21
