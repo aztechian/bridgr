@@ -55,7 +55,7 @@ docker:
     - image: ubuntu
       version: "18.04"
     - host: quay.io
-      image: prom/node-exporter
+      image: prometheus/node-exporter
       version: latest
     - quay.io/prometheus/prometheus:v2.11.2
 
