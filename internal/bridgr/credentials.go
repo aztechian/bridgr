@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	log "unknwon.dev/clog/v2"
 )
 
@@ -83,7 +83,7 @@ func (w *WorkerCredentialReader) Read(url *url.URL) (Credential, bool) {
 
 // DockerCredential implements the CredentialReader and CredentialWriter interface for the Docker "login" format
 type DockerCredential struct {
-	types.AuthConfig
+	registry.AuthConfig
 	WorkerCredentialReader
 }
 

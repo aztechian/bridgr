@@ -130,7 +130,7 @@ func TestFilesHttp(t *testing.T) {
 				t.Errorf("Unable to fetch HTTP source: %s", err)
 			}
 			if !cmp.Equal(test.expect, "OK") {
-				t.Errorf(cmp.Diff(test.expect, "OK"))
+				t.Error(cmp.Diff(test.expect, "OK"))
 			}
 		})
 	}

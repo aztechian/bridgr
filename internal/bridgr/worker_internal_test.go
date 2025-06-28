@@ -15,39 +15,40 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/mount"
 	networktypes "github.com/docker/docker/api/types/network"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/stretchr/testify/mock"
 	imagespecs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/stretchr/testify/mock"
 )
 
 type mockClient struct {
 	mock.Mock
 }
 
-func (m *mockClient) ContainerAttach(ctx context.Context, container string, options types.ContainerAttachOptions) (types.HijackedResponse, error) {
+func (m *mockClient) ContainerAttach(ctx context.Context, container string, options container.AttachOptions) (types.HijackedResponse, error) {
 	args := m.Called(ctx, container, options)
 	return args.Get(0).(types.HijackedResponse), args.Error(1)
 }
-func (m *mockClient) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *networktypes.NetworkingConfig, platform *imagespecs.Platform, containerName string) (container.ContainerCreateCreatedBody, error) {
+func (m *mockClient) ContainerCreate(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, networkingConfig *networktypes.NetworkingConfig, platform *imagespecs.Platform, containerName string) (container.CreateResponse, error) {
 	args := m.Called(ctx, config, hostConfig, networkingConfig, platform, containerName)
-	return args.Get(0).(container.ContainerCreateCreatedBody), args.Error(1)
+	return args.Get(0).(container.CreateResponse), args.Error(1)
 }
-func (m *mockClient) ContainerLogs(ctx context.Context, container string, options types.ContainerLogsOptions) (io.ReadCloser, error) {
+func (m *mockClient) ContainerLogs(ctx context.Context, container string, options container.LogsOptions) (io.ReadCloser, error) {
 	args := m.Called(ctx, container, options)
 	return args.Get(0).(io.ReadCloser), args.Error(1)
 }
-func (m *mockClient) ContainerStart(ctx context.Context, container string, options types.ContainerStartOptions) error {
+func (m *mockClient) ContainerStart(ctx context.Context, container string, options container.StartOptions) error {
 	args := m.Called(ctx, container, options)
 	return args.Error(0)
 }
-func (m *mockClient) ContainerRemove(ctx context.Context, container string, options types.ContainerRemoveOptions) error {
+func (m *mockClient) ContainerRemove(ctx context.Context, container string, options container.RemoveOptions) error {
 	args := m.Called(ctx, container, options)
 	return args.Error(0)
 }
-func (m *mockClient) ImagePull(ctx context.Context, ref string, options types.ImagePullOptions) (io.ReadCloser, error) {
+func (m *mockClient) ImagePull(ctx context.Context, ref string, options image.PullOptions) (io.ReadCloser, error) {
 	args := m.Called(ctx, ref, options)
 	return args.Get(0).(io.ReadCloser), args.Error(1)
 }
@@ -97,7 +98,7 @@ func TestNewBatch(t *testing.T) {
 func TestCleanContainer(t *testing.T) {
 	b := newBatch("ann", "gob", "G.O.B.'s wife", "marta")
 	cli := mockClient{}
-	cli.On("ContainerRemove", context.Background(), "gene", types.ContainerRemoveOptions{Force: true}).Return(nil).Return(errors.New("gene!!!"))
+	cli.On("ContainerRemove", context.Background(), "gene", container.RemoveOptions{Force: true}).Return(nil).Return(errors.New("gene!!!"))
 	b.Client = &cli
 	b.cleanContainer("gene")
 	b.cleanContainer("gene")
@@ -110,9 +111,9 @@ func TestRunContainer(t *testing.T) {
 	connWriter, _ := net.Pipe()
 	connWriter = mockConn{Conn: connWriter}
 	cli := mockClient{}
-	cli.On("ContainerCreate", context.Background(), b.ContainerConfig, mock.Anything, mock.Anything, mock.Anything, namePid).Return(container.ContainerCreateCreatedBody{ID: "something"}, nil)
+	cli.On("ContainerCreate", context.Background(), b.ContainerConfig, mock.Anything, mock.Anything, mock.Anything, namePid).Return(container.CreateResponse{ID: "something"}, nil)
 	cli.On("ImagePull", context.Background(), "docker.io/library/rebel", mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)
-	cli.On("ContainerRemove", context.Background(), namePid, types.ContainerRemoveOptions{Force: true}).Return(nil)
+	cli.On("ContainerRemove", context.Background(), namePid, container.RemoveOptions{Force: true}).Return(nil)
 	cli.On("ContainerAttach", context.Background(), "something", mock.Anything).Return(types.HijackedResponse{Conn: connWriter, Reader: bufio.NewReader(strings.NewReader("annyong"))}, nil)
 	cli.On("ContainerStart", context.Background(), "something", mock.Anything).Return(nil)
 	cli.On("ContainerLogs", context.Background(), "something", mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)

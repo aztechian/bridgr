@@ -93,12 +93,12 @@ func main() {
 	}
 	config, err := cmd.New(configFile)
 	if err != nil {
-		log.Info(err.Error())
+		log.Info("%s", err.Error())
 		exit(execErr)
 	}
 
 	if err := config.Execute(flag.Args()); err != nil {
-		log.Info(err.Error())
+		log.Info("%s", err.Error())
 		exit(execErr)
 	}
 	exit(success)
