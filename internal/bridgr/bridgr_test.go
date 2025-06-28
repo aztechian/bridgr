@@ -5,15 +5,14 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
-	"github.com/docker/distribution/reference"
-	"github.com/docker/docker/api/types"
+	"github.com/distribution/reference"
+	"github.com/docker/docker/api/types/image"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -21,7 +20,7 @@ type fakeCLI struct {
 	mock.Mock
 }
 
-func (f *fakeCLI) ImagePull(ctx context.Context, ref string, options types.ImagePullOptions) (io.ReadCloser, error) {
+func (f *fakeCLI) ImagePull(ctx context.Context, ref string, options image.PullOptions) (io.ReadCloser, error) {
 	args := f.Called(ctx, ref, options)
 	return args.Get(0).(io.ReadCloser), args.Error(1)
 }
@@ -43,8 +42,8 @@ func TestBaseDir(t *testing.T) {
 func TestPullImage(t *testing.T) {
 	cli := fakeCLI{}
 	img, _ := reference.ParseNormalizedNamed("nginx:2")
-	cli.On("ImagePull", context.Background(), img.String(), types.ImagePullOptions{}).Return(ioutil.NopCloser(bytes.NewReader([]byte("hello world"))), nil).Once()
-	cli.On("ImagePull", context.Background(), img.String(), types.ImagePullOptions{}).Return(ioutil.NopCloser(bytes.NewReader([]byte(""))), errors.New("failed image pull")).Once()
+	cli.On("ImagePull", context.Background(), img.String(), image.PullOptions{}).Return(io.NopCloser(bytes.NewReader([]byte("hello world"))), nil).Once()
+	cli.On("ImagePull", context.Background(), img.String(), image.PullOptions{}).Return(io.NopCloser(bytes.NewReader([]byte(""))), errors.New("failed image pull")).Once()
 	if err := bridgr.PullImage(&cli, img); err != nil {
 		t.Error(err)
 	}

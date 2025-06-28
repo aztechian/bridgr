@@ -21,7 +21,7 @@ func TestGitName(t *testing.T) {
 	expected := "git"
 	git := bridgr.Git{}
 	if !cmp.Equal(expected, git.Name()) {
-		t.Errorf(cmp.Diff(expected, git.Name()))
+		t.Error(cmp.Diff(expected, git.Name()))
 	}
 }
 

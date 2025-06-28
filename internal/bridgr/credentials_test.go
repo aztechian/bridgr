@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -83,8 +83,8 @@ func TestCredentialRead(t *testing.T) {
 }
 
 func TestDockerCredsWrite(t *testing.T) {
-	docker := bridgr.DockerCredential{AuthConfig: types.AuthConfig{}}
-	expect := bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "tobias", Password: "themaninsideme"}}
+	docker := bridgr.DockerCredential{AuthConfig: registry.AuthConfig{}}
+	expect := bridgr.DockerCredential{AuthConfig: registry.AuthConfig{Username: "tobias", Password: "themaninsideme"}}
 	cred := bridgr.Credential{Username: "tobias", Password: "themaninsideme"}
 	err := docker.Write(cred)
 
@@ -102,9 +102,9 @@ func TestDockerCredsString(t *testing.T) {
 		cred   bridgr.DockerCredential
 		expect string
 	}{
-		{"just username", bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "buster"}}, "eyJ1c2VybmFtZSI6ImJ1c3RlciJ9"},
-		{"user and password", bridgr.DockerCredential{AuthConfig: types.AuthConfig{Username: "buster", Password: "monster!!"}}, "eyJ1c2VybmFtZSI6ImJ1c3RlciIsInBhc3N3b3JkIjoibW9uc3RlciEhIn0="},
-		{"empty", bridgr.DockerCredential{AuthConfig: types.AuthConfig{}}, ""},
+		{"just username", bridgr.DockerCredential{AuthConfig: registry.AuthConfig{Username: "buster"}}, "eyJ1c2VybmFtZSI6ImJ1c3RlciJ9"},
+		{"user and password", bridgr.DockerCredential{AuthConfig: registry.AuthConfig{Username: "buster", Password: "monster!!"}}, "eyJ1c2VybmFtZSI6ImJ1c3RlciIsInBhc3N3b3JkIjoibW9uc3RlciEhIn0="},
+		{"empty", bridgr.DockerCredential{AuthConfig: registry.AuthConfig{}}, ""},
 	}
 
 	for _, test := range tests {

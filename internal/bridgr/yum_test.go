@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -27,7 +27,7 @@ func TestYumName(t *testing.T) {
 	expected := "yum"
 	yum := bridgr.Yum{}
 	if !cmp.Equal(expected, yum.Name()) {
-		t.Errorf(cmp.Diff(expected, yum.Name()))
+		t.Error(cmp.Diff(expected, yum.Name()))
 	}
 }
 

@@ -5,13 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"reflect"
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/google/go-cmp/cmp"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/mock"
@@ -264,7 +263,7 @@ func TestNewCmd(t *testing.T) {
 				reader = new(errReader)
 			}
 
-			cfg, err := New(ioutil.NopCloser(reader))
+			cfg, err := New(io.NopCloser(reader))
 			if cfg == nil {
 				t.Error(cfg)
 			}

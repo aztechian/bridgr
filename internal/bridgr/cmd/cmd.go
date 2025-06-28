@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"reflect"
@@ -13,7 +12,7 @@ import (
 	"github.com/aztechian/bridgr/internal/bridgr"
 	"github.com/briandowns/spinner"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
@@ -28,7 +27,7 @@ type Bridgr []bridgr.Configuration
 // New is a factory method that instantiates and populates a BridgrConf object
 func New(f io.ReadCloser) (*Bridgr, error) {
 	c := Bridgr{}
-	confData, err := ioutil.ReadAll(f)
+	confData, err := io.ReadAll(f)
 	defer f.Close()
 	if err != nil {
 		log.Error("Unable to read config file: %s", err)
@@ -67,7 +66,7 @@ func New(f io.ReadCloser) (*Bridgr, error) {
 		}
 		c = append(c, section)
 	}
-	log.Trace(spew.Sdump(c))
+	log.Trace("%s", spew.Sdump(c))
 	return &c, nil
 }
 

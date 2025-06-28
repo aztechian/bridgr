@@ -20,7 +20,7 @@ func TestHelmName(t *testing.T) {
 	expected := "helm"
 	helm := bridgr.Helm{}
 	if !cmp.Equal(expected, helm.Name()) {
-		t.Errorf(cmp.Diff(expected, helm.Name()))
+		t.Error(cmp.Diff(expected, helm.Name()))
 	}
 }
 

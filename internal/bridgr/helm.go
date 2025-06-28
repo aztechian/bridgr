@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 	"helm.sh/helm/v3/pkg/repo"
 	log "unknwon.dev/clog/v2"

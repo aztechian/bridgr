@@ -10,7 +10,7 @@ import (
 	"text/template"
 
 	"github.com/aztechian/bridgr/internal/bridgr/asset"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 	log "unknwon.dev/clog/v2"
 )

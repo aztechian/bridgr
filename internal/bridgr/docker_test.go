@@ -20,7 +20,7 @@ func TestDockerName(t *testing.T) {
 	expected := "docker"
 	docker := bridgr.Docker{}
 	if !cmp.Equal(expected, docker.Name()) {
-		t.Errorf(cmp.Diff(expected, docker.Name()))
+		t.Error(cmp.Diff(expected, docker.Name()))
 	}
 }
 
