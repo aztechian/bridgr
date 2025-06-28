@@ -168,7 +168,7 @@ func TestFilesS3(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			s3Client := mockS3Client{}
 			s3Client.On("GetBucketLocation", mock.Anything).Return(&s3.GetBucketLocationOutput{LocationConstraint: &test.region}, nil)
-			s3Client.On("GetObject", mock.Anything).Return(&s3.GetObjectOutput{Body: ioutil.NopCloser(bytes.NewReader([]byte(test.expect)))}, nil)
+			s3Client.On("GetObject", mock.Anything).Return(&s3.GetObjectOutput{Body: io.NopCloser(bytes.NewReader([]byte(test.expect)))}, nil)
 
 			err := fetcher.s3Fetch(&s3Client, test.source, test.target)
 			if err != nil {

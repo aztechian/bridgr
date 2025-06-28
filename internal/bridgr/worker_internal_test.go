@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"strings"
@@ -58,7 +57,7 @@ type mockConn struct {
 }
 
 func (mc mockConn) Write(data []byte) (int, error) {
-	io.Copy(ioutil.Discard, bytes.NewReader(data))
+	io.Copy(io.Discard, bytes.NewReader(data))
 	return len(data), nil
 }
 
@@ -112,11 +111,11 @@ func TestRunContainer(t *testing.T) {
 	connWriter = mockConn{Conn: connWriter}
 	cli := mockClient{}
 	cli.On("ContainerCreate", context.Background(), b.ContainerConfig, mock.Anything, mock.Anything, mock.Anything, namePid).Return(container.CreateResponse{ID: "something"}, nil)
-	cli.On("ImagePull", context.Background(), "docker.io/library/rebel", mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)
+	cli.On("ImagePull", context.Background(), "docker.io/library/rebel", mock.Anything).Return(io.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)
 	cli.On("ContainerRemove", context.Background(), namePid, container.RemoveOptions{Force: true}).Return(nil)
 	cli.On("ContainerAttach", context.Background(), "something", mock.Anything).Return(types.HijackedResponse{Conn: connWriter, Reader: bufio.NewReader(strings.NewReader("annyong"))}, nil)
 	cli.On("ContainerStart", context.Background(), "something", mock.Anything).Return(nil)
-	cli.On("ContainerLogs", context.Background(), "something", mock.Anything).Return(ioutil.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)
+	cli.On("ContainerLogs", context.Background(), "something", mock.Anything).Return(io.NopCloser(bytes.NewReader([]byte("do not eat"))), nil)
 	b.Client = &cli
 	err := b.runContainer("rebel", "fakeblock")
 	if err != nil && !strings.Contains(err.Error(), "Unrecognized input header") { // we use StdCopy which is the duplexed output streaming format for docker. I'm not doing that.

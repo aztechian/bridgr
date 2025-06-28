@@ -23,7 +23,7 @@ var (
 
 	imageDefault, _ = reference.ParseNormalizedNamed("jade:dragon-triad")
 	responseDefault = []byte("Stan Sitwell")
-	errDefault      = fmt.Errorf("Gene Parmesean")
+	errDefault      = fmt.Errorf("gene parmesean")
 )
 
 func dockerMust(ref reference.Named, err error) reference.Named {
