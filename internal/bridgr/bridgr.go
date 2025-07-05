@@ -16,6 +16,11 @@ import (
 	log "unknwon.dev/clog/v2"
 )
 
+const (
+	fileMode = 0644
+	dirMode  = 0750
+)
+
 var (
 	// Verbose determines whether debug logging is printed
 	Verbose = false
@@ -28,6 +33,12 @@ var (
 
 	// FileTimeout is the duration used for HTTP/s file download overall timeout. Used in the transport object
 	FileTimeout = time.Second * 20
+
+	// DefaultFilePerms are the permissions for files created by Bridgr workers
+	DefaultFilePerms = os.FileMode(fileMode)
+
+	// DefaultDirPerms are the directory permissions for directories created by Bridgr workers
+	DefaultDirPerms = os.FileMode(dirMode)
 )
 
 // BaseDir gives the runtime absolute directory of the base "packages" directory

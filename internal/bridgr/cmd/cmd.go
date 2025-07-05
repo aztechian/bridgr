@@ -103,7 +103,7 @@ func (b Bridgr) Execute(filter []string) error {
 }
 
 func contains(item string, list []string) bool {
-	if len(list) <= 0 || strings.ToLower(list[0]) == "all" {
+	if len(list) == 0 || strings.ToLower(list[0]) == "all" {
 		return true
 	}
 	for _, x := range list {

@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+const (
+	serverReadHeaderTimeout = 5 * time.Second
+)
+
 var (
 	logFmt          = "2/Jan/2006:15:04:05 -0700"
 	shutdownTimeout = 10 * time.Second
@@ -54,7 +58,7 @@ func Serve(addr string, root http.FileSystem) error {
 	fs := http.FileServer(root)
 	handlerChain := logMiddleware(customHeaders(fs))
 	http.Handle("/", handlerChain)
-	server := &http.Server{Addr: addr}
+	server := &http.Server{Addr: addr, ReadHeaderTimeout: serverReadHeaderTimeout, Handler: http.DefaultServeMux}
 
 	signal.Notify(quit, os.Interrupt)
 	go shutdownHandler(server)
@@ -83,7 +87,7 @@ func logMiddleware(next http.Handler) http.Handler {
 		loggingRW := &loggingResponseWriter{
 			ResponseWriter: w,
 		}
-		next.ServeHTTP(loggingRW, r) //continue with the response
+		next.ServeHTTP(loggingRW, r) // continue with the response
 
 		// clog (used by the rest of bridgr) doesn't support changing the "prefix" of logging output
 		// so, we use direct Printf here instead so the logs aren't "double formatted" - first by clog and then in CLF form

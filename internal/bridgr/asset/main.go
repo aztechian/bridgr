@@ -6,7 +6,6 @@ package asset
 
 import (
 	"io"
-	"io/ioutil"
 	"strings"
 	"text/template"
 
@@ -20,7 +19,7 @@ func Load(name string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
-	content, err := ioutil.ReadAll(f)
+	content, err := io.ReadAll(f)
 	if err != nil {
 		return "", err
 	}

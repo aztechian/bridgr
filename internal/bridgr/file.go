@@ -152,7 +152,7 @@ func (f File) Run() error {
 // Setup only does the setup step of the Files worker
 func (f File) Setup() error {
 	log.Trace("Called Files.Setup()")
-	_ = os.MkdirAll(f.dir(), os.ModePerm)
+	_ = os.MkdirAll(f.dir(), DefaultDirPerms)
 	for _, item := range f {
 		_ = item.Normalize(f.dir())
 	}
@@ -160,7 +160,7 @@ func (f File) Setup() error {
 }
 
 func (ff *fileFetcher) fileFetch(source string, out io.WriteCloser) error {
-	in, openErr := os.Open(source)
+	in, openErr := os.Open(source) // #nosec G304 this is intended behavior, we want to read local files
 	if openErr != nil {
 		return openErr
 	}
@@ -204,7 +204,7 @@ func (ff *fileFetcher) httpFetch(httpClient *http.Client, source string, out io.
 func (ff *fileFetcher) s3Fetch(client s3iface.S3API, source *url.URL, out io.WriteCloser) error {
 	defer out.Close()
 	if client == (*s3.S3)(nil) {
-		return errors.New("Invalid S3 client, unable to copy file")
+		return errors.New("invalid S3 client, unable to copy file")
 	}
 	log.Trace("Downloading S3 file: %s", source.String())
 	resp, err := client.GetObject(&s3.GetObjectInput{
