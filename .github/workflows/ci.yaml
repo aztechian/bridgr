@@ -41,7 +41,6 @@ jobs:
       - name: Setup bridger
         id: setup
         run: |
-          echo "gcli_ver=$(grep 'golangci-lint-version' .golangci.yml | awk '{print $2}')" >> $GITHUB_OUTPUT
           echo "::group::godownload"
           make download
           echo "::endgroup::"
@@ -50,7 +49,6 @@ jobs:
         with:
           go_version_file: "go.mod"
           reporter: github-pr-review
-          golangci_lint_version: "v${{ steps.setup.outputs.gcli_ver }}"
           cache: false
           fail_level: warning
           filter_mode: added
