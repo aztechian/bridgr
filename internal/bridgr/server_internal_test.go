@@ -2,7 +2,7 @@ package bridgr
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -38,7 +38,7 @@ func TestLogMiddleware(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	body, _ := ioutil.ReadAll(res.Body)
+	body, _ := io.ReadAll(res.Body)
 	if !strings.Contains(string(body), "Hello") {
 		t.Error("logMiddleware handler did not call next")
 	}

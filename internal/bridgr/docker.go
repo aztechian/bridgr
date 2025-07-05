@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -12,14 +11,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/docker/distribution/reference"
-	"github.com/docker/docker/api/types"
+	"github.com/distribution/reference"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/mitchellh/mapstructure"
 	log "unknwon.dev/clog/v2"
 )
 
-var cli, _ = client.NewClientWithOpts(client.FromEnv)
+var cli, _ = client.NewClientWithOpts(client.WithAPIVersionNegotiation(), client.FromEnv)
 
 // Docker struct is the configuration holder for the Docker worker type
 type Docker struct {
@@ -43,7 +42,7 @@ func (d Docker) Name() string {
 
 func mapToImage(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
 	if f.Kind() == reflect.Map && t == reflect.TypeOf((*reference.Named)(nil)).Elem() {
-		imageStr, err := dockerParse(data.(map[interface{}]interface{}))
+		imageStr, err := dockerParse(data.(map[string]interface{}))
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +80,7 @@ func (d *Docker) Hook() mapstructure.DecodeHookFunc {
 	)
 }
 
-func dockerParse(imageObj map[interface{}]interface{}) (string, error) {
+func dockerParse(imageObj map[string]interface{}) (string, error) {
 	i := ""
 	if image, ok := imageObj["image"]; ok {
 		i = i + image.(string)
@@ -116,7 +115,7 @@ func (d *Docker) Run() error {
 			dest := d.tagForRemote(cli, img)
 			err := d.writeRemote(cli, dest, img)
 			if err != nil {
-				log.Info(err.Error())
+				log.Info("%s", err.Error())
 			}
 		} else {
 			re := regexp.MustCompile(`[:/]`)
@@ -143,17 +142,24 @@ func (d *Docker) Setup() error {
 	log.Trace("Called Docker.Setup()")
 	_ = os.MkdirAll(d.dir(), os.ModePerm)
 
+	// filter nil images from parse errors
+	filtered := d.Images[:0]
 	for _, img := range d.Images {
+		if img == nil {
+			continue
+		}
+		filtered = append(filtered, img)
 		log.Trace("pulling image %s", img.String())
 		if err := PullImage(cli, img); err != nil {
 			log.Error("Error pulling Docker image `%s`: %s", img.String(), err)
 		}
 	}
+	d.Images = filtered
 	return nil
 }
 
 type imageSaver interface {
-	ImageSave(ctx context.Context, images []string) (io.ReadCloser, error)
+	ImageSave(ctx context.Context, images []string, saveOpts ...client.ImageSaveOption) (io.ReadCloser, error)
 }
 
 func (d *Docker) writeLocal(cli imageSaver, out io.WriteCloser, in reference.Named) error {
@@ -169,15 +175,15 @@ func (d *Docker) writeLocal(cli imageSaver, out io.WriteCloser, in reference.Nam
 }
 
 type imagePusher interface {
-	ImagePush(ctx context.Context, ref string, options types.ImagePushOptions) (io.ReadCloser, error)
+	ImagePush(ctx context.Context, ref string, options image.PushOptions) (io.ReadCloser, error)
 }
 
 func (d *Docker) writeRemote(cli imagePusher, remote string, in reference.Named) error {
-	writer := ioutil.Discard
+	writer := io.Discard
 	if Verbose {
 		writer = os.Stderr
 	}
-	output, err := cli.ImagePush(context.Background(), remote, types.ImagePushOptions{})
+	output, err := cli.ImagePush(context.Background(), remote, image.PushOptions{})
 	if err != nil {
 		return err
 	}
