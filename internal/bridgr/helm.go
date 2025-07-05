@@ -38,7 +38,7 @@ func (h Helm) Setup() error {
 	for _, chart := range h {
 		chart.Normalize(h.dir())
 	}
-	return os.MkdirAll(h.dir(), os.ModePerm)
+	return os.MkdirAll(h.dir(), DefaultDirPerms)
 }
 
 // Run downloads the requested Helm charts, and creates an index for statically hosting them

@@ -111,11 +111,11 @@ func (r Ruby) Hook() mapstructure.DecodeHookFunc {
 // Setup creates the items that are needed to fetch artifacts for the Python worker. It does not actually fetch artifacts.
 func (r *Ruby) Setup() error {
 	log.Trace("Called Ruby.Setup()")
-	_ = os.MkdirAll(r.dir(), os.ModePerm)
+	_ = os.MkdirAll(r.dir(), DefaultDirPerms)
 
 	gemfile, err := os.Create(path.Join(r.dir(), "Gemfile"))
 	if err != nil {
-		return fmt.Errorf("Unable to create Ruby Gemfile: %s", err)
+		return fmt.Errorf("unable to create Ruby Gemfile: %s", err)
 	}
 
 	return asset.RenderFile(rbGems, r, gemfile)
@@ -128,7 +128,7 @@ func (r *Ruby) Run() error {
 		return err
 	}
 
-	shell, err := asset.Load("ruby.sh") //no parsing needed, so just Load is fine here
+	shell, err := asset.Load("ruby.sh") // no parsing needed, so just Load is fine here
 	if err != nil {
 		return err
 	}

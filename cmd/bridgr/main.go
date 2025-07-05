@@ -87,7 +87,7 @@ func main() {
 	if err != nil {
 		log.Error("Unable to open bridgr config \"%s\": %s", *configPtr, err)
 		if configFile != nil {
-			configFile.Close()
+			_ = configFile.Close()
 		}
 		exit(cfgErr)
 	}

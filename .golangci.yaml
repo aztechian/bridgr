@@ -1,0 +1,56 @@
+---
+version: "2"
+linters:
+  enable:
+    - bodyclose
+    - depguard
+    - durationcheck
+    - funlen
+    - gocognit
+    - gocritic
+    - gocyclo
+    - godox
+    - goheader
+    - gosec
+    - misspell
+    - mnd
+    - nakedret
+    - revive
+    - unconvert
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+      exclude-functions:
+        - (io.Closer).Close
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          allow:
+            - $gostd
+          deny:
+            - pkg: github.com/docker/distribution
+              desc: use the distribution package from github.com/distribution/distribution instead
+            - pkg: golang.org/x/crypto/ssh/terminal
+              desc: use the terminal package from golang.org/x/term instead
+formatters:
+  enable:
+    - gofmt
+    - goimports
+output:
+  formats:
+    text:
+      print-linter-name: true
+    junit-xml:
+      output: "reports/golangci-lint.xml"
+  sort-order:
+    - severity
+    - linter
+    - file
+issues:
+  new: true
+run:
+  tests: false
+  modules-download-mode: readonly
+  allow-parallel-runners: true

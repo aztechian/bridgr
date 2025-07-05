@@ -108,11 +108,11 @@ func (y Yum) Run() error {
 // Setup only does the setup step of the YUM worker
 func (y Yum) Setup() error {
 	log.Trace("Called Yum Setup()")
-	_ = os.MkdirAll(y.dir(), os.ModePerm)
+	_ = os.MkdirAll(y.dir(), DefaultDirPerms)
 
 	repoFile, err := os.Create(path.Join(y.dir(), "bridgr.repo"))
 	if err != nil {
-		return fmt.Errorf("Unable to create YUM repo file: %s", err)
+		return fmt.Errorf("unable to create YUM repo file: %s", err)
 	}
 
 	err = asset.RenderFile(yumRepo, y.Repos, repoFile)

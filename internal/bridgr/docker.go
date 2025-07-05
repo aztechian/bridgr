@@ -120,7 +120,7 @@ func (d *Docker) Run() error {
 		} else {
 			re := regexp.MustCompile(`[:/]`)
 			outFile := re.ReplaceAllString(reference.Path(img), "_") + ".tar"
-			out, err := os.Create(path.Join(d.dir(), outFile))
+			out, err := os.Create(path.Join(d.dir(), outFile)) // #nosec G304, this is already rooted in the Docker worker's base directory
 			if err != nil {
 				log.Info("error creating %s for saving Docker image %s - %s", outFile, img.String(), err)
 				continue
@@ -140,7 +140,7 @@ func (d *Docker) Run() error {
 // Setup gets the environment ready to run the Docker worker
 func (d *Docker) Setup() error {
 	log.Trace("Called Docker.Setup()")
-	_ = os.MkdirAll(d.dir(), os.ModePerm)
+	_ = os.MkdirAll(d.dir(), DefaultDirPerms)
 
 	// filter nil images from parse errors
 	filtered := d.Images[:0]
@@ -198,7 +198,7 @@ type imageTagger interface {
 
 func (d *Docker) tagForRemote(cli imageTagger, local reference.Named) string {
 	destReg := d.Destination
-	remoteTag := strings.Replace(local.String(), reference.Domain(local), destReg, -1)
+	remoteTag := strings.ReplaceAll(local.String(), reference.Domain(local), destReg)
 
 	_ = cli.ImageTag(context.Background(), local.String(), remoteTag)
 	return remoteTag

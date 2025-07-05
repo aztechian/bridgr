@@ -98,10 +98,10 @@ func (p *Python) Hook() mapstructure.DecodeHookFunc {
 // Setup creates the items that are needed to fetch artifacts for the Python worker. It does not actually fetch artifacts.
 func (p Python) Setup() error {
 	log.Trace("Called Python Setup()")
-	_ = os.MkdirAll(p.dir(), os.ModePerm)
+	_ = os.MkdirAll(p.dir(), DefaultDirPerms)
 	reqt, err := os.Create(path.Join(p.dir(), "requirements.txt"))
 	if err != nil {
-		return fmt.Errorf("Unable to create Python requirements file: %s", err)
+		return fmt.Errorf("unable to create Python requirements file: %s", err)
 	}
 
 	return asset.RenderFile(pyReqt, p.Packages, reqt)

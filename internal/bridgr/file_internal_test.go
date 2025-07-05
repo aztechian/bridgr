@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -24,7 +23,7 @@ type httpMock struct {
 func (m httpMock) RoundTrip(req *http.Request) (*http.Response, error) {
 	return &http.Response{
 		StatusCode: 200,
-		Body:       ioutil.NopCloser(bytes.NewBufferString("OK")),
+		Body:       io.NopCloser(bytes.NewBufferString("OK")),
 		Header:     make(http.Header),
 	}, nil
 }

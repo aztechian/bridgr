@@ -108,7 +108,7 @@ func (g *Git) Hook() mapstructure.DecodeHookFunc {
 
 // Setup does any initial setup for the Git worker
 func (g *Git) Setup() error {
-	return os.MkdirAll(g.dir(), os.ModePerm)
+	return os.MkdirAll(g.dir(), DefaultDirPerms)
 }
 
 // Run executes the Git worker to fetch artifacts
@@ -124,13 +124,13 @@ func (g *Git) Run() error {
 			log.Info("Error cloning Git repository '%s': %s", item.URL.String(), err)
 		}
 		if item.Bare {
-			_ = os.MkdirAll(path.Join(dir, "info"), os.ModePerm)
-			_ = os.MkdirAll(path.Join(dir, "objects", "info"), os.ModePerm)
-			infoRefs, _ := os.Create(path.Join(dir, "info", "refs"))
+			_ = os.MkdirAll(path.Join(dir, "info"), DefaultDirPerms)
+			_ = os.MkdirAll(path.Join(dir, "objects", "info"), DefaultDirPerms)
+			infoRefs, _ := os.Create(path.Join(dir, "info", "refs")) // #nosec G304, this is already cleaned and rooted in the PrepDir function
 			generateRefInfo(repo, infoRefs)
 			infoRefs.Close()
 
-			infoPack, _ := os.Create(path.Join(dir, "objects", "info", "packs"))
+			infoPack, _ := os.Create(path.Join(dir, "objects", "info", "packs")) // #nosec G304, this is already cleaned and rooted in the PrepDir function
 			generatePackInfo(repo, infoPack)
 			infoPack.Close()
 		}
@@ -142,7 +142,7 @@ func (g *Git) Run() error {
 func (g *Git) prepDir(url *url.URL) string {
 	dir := path.Base(url.Path)
 	dir = strings.TrimSuffix(dir, git.GitDirName)
-	dir = path.Join(g.dir(), dir)
+	dir = path.Join(g.dir(), dir) // this roots the directory in the Git worker's base directory
 
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
 		log.Trace("%s exists, removing to allow new clone", dir)
