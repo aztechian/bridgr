@@ -18,7 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/mitchellh/mapstructure"
 	log "unknwon.dev/clog/v2"
 )

@@ -22,7 +22,7 @@ func TestFileName(t *testing.T) {
 	expected := "files"
 	file := bridgr.File{}
 	if !cmp.Equal(expected, file.Name()) {
-		t.Errorf(cmp.Diff(expected, file.Name()))
+		t.Error(cmp.Diff(expected, file.Name()))
 	}
 }
 

@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/aztechian/bridgr/internal/bridgr"
-	"github.com/docker/distribution/reference"
+	"github.com/distribution/reference"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -27,7 +27,7 @@ func TestRubyName(t *testing.T) {
 	expected := "ruby"
 	ruby := bridgr.Ruby{}
 	if !cmp.Equal(expected, ruby.Name()) {
-		t.Errorf(cmp.Diff(expected, ruby.Name()))
+		t.Error(cmp.Diff(expected, ruby.Name()))
 	}
 }
 

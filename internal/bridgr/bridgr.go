@@ -10,8 +10,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/docker/distribution/reference"
-	"github.com/docker/docker/api/types"
+	"github.com/distribution/reference"
+	"github.com/docker/docker/api/types/image"
 	"github.com/mitchellh/mapstructure"
 	log "unknwon.dev/clog/v2"
 )
@@ -53,14 +53,14 @@ type Configuration interface {
 
 // ImagePuller is a simplified interface to docker ImageAPIClient, that only defines the ImagePull function
 type ImagePuller interface {
-	ImagePull(ctx context.Context, ref string, options types.ImagePullOptions) (io.ReadCloser, error)
+	ImagePull(ctx context.Context, ref string, options image.PullOptions) (io.ReadCloser, error)
 }
 
 // PullImage is a helper function that Pulls a docker image to the local docker daemon
-func PullImage(cli ImagePuller, image reference.Named) error {
+func PullImage(cli ImagePuller, imageRef reference.Named) error {
 	creds := &DockerCredential{}
-	dockerAuth(image, creds)
-	output, err := cli.ImagePull(context.Background(), image.String(), types.ImagePullOptions{RegistryAuth: creds.String()})
+	dockerAuth(imageRef, creds)
+	output, err := cli.ImagePull(context.Background(), imageRef.String(), image.PullOptions{RegistryAuth: creds.String()})
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func PullImage(cli ImagePuller, image reference.Named) error {
 	// must wait for output before returning
 	scanner := bufio.NewScanner(output)
 	for scanner.Scan() {
-		log.Trace(scanner.Text())
+		log.Trace("%s", scanner.Text())
 	}
 	return nil
 }
