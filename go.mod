@@ -14,7 +14,7 @@ require (
 	golang.org/x/term v0.32.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.18.3
+	helm.sh/helm/v3 v3.18.4
 	unknwon.dev/clog/v2 v2.2.0
 )
 
