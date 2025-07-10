@@ -5,7 +5,7 @@ require (
 	github.com/briandowns/spinner v1.23.2
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/distribution/reference v0.6.0
-	github.com/docker/docker v28.3.0+incompatible
+	github.com/docker/docker v28.3.2+incompatible
 	github.com/google/go-cmp v0.7.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/opencontainers/image-spec v1.1.1
