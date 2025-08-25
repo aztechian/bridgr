@@ -10,7 +10,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/shurcooL/vfsgen v0.0.0-20200824052919-0d455de96546
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	golang.org/x/term v0.32.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v3 v3.0.1
